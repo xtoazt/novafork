@@ -1,6 +1,16 @@
-import API_KEY from './apis/config.js';
+async function getApiKey() {
+    try {
+        const response = await fetch('apis/config.json'); // Update with the actual path to your config file
+        const config = await response.json();
+        return config.apiKey;
+    } catch (error) {
+        console.error('Failed to fetch API key:', error);
+        return null;
+    }
+}
 
-document.addEventListener('DOMContentLoaded', function () {
+
+document.addEventListener('DOMContentLoaded', async function () {
     const homePage = document.getElementById('homePage');
     const welcomeBanner = document.getElementById('welcomeBanner');
     const closeBanner = document.getElementById('closeBanner');
@@ -24,6 +34,9 @@ document.addEventListener('DOMContentLoaded', function () {
             search();
         }
     });
+
+    // Fetch the API key
+    const API_KEY = await getApiKey();
 
     async function search() {
         const searchInputValue = searchInput.value;
