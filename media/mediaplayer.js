@@ -25,6 +25,7 @@ async function displaySelectedMedia(media, mediaType) {
     let runtime = '';
     let language = '';
     let castList = '';
+    let quality = ''; // Placeholder for streaming quality
 
     try {
         let response;
@@ -54,6 +55,10 @@ async function displaySelectedMedia(media, mediaType) {
             <div class="text-sm text-gray-300 mb-4">Popularity: <span class="font-semibold">${popularityScore.toFixed(1)}</span></div>
         `;
 
+        // Placeholder for quality information - you would fetch this from a streaming service API if available
+        quality = `
+            <div class="text-sm text-gray-300 mb-4">Quality: <span class="font-semibold">HD</span></div>
+        `;
 
         let castResponse;
         if (mediaType === 'tv') {
@@ -99,6 +104,7 @@ async function displaySelectedMedia(media, mediaType) {
         runtime = 'Runtime: Not available';
         language = 'Language: Not available';
         castList = 'Cast: Not available';
+        quality = 'Quality: Not available'; // Handle error
     }
 
     const templateResponse = await fetch('media/mediaTemplate.html');
@@ -116,7 +122,8 @@ async function displaySelectedMedia(media, mediaType) {
         .replace(/{{genres}}/g, `Genres: ${genres}`)
         .replace(/{{runtime}}/g, `Runtime: ${runtime}`)
         .replace(/{{language}}/g, `Language: ${language}`)
-        .replace(/{{cast_list}}/g, castList);
+        .replace(/{{cast_list}}/g, castList)
+        .replace(/{{quality}}/g, quality); // Add quality to template
 
     selectedMovie.innerHTML = populatedHTML;
 
@@ -300,7 +307,6 @@ async function displaySelectedMedia(media, mediaType) {
                 await updateEpisodes();
                 await updateVideo();
             });
-
 
             await updateEpisodes();
         }
