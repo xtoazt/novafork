@@ -145,6 +145,9 @@ async function displaySelectedMedia(media, mediaType) {
         const selectedLanguage = languageSelect ? languageSelect.value : '';
         const provider = providerSelect ? providerSelect.value : '';
 
+        // Prepare the media ID with 'tt' prefix if necessary
+        const mediaId = media.imdb_id ? `tt${media.imdb_id}` : media.id;
+
         if (mediaType === 'tv') {
             const seasonNumber = seasonSelect ? seasonSelect.value : '';
             const episodeNumber = episodeSelect ? episodeSelect.value : '';
@@ -156,25 +159,28 @@ async function displaySelectedMedia(media, mediaType) {
 
             switch (provider) {
                 case 'vidsrc':
-                    endpoint = `https://vidsrc.cc/v2/embed/tv/${media.id}/${seasonNumber}/${episodeNumber}`;
+                    endpoint = `https://vidsrc.cc/v2/embed/tv/${mediaId}/${seasonNumber}/${episodeNumber}`;
                     break;
                 case 'vidsrc2':
-                    endpoint = `https://vidsrc2.to/embed/tv/${media.id}?season=${seasonNumber}&episode=${episodeNumber}`;
+                    endpoint = `https://vidsrc2.to/embed/tv/${mediaId}?season=${seasonNumber}&episode=${episodeNumber}`;
                     break;
                 case 'vidsrcxyz':
-                    endpoint = `https://vidsrc.xyz/embed/tv/${media.id}?season=${seasonNumber}&episode=${episodeNumber}`;
+                    endpoint = `https://vidsrc.xyz/embed/tv/${mediaId}?season=${seasonNumber}&episode=${episodeNumber}`;
                     break;
                 case 'superembed':
-                    endpoint = `https://multiembed.mov/?video_id=${media.id}&tmdb=1&s=${seasonNumber}&e=${episodeNumber}`;
+                    endpoint = `https://multiembed.mov/?video_id=${mediaId}&tmdb=1&s=${seasonNumber}&e=${episodeNumber}`;
                     break;
                 case 'embedsoap':
-                    endpoint = `https://www.embedsoap.com/embed/tv/?id=${media.id}&s=${seasonNumber}&e=${episodeNumber}`;
+                    endpoint = `https://www.embedsoap.com/embed/tv/?id=${mediaId}&s=${seasonNumber}&e=${episodeNumber}`;
                     break;
                 case 'autoembed':
-                    endpoint = `https://autoembed.co/tv/tmdb/${media.id}-${seasonNumber}-${episodeNumber}`;
+                    endpoint = `https://autoembed.co/tv/tmdb/${mediaId}-${seasonNumber}-${episodeNumber}`;
+                    break;
+                case 'autoembed2':
+                    endpoint = `https://player.autoembed.cc/embed/tv/${mediaId}/${seasonNumber}/${episodeNumber}`;
                     break;
                 case 'smashystream':
-                    endpoint = `https://player.smashy.stream/tv/${media.id}?s=${seasonNumber}&e=${episodeNumber}`;
+                    endpoint = `https://player.smashy.stream/tv/${mediaId}?s=${seasonNumber}&e=${episodeNumber}`;
                     break;
                 case 'trailer':
                     const trailerResponse = await fetch(`https://api.themoviedb.org/3/tv/${media.id}/videos?api_key=${apiKey}`);
@@ -194,25 +200,28 @@ async function displaySelectedMedia(media, mediaType) {
         } else {
             switch (provider) {
                 case 'vidsrc':
-                    endpoint = `https://vidsrc.cc/v2/embed/movie/${media.id}`;
+                    endpoint = `https://vidsrc.cc/v2/embed/movie/${mediaId}`;
                     break;
                 case 'vidsrc2':
-                    endpoint = `https://vidsrc2.to/embed/movie/${media.id}`;
+                    endpoint = `https://vidsrc2.to/embed/movie/${mediaId}`;
                     break;
                 case 'vidsrcxyz':
-                    endpoint = `https://vidsrc.xyz/embed/movie/${media.id}`;
+                    endpoint = `https://vidsrc.xyz/embed/movie/${mediaId}`;
                     break;
                 case 'superembed':
-                    endpoint = `https://multiembed.mov/?video_id=${media.id}`;
+                    endpoint = `https://multiembed.mov/?video_id=${mediaId}`;
                     break;
                 case 'embedsoap':
-                    endpoint = `https://www.embedsoap.com/embed/movie/?id=${media.id}`;
+                    endpoint = `https://www.embedsoap.com/embed/movie/?id=${mediaId}`;
                     break;
                 case 'autoembed':
-                    endpoint = `https://autoembed.co/movie/tmdb/${media.id}`;
+                    endpoint = `https://autoembed.co/movie/tmdb/${mediaId}`;
+                    break;
+                case 'autoembed2':
+                    endpoint = `https://player.autoembed.cc/embed/movie/${mediaId}`;
                     break;
                 case 'smashystream':
-                    endpoint = `https://player.smashy.stream/movie/${media.id}`;
+                    endpoint = `https://player.smashy.stream/movie/${mediaId}`;
                     break;
                 case 'trailer':
                     const trailerResponse = await fetch(`https://api.themoviedb.org/3/movie/${media.id}/videos?api_key=${apiKey}`);
@@ -236,6 +245,7 @@ async function displaySelectedMedia(media, mediaType) {
         videoPlayer.classList.remove('hidden');
         movieInfo.classList.add('hidden');
     }
+
 
     async function updateEpisodes() {
         const seasonNumber = seasonSelect ? seasonSelect.value : '';

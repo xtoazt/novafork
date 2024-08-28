@@ -16,19 +16,22 @@
             <select id="providerSelect" class="dropdown mt-1 block w-full bg-gray-800 text-white rounded border border-gray-700 focus:border-blue-500 focus:ring-blue-500">
                 <option value="vidsrc">VidSrc (Top Provider)</option>
                 <optgroup label="Alternative Providers">
-                    <option value="vidsrc2">VidSrc2</option>
-                    <option value="vidsrcxyz">VidSrcXYZ</option>
-                    <option value="superembed">SuperEmbed</option>
-                    <option value="embedsoap">EmbedSoap</option>
-                    <option value="autoembed">AutoEmbed</option>
-                    <option value="smashystream">SmashyStream</option>
+                    <option value="autoembed2">AutoEmbed2 (Hindi Support) - Ads May Appear</option>
+                    <option value="vidsrc2">VidSrc2 - Ads May Appear</option>
+                    <option value="vidsrcxyz">VidSrcXYZ - Ads May Appear</option>
+                    <option value="superembed">SuperEmbed - Ads May Appear</option>
+                    <option value="embedsoap">EmbedSoap - Ads May Appear</option>
+                    <option value="autoembed">AutoEmbed - Ads May Appear</option>
+                    <option value="smashystream">SmashyStream - Ads May Appear</option>
                 </optgroup>
                 <option value="trailer">Trailer</option>
             </select>
+            <p class="text-xs text-gray-400 mt-2">Note: All providers except VidSrc may include ads in their content.</p>
         </div>
         {{season_section}}
     </div>
 </div>
+
 <div id="movieInfo" class="relative w-full sm:w-2/3 pl-6">
     <h2 class="text-3xl font-bold text-white mb-2">{{title_or_name}}</h2>
     <p class="text-lg text-gray-300 mb-4">{{release_date_or_first_air_date}}</p>
@@ -45,6 +48,7 @@
         Play
     </button>
 </div>
+
 <div id="videoPlayer" class="w-full h-full rounded-lg overflow-hidden hidden relative bg-gray-800">
     <div class="absolute inset-0 bg-cover bg-center" style="background-image: url('https://image.tmdb.org/t/p/w500{{poster_path}}'); opacity: 0.4;"></div>
     <div class="relative z-10 h-full overflow-auto">
