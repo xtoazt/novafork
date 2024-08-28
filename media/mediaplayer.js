@@ -4,8 +4,10 @@ async function displaySelectedMedia(media, mediaType) {
 
     let ratings = '';
     let popularity = '';
-    let castList = '';
     let seasonSection = '';
+    let genres = '';
+    let runtime = '';
+    let language = '';
 
     try {
         let response;
@@ -15,14 +17,21 @@ async function displaySelectedMedia(media, mediaType) {
             response = await fetch(`https://api.themoviedb.org/3/movie/${media.id}?api_key=${apiKey}`);
         }
         const data = await response.json();
+
+
+        genres = data.genres ? data.genres.map(genre => genre.name).join(', ') : 'Unknown Genre';
+
+
+        runtime = mediaType === 'tv' ? `${data.episode_run_time ? data.episode_run_time[0] : 'N/A'} min per episode` : `${data.runtime || 'N/A'} min`;
+
+
+        language = data.original_language ? data.original_language.toUpperCase() : 'Unknown';
+
+
         const voteAverage = data.vote_average || 0;
         const popularityScore = data.popularity || 0;
-        const castResponse = await fetch(`https://api.themoviedb.org/3/${mediaType}/${media.id}/credits?api_key=${apiKey}`);
-        const castData = await castResponse.json();
-        const cast = castData.cast || [];
-
-        // Format rating and popularity
         const stars = Math.round(voteAverage / 2); // TMDB ratings are out of 10, so divide by 2 for 5-star scale
+
         ratings = `
             <div class="flex items-center space-x-1 mb-2">
                 <span class="text-yellow-400">${'★'.repeat(stars)}</span>
@@ -34,59 +43,53 @@ async function displaySelectedMedia(media, mediaType) {
             <div class="text-sm text-gray-300 mb-4">Popularity: <span class="font-semibold">${popularityScore.toFixed(1)}</span></div>
         `;
 
-        // Format cast
-        castList = cast.slice(0, 5).map(actor =>
-            `<div class="flex-shrink-0 w-32 mx-2">
-                <img src="https://image.tmdb.org/t/p/w500${actor.profile_path}" alt="${actor.name}" class="w-full h-32 rounded-full object-cover shadow-md">
-                <div class="mt-2 text-center">
-                    <p class="text-white font-semibold">${actor.name}</p>
-                    <p class="text-gray-400 text-sm">${actor.character}</p>
-                </div>
-            </div>`
-        ).join('');
 
-        // Format season and episode select if it's a TV show
         if (mediaType === 'tv') {
             seasonSection = `
                 <div class="mt-4">
-                    <!-- Season Select Dropdown -->
-                    <label for="seasonSelect" class="block text-sm font-medium text-gray-300">Select Season:</label>
-                    <select id="seasonSelect" class="dropdown mt-1 block w-full bg-gray-800 text-white rounded border border-gray-700 focus:border-blue-500 focus:ring-blue-500">
-                        ${media.seasons.map(season =>
+                    <label for="seasonSelect" class="block text-xs font-medium text-gray-300">Select Season:</label>
+                    <select id="seasonSelect" class="dropdown mt-1 block w-full bg-gray-800 text-white rounded border border-gray-700 text-sm">
+                        ${data.seasons.map(season =>
                 `<option value="${season.season_number}">Season ${season.season_number}: ${season.name}</option>`
             ).join('')}
                     </select>
 
-                    <!-- Episode Select Dropdown -->
-                    <label for="episodeSelect" class="block text-sm font-medium text-gray-300 mt-2">Select Episode:</label>
-                    <select id="episodeSelect" class="dropdown mt-1 block w-full bg-gray-800 text-white rounded border border-gray-700 focus:border-blue-500 focus:ring-blue-500"></select>
+                    <label for="episodeSelect" class="block text-xs font-medium text-gray-300 mt-2">Select Episode:</label>
+                    <select id="episodeSelect" class="dropdown mt-1 block w-full bg-gray-800 text-white rounded border border-gray-700 text-sm"></select>
+                    
+                    <div id="episodeImage" class="mt-4"></div>
                 </div>
             `;
         }
 
     } catch (error) {
-        console.error('Failed to fetch ratings, popularity, and cast:', error);
+        console.error('Failed to fetch media details:', error);
         ratings = 'Rating: Not available';
         popularity = 'Popularity: Not available';
-        castList = 'Cast: Not available';
+        genres = 'Genres: Not available';
+        runtime = 'Runtime: Not available';
+        language = 'Language: Not available';
     }
 
-    // Load and populate the template
+
     const response = await fetch('media/mediaTemplate.html');
     const template = await response.text();
 
     const populatedHTML = template
-        .replace(/{{poster_path}}/g, media.poster_path)
+        .replace(/{{poster_path}}/g, `https://image.tmdb.org/t/p/w500${media.poster_path}`)
         .replace(/{{title_or_name}}/g, media.title || media.name)
         .replace(/{{release_date_or_first_air_date}}/g, media.release_date || media.first_air_date)
-        .replace(/{{overview}}/g, media.overview)
+        .replace(/{{overview}}/g, media.overview || 'No overview available.')
         .replace(/{{type}}/g, mediaType === 'movie' ? 'Movie' : 'TV Show')
         .replace(/{{ratings}}/g, ratings)
         .replace(/{{popularity}}/g, popularity)
-        .replace(/{{cast_list}}/g, castList)
-        .replace(/{{season_section}}/g, seasonSection);
+        .replace(/{{season_section}}/g, seasonSection)
+        .replace(/{{genres}}/g, `Genres: ${genres}`)
+        .replace(/{{runtime}}/g, `Runtime: ${runtime}`)
+        .replace(/{{language}}/g, `Language: ${language}`);
 
     selectedMovie.innerHTML = populatedHTML;
+
 
     const playButton = document.getElementById('playButton');
     const videoPlayer = selectedMovie.querySelector('#videoPlayer');
@@ -96,6 +99,7 @@ async function displaySelectedMedia(media, mediaType) {
     const seasonSelect = document.getElementById('seasonSelect');
     const episodeSelect = document.getElementById('episodeSelect');
 
+
     async function updateVideo() {
         if (!videoPlayer || !movieInfo) {
             console.error("Error: videoPlayer or movieInfo elements not found.");
@@ -103,12 +107,12 @@ async function displaySelectedMedia(media, mediaType) {
         }
 
         let endpoint;
-        const language = languageSelect.value;
-        const provider = providerSelect.value;
+        const selectedLanguage = languageSelect ? languageSelect.value : '';
+        const provider = providerSelect ? providerSelect.value : '';
 
         if (mediaType === 'tv') {
-            const seasonNumber = seasonSelect.value;
-            const episodeNumber = episodeSelect.value;
+            const seasonNumber = seasonSelect ? seasonSelect.value : '';
+            const episodeNumber = episodeSelect ? episodeSelect.value : '';
 
             if (!seasonNumber || !episodeNumber) {
                 console.error("Error: Season number or episode number not selected.");
@@ -192,43 +196,81 @@ async function displaySelectedMedia(media, mediaType) {
             }
         }
 
-        videoPlayer.querySelector('.relative').innerHTML = `<iframe src="${endpoint}" class="w-full" style="height: ${document.getElementById('poster').offsetHeight}px;" allowfullscreen></iframe>`;
+        videoPlayer.innerHTML = '';
+
+        videoPlayer.innerHTML = `<iframe src="${endpoint}" class="w-full" style="height: ${document.getElementById('poster').offsetHeight}px;" allowfullscreen></iframe>`;
         videoPlayer.classList.remove('hidden');
         movieInfo.classList.add('hidden');
     }
 
+
+    async function updateEpisodes() {
+        const seasonNumber = seasonSelect ? seasonSelect.value : '';
+        if (!seasonNumber) return;
+
+        const response = await fetch(`https://api.themoviedb.org/3/tv/${media.id}/season/${seasonNumber}?api_key=${apiKey}`);
+        if (response.ok) {
+            const season = await response.json();
+            episodeSelect.innerHTML = season.episodes.map(episode =>
+                `<option value="${episode.episode_number}" data-image="https://image.tmdb.org/t/p/w500${episode.still_path}">
+                    Episode ${episode.episode_number}: ${episode.name}
+                    <img src="https://image.tmdb.org/t/p/w500${episode.still_path}" alt="${episode.name}" style="width: 50px; height: auto; display: block; margin-top: 5px;">
+                </option>`
+            ).join('');
+            episodeSelect.dispatchEvent(new Event('change')); // Trigger change event to load images
+        } else {
+            console.error('Failed to fetch season details.');
+        }
+    }
+
+
+    async function updateEpisodeImage() {
+        const seasonNumber = seasonSelect ? seasonSelect.value : '';
+        const episodeNumber = episodeSelect ? episodeSelect.value : '';
+        if (!seasonNumber || !episodeNumber) return;
+
+        const imageResponse = await fetch(`https://api.themoviedb.org/3/tv/${media.id}/season/${seasonNumber}/episode/${episodeNumber}/images?api_key=${apiKey}`);
+        if (imageResponse.ok) {
+            const imageData = await imageResponse.json();
+            const imagesContainer = document.getElementById('episodeImage');
+            // Only show the first image
+            if (imageData.stills.length > 0) {
+                const firstImage = imageData.stills[0];
+                imagesContainer.innerHTML = `<img src="https://image.tmdb.org/t/p/w500${firstImage.file_path}" alt="Episode ${episodeNumber}" class="w-full h-auto mt-2 rounded-lg shadow-md">`;
+            } else {
+                imagesContainer.innerHTML = '<p>No image available.</p>';
+            }
+        } else {
+            console.error('Failed to fetch episode images.');
+        }
+    }
+
+
     playButton.addEventListener('click', updateVideo);
 
-    languageSelect.addEventListener('change', () => {
-        const providerSelect = document.getElementById('providerSelect');
-        providerSelect.classList.toggle('hidden', languageSelect.value === 'fr');
-        updateVideo();
-    });
-
-    providerSelect.addEventListener('change', updateVideo);
-
-    if (mediaType === 'tv') {
-        async function updateEpisodes() {
-            const seasonNumber = seasonSelect.value;
-            if (!seasonNumber) return;
-
-            const response = await fetch(`https://api.themoviedb.org/3/tv/${media.id}/season/${seasonNumber}?api_key=${apiKey}`);
-            if (response.ok) {
-                const season = await response.json();
-                episodeSelect.innerHTML = season.episodes.map(episode =>
-                    `<option value="${episode.episode_number}">Episode ${episode.episode_number}: ${episode.name}</option>`
-                ).join('');
-            } else {
-                console.error('Failed to fetch season details.');
+    if (languageSelect) {
+        languageSelect.addEventListener('change', () => {
+            if (providerSelect) {
+                providerSelect.classList.toggle('hidden', languageSelect.value === 'fr');
             }
-        }
-
-        seasonSelect.addEventListener('change', async () => {
-            await updateEpisodes();
             updateVideo();
         });
+    }
 
-        episodeSelect.addEventListener('change', updateVideo);
+    if (providerSelect) {
+        providerSelect.addEventListener('change', updateVideo);
+    }
+
+    if (mediaType === 'tv') {
+        seasonSelect.addEventListener('change', async () => {
+            await updateEpisodes();
+            await updateVideo();
+        });
+
+        episodeSelect.addEventListener('change', async () => {
+            await updateEpisodeImage();
+            await updateVideo();
+        });
 
         updateEpisodes();
     }
