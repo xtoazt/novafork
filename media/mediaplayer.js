@@ -165,11 +165,12 @@ async function displaySelectedMedia(media, mediaType) {
                 case 'autoembed': return `https://player.autoembed.cc/embed/tv/${mediaId}/${seasonNumber}/${episodeNumber}`;
                 case 'smashystream': return `https://player.smashy.stream/tv/${mediaId}?s=${seasonNumber}&e=${episodeNumber}`;
                 case 'anime': return `https://anime.autoembed.cc/embed/${media.name.replace(/\s+/g, '-').toLowerCase()}-episode-${episodeNumber}`;
+                case 'nontonGo': return `https://www.NontonGo.win/embed/tv/${mediaId}/${seasonNumber}/${episodeNumber}`;
+                case 'nontonGoAlt': return `https://www.NontonGo.win/embed/tv/?id=${mediaId}&s=${seasonNumber}&e=${episodeNumber}`;
                 case 'trailer': return await fetchTrailer(mediaId, 'tv', apiKey);
                 default: throw new Error('Provider not recognized.');
             }
         }
-
         async function getMovieEmbedUrl(mediaId, provider, apiKey) {
             switch (provider) {
                 case 'vidsrc': return `https://vidsrc.cc/v2/embed/movie/${mediaId}`;
@@ -179,10 +180,12 @@ async function displaySelectedMedia(media, mediaType) {
                 case 'autoembed': return `https://player.autoembed.cc/embed/movie/${mediaId}`;
                 case 'smashystream': return `https://player.smashy.stream/movie/${mediaId}`;
                 case 'anime': return `https://anime.autoembed.cc/embed/${media.title.replace(/\s+/g, '-').toLowerCase()}-episode-1`;
+                case 'nontonGo': return `https://www.NontonGo.win/embed/movie/${mediaId}`;
                 case 'trailer': return await fetchTrailer(mediaId, 'movie', apiKey);
                 default: throw new Error('Provider not recognized.');
             }
         }
+
 
         async function updateEpisodes() {
             const seasonNumber = seasonSelect ? seasonSelect.value : '';
