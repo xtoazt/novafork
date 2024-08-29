@@ -1,0 +1,22 @@
+{
+  "movie": {
+    "vidsrc": "https://vidsrc.cc/v2/embed/movie/{{mediaId}}",
+    "vidsrc2": "https://vidsrc2.to/embed/movie/{{mediaId}}",
+    "vidsrcxyz": "https://vidsrc.xyz/embed/movie/{{mediaId}}",
+    "embedsoap": "https://www.embedsoap.com/embed/movie/?id={{mediaId}}",
+    "autoembed": "https://player.autoembed.cc/embed/movie/{{mediaId}}",
+    "smashystream": "https://player.smashy.stream/movie/{{mediaId}}",
+    "anime": "https://anime.autoembed.cc/embed/{{mediaId}}-episode-1",
+    "trailer": "https://api.themoviedb.org/3/movie/{{mediaId}}/videos"
+  },
+  "tv": {
+    "vidsrc": "https://vidsrc.cc/v2/embed/tv/{{mediaId}}/{{seasonNumber}}/{{episodeNumber}}",
+    "vidsrc2": "https://vidsrc2.to/embed/tv/{{mediaId}}?season={{seasonNumber}}&episode={{episodeNumber}}",
+    "vidsrcxyz": "https://vidsrc.xyz/embed/tv/{{mediaId}}?season={{seasonNumber}}&episode={{episodeNumber}}",
+    "embedsoap": "https://www.embedsoap.com/embed/tv/?id={{mediaId}}&s={{seasonNumber}}&e={{episodeNumber}}",
+    "autoembed": "https://player.autoembed.cc/embed/tv/{{mediaId}}/{{seasonNumber}}/{{episodeNumber}}",
+    "smashystream": "https://player.smashy.stream/tv/{{mediaId}}?s={{seasonNumber}}&e={{episodeNumber}}",
+    "anime": "https://anime.autoembed.cc/embed/{{mediaId}}-episode-{{episodeNumber}}",
+    "trailer": "https://api.themoviedb.org/3/tv/{{mediaId}}/videos"
+  }
+}

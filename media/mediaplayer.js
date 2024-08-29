@@ -10,6 +10,17 @@ async function getApiKey() {
     }
 }
 
+async function getApiProviders() {
+    try {
+        const response = await fetch('apis/apiProviders.json');
+        if (!response.ok) throw new Error('Network response was not ok');
+        return await response.json();
+    } catch (error) {
+        console.error('Failed to fetch API providers:', error);
+        return null;
+    }
+}
+
 async function fetchJson(url) {
     try {
         const response = await fetch(url);
@@ -41,9 +52,10 @@ async function fetchTrailer(mediaId, mediaType, apiKey) {
 async function displaySelectedMedia(media, mediaType) {
     const selectedMovie = document.getElementById('selectedMovie');
     const apiKey = await getApiKey();
+    const apiProviders = await getApiProviders();
 
-    if (!apiKey) {
-        console.error('API key is not available.');
+    if (!apiKey || !apiProviders) {
+        console.error('API key or providers are not available.');
         return;
     }
 
@@ -146,133 +158,47 @@ async function displaySelectedMedia(media, mediaType) {
                     return;
                 }
 
-                endpoint = await getTvEmbedUrl(media.id, seasonNumber, episodeNumber, provider, apiKey);
+                endpoint = apiProviders.tv[provider]
+                    ? apiProviders.tv[provider].replace('{{mediaId}}', media.id).replace('{{seasonNumber}}', seasonNumber).replace('{{episodeNumber}}', episodeNumber)
+                    : null;
             } else {
-                endpoint = await getMovieEmbedUrl(media.id, provider, apiKey);
+                endpoint = apiProviders.movie[provider]
+                    ? apiProviders.movie[provider].replace('{{mediaId}}', media.id)
+                    : null;
             }
 
-            videoPlayer.innerHTML = `<iframe src="${endpoint}" class="w-full" style="height: ${document.getElementById('poster').offsetHeight}px;" allowfullscreen></iframe>`;
-            videoPlayer.classList.remove('hidden');
-            movieInfo.classList.add('hidden');
-        }
+            if (provider === 'trailer') {
+                endpoint = await fetchTrailer(media.id, mediaType, apiKey);
+            }
 
-        async function getTvEmbedUrl(mediaId, seasonNumber, episodeNumber, provider, apiKey) {
-            switch (provider) {
-                case 'vidsrc':
-                    return `https://vidsrc.cc/v2/embed/tv/${mediaId}/${seasonNumber}/${episodeNumber}`;
-                case 'vidsrcxyz':
-                    return `https://vidsrc.xyz/embed/tv/${mediaId}?season=${seasonNumber}&episode=${episodeNumber}`;
-                case 'embedsoap':
-                    return `https://www.embedsoap.com/embed/tv/?id=${mediaId}&s=${seasonNumber}&e=${episodeNumber}`;
-                case 'autoembed':
-                    return `https://player.autoembed.cc/embed/tv/${mediaId}/${seasonNumber}/${episodeNumber}`;
-                case 'smashystream':
-                    return `https://player.smashy.stream/tv/${mediaId}?s=${seasonNumber}&e=${episodeNumber}`;
-                case 'anime':
-                    return `https://anime.autoembed.cc/embed/${media.name.replace(/\s+/g, '-').toLowerCase()}-episode-${episodeNumber}`;
-                case 'trailer':
-                    return await fetchTrailer(mediaId, 'tv', apiKey);
-                case 'nontongo':
-                    return `https://www.NontonGo.win/embed/tv/?id=${mediaId}&s=${seasonNumber}&e=${episodeNumber}`; // NontonGo API for TV shows with query parameters
-                default:
-                    throw new Error('Provider not recognized.');
+            if (endpoint) {
+                videoPlayer.innerHTML = `<iframe src="${endpoint}" class="w-full" style="height: ${document.getElementById('poster').offsetHeight}px;" allowfullscreen></iframe>`;
+                videoPlayer.classList.remove('hidden');
+                movieInfo.classList.add('hidden');
+            } else {
+                console.error('Provider not recognized or endpoint not found.');
             }
         }
-
-        async function getMovieEmbedUrl(mediaId, provider, apiKey) {
-            switch (provider) {
-                case 'vidsrc':
-                    return `https://vidsrc.cc/v2/embed/movie/${mediaId}`;
-                case 'vidsrcxyz':
-                    return `https://vidsrc.xyz/embed/movie/${mediaId}`;
-                case 'embedsoap':
-                    return `https://www.embedsoap.com/embed/movie/?id=${mediaId}`;
-                case 'autoembed':
-                    return `https://player.autoembed.cc/embed/movie/${mediaId}`;
-                case 'smashystream':
-                    return `https://player.smashy.stream/movie/${mediaId}`;
-                case 'anime':
-                    return `https://anime.autoembed.cc/embed/${media.title.replace(/\s+/g, '-').toLowerCase()}-episode-1`;
-                case 'trailer':
-                    return await fetchTrailer(mediaId, 'movie', apiKey);
-                case 'nontongo':
-                    return `https://www.NontonGo.win/embed/movie/${mediaId}`; // NontonGo API for Movies
-                default:
-                    throw new Error('Provider not recognized.');
-            }
-        }
-
-
 
         async function updateEpisodes() {
-            const seasonNumber = seasonSelect ? seasonSelect.value : '';
-            if (!seasonNumber) return;
+            if (!episodeSelect || !seasonSelect || !apiProviders) return;
 
-            try {
-                const url = `https://api.themoviedb.org/3/tv/${media.id}/season/${seasonNumber}?api_key=${apiKey}`;
-                const season = await fetchJson(url);
-                episodeSelect.innerHTML = season.episodes.map(episode =>
-                    `<option value="${episode.episode_number}" data-image="https://image.tmdb.org/t/p/w500${episode.still_path}">
-                        Episode ${episode.episode_number}: ${episode.name}
-                    </option>`
-                ).join('');
-                episodeSelect.dispatchEvent(new Event('change')); // Trigger change event to load images
-            } catch (error) {
-                console.error('Failed to fetch season details:', error);
-            }
+            const seasonNumber = seasonSelect.value;
+            const episodes = mediaData.seasons.find(season => season.season_number == seasonNumber).episodes;
+            episodeSelect.innerHTML = episodes.map(episode =>
+                `<option value="${episode.episode_number}">Episode ${episode.episode_number}: ${episode.name}</option>`
+            ).join('');
+            await updateEpisodeImage();
         }
 
         async function updateEpisodeImage() {
-            const seasonNumber = seasonSelect ? seasonSelect.value : '';
             const episodeNumber = episodeSelect ? episodeSelect.value : '';
-            if (!seasonNumber || !episodeNumber) return;
-
-            try {
-                const url = `https://api.themoviedb.org/3/tv/${media.id}/season/${seasonNumber}/episode/${episodeNumber}/images?api_key=${apiKey}`;
-                const imageData = await fetchJson(url);
-                const imagesContainer = document.getElementById('episodeImage');
-                imagesContainer.innerHTML = imageData.stills.length > 0
-                    ? `<img src="https://image.tmdb.org/t/p/w500${imageData.stills[0].file_path}" alt="Episode ${episodeNumber}" class="w-full h-auto mt-2 rounded-lg shadow-md">`
-                    : '<p>No image available.</p>';
-            } catch (error) {
-                console.error('Failed to fetch episode images:', error);
+            if (episodeNumber && mediaData.seasons) {
+                const seasonNumber = seasonSelect ? seasonSelect.value : '';
+                const episode = mediaData.seasons.find(season => season.season_number == seasonNumber).episodes.find(ep => ep.episode_number == episodeNumber);
+                const episodeImage = selectedMovie.querySelector('#episodeImage');
+                episodeImage.innerHTML = episode ? `<img src="https://image.tmdb.org/t/p/w500${episode.still_path}" alt="${episode.name}" class="w-full rounded-md">` : '';
             }
-        }
-
-        // Search functionality
-        async function searchMedia(query) {
-            const url = `https://api.themoviedb.org/3/search/${mediaType}?api_key=${apiKey}&query=${encodeURIComponent(query)}`;
-            try {
-                const searchResults = await fetchJson(url);
-                return searchResults.results;
-            } catch (error) {
-                console.error('Failed to search media:', error);
-                return [];
-            }
-        }
-
-        function handleSearchInput(event) {
-            const query = event.target.value;
-            if (query.length < 3) { // Trigger search after 3 characters
-                return;
-            }
-
-            searchMedia(query).then(results => {
-                const searchResultsContainer = document.getElementById('searchResults');
-                if (searchResultsContainer) {
-                    searchResultsContainer.innerHTML = results.map(result =>
-                        `<div class="search-result-item" data-id="${result.id}" data-type="${mediaType}">
-                            <img src="https://image.tmdb.org/t/p/w500${result.poster_path}" alt="${result.title || result.name}" class="w-24 h-36 object-cover">
-                            <p class="text-white">${result.title || result.name}</p>
-                        </div>`
-                    ).join('');
-                }
-            });
-        }
-
-        const searchInput = document.getElementById('searchInput');
-        if (searchInput) {
-            searchInput.addEventListener('input', handleSearchInput);
         }
 
         if (playButton) {
