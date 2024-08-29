@@ -16,54 +16,10 @@
     <link rel="stylesheet" href="themes/mediacard.css">
     <link rel="stylesheet" href="themes/category.css">
     <style>
-        .social-buttons {
-            display: flex;
-            gap: 16px;
-            margin-bottom: 16px;
-            justify-content: center; /* Center the buttons on small screens */
-        }
         .social-buttons img {
             width: 24px;
             height: 24px;
-        }
-
-        #searchInput {
-            padding-right: 4rem; /* Space for the search button */
-            border: 1px solid #333; /* Border for better visibility */
-        }
-
-        #searchButton {
-            position: absolute;
-            inset-y-0: 0; /* Align to the right edge */
-            right: 0; /* Align to the right */
-            width: 4rem; /* Fixed width */
-            height: 100%; /* Full height */
-            display: flex; /* Center text inside */
-            align-items: center; /* Center text vertically */
-            justify-content: center; /* Center text horizontally */
-        }
-
-        @media (max-width: 768px) {
-            .social-buttons {
-                flex-direction: row; /* Ensure buttons are in a row on small screens */
-                gap: 12px; /* Adjust gap between buttons */
-            }
-            #searchInput {
-                padding-right: 3rem; /* Adjust padding on smaller screens */
-            }
-            #searchButton {
-                width: 100%; /* Full width button on smaller screens */
-                margin-top: 8px;
-                padding: 0.5rem; /* Adjust padding on smaller screens */
-            }
-            header {
-                flex-direction: column; /* Stack elements vertically on small screens */
-                align-items: center; /* Center align items */
-                gap: 16px; /* Add spacing between elements */
-            }
-            #categorySelect {
-                margin-top: 8px; /* Add margin to separate from other elements */
-            }
+            margin: 0 8px;
         }
     </style>
 </head>
@@ -79,17 +35,17 @@
 
 <div id="homePage" class="min-h-screen">
     <div class="container mx-auto px-4 py-8">
-        <header class="flex flex-col md:flex-row md:justify-between items-center py-4">
-            <h1 class="text-3xl font-bold text-purple-400 mb-2 md:mb-0">Nova</h1>
-            <div class="text-center text-sm text-zinc-400 mb-2 md:mb-0">This website is not affiliated with novastream.to</div>
+        <header class="flex justify-between items-center py-4">
+            <h1 class="text-3xl font-bold text-purple-400">Nova</h1>
+            <div class="text-center text-sm text-zinc-400 mt-4">This website is not affiliated with novastream.to</div>
             <div class="relative">
-                <select id="categorySelect" class="border p-2 rounded bg-zinc-800 text-white border-zinc-700">
+                <select id="categorySelect">
                     <option value="movie" selected>Movie</option>
                     <option value="tv">TV Show</option>
                 </select>
             </div>
         </header>
-        <div class="flex flex-col md:flex-row gap-4 mb-8">
+        <div class="flex gap-4 mb-8">
             <div class="relative flex-1">
                 <input type="text" id="searchInput" placeholder="Search for something" class="w-full p-3 rounded-l bg-zinc-800 border border-zinc-700 focus:border-purple-500 focus:outline-none">
                 <button id="searchButton" class="absolute inset-y-0 right-0 bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded-r">Search</button>
