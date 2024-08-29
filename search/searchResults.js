@@ -1,3 +1,9 @@
+
+function handleError(message, error) {
+    console.error(message, error);
+    alert(message);
+}
+
 // Function to fetch the API key from the configuration file
 async function getApiKey() {
     try {
@@ -6,26 +12,33 @@ async function getApiKey() {
         const config = await response.json();
         return config.apiKey;
     } catch (error) {
-        console.error('Failed to fetch API key:', error);
+        handleError('Failed to fetch API key.', error);
         return null;
     }
 }
 
-// Function to display search suggestions
+
+function debounce(func, delay) {
+    let timeoutId;
+    return function(...args) {
+        clearTimeout(timeoutId);
+        timeoutId = setTimeout(() => func.apply(this, args), delay);
+    };
+}
+
+
 async function displaySearchSuggestions(results) {
     const searchSuggestions = document.getElementById('searchSuggestions');
 
-    // If no results, show a "No suggestions" message
     if (results.length === 0) {
         searchSuggestions.innerHTML = '<div class="p-2 text-gray-500">No suggestions available</div>';
         searchSuggestions.classList.remove('hidden');
         return;
     }
 
-    // Generate the HTML for search suggestions
     const suggestionsHTML = results.map(media => {
         const mediaTypeLabel = media.media_type === 'movie' ? 'Movie' : 'TV Show';
-        const mediaTitle = media.title || media.name; // Display title or name
+        const mediaTitle = media.title || media.name;
         const mediaRating = media.vote_average ? media.vote_average.toFixed(1) : 'N/A';
 
         return `
@@ -45,7 +58,6 @@ async function displaySearchSuggestions(results) {
     searchSuggestions.innerHTML = suggestionsHTML;
     searchSuggestions.classList.remove('hidden');
 
-    // Attach event listeners to each suggestion item
     searchSuggestions.querySelectorAll('.suggestion-item').forEach(item => {
         item.addEventListener('click', async () => {
             const mediaId = item.getAttribute('data-id');
@@ -59,19 +71,19 @@ async function displaySearchSuggestions(results) {
     });
 }
 
-// Event listener for search button click
-document.getElementById('searchButton').addEventListener('click', async function() {
+
+async function handleSearchInput() {
     const searchInput = document.getElementById('searchInput');
     const searchInputValue = searchInput.value.trim();
     const apiKey = await getApiKey();
 
     if (!searchInputValue) {
-        alert('Please enter a search term.');
+        document.getElementById('searchSuggestions').innerHTML = '';
         return;
     }
 
     if (!apiKey) {
-        alert('Failed to fetch API key.');
+        handleError('Failed to fetch API key.');
         return;
     }
 
@@ -81,19 +93,21 @@ document.getElementById('searchButton').addEventListener('click', async function
             const data = await response.json();
             displaySearchSuggestions(data.results);
         } else {
-            console.error('Failed to fetch search results.');
+            handleError('Failed to fetch search results.');
         }
     } catch (error) {
-        console.error('An error occurred while fetching search results:', error);
+        handleError('An error occurred while fetching search results:', error);
     }
-});
+}
 
-// Event listener for random button click
+
+document.getElementById('searchInput').addEventListener('input', debounce(handleSearchInput, 300));
+
 document.getElementById('randomButton').addEventListener('click', async function() {
     const apiKey = await getApiKey();
 
     if (!apiKey) {
-        alert('Failed to fetch API key.');
+        handleError('Failed to fetch API key.');
         return;
     }
 
@@ -104,27 +118,31 @@ document.getElementById('randomButton').addEventListener('click', async function
             const randomMedia = data.results[Math.floor(Math.random() * data.results.length)];
             fetchSelectedMedia(apiKey, randomMedia.id, randomMedia.media_type);
         } else {
-            console.error('Failed to fetch trending media.');
+            handleError('Failed to fetch trending media.');
         }
     } catch (error) {
-        console.error('An error occurred while fetching trending media:', error);
+        handleError('An error occurred while fetching trending media:', error);
     }
 });
 
 // Function to fetch popular movies
 async function fetchPopularMovies(apiKey, page = 1) {
-    const response = await fetch(`https://api.themoviedb.org/3/trending/all/week?api_key=${apiKey}&page=${page}`);
-    if (response.ok) {
-        const data = await response.json();
-        displaySearchResults(data.results);
-        updatePaginationControls(data.page, data.total_pages);
-        fetchUpcomingMedia(apiKey);
-    } else {
-        console.error('Failed to fetch popular media.');
+    try {
+        const response = await fetch(`https://api.themoviedb.org/3/trending/all/week?api_key=${apiKey}&page=${page}`);
+        if (response.ok) {
+            const data = await response.json();
+            displaySearchResults(data.results);
+            updatePaginationControls(data.page, data.total_pages);
+            fetchUpcomingMedia(apiKey);
+        } else {
+            handleError('Failed to fetch popular media.');
+        }
+    } catch (error) {
+        handleError('An error occurred while fetching popular media:', error);
     }
 }
 
-// Function to update pagination controls
+
 function updatePaginationControls(currentPage, totalPages) {
     const prevPageButton = document.getElementById('prevPage');
     const nextPageButton = document.getElementById('nextPage');
@@ -148,13 +166,17 @@ function changePage(page) {
     });
 }
 
-// Function to fetch selected media details
+
 async function fetchSelectedMedia(apiKey, mediaId, mediaType) {
-    const response = await fetch(`https://api.themoviedb.org/3/${mediaType}/${mediaId}?api_key=${apiKey}`);
-    if (response.ok) {
-        const media = await response.json();
-        displaySelectedMedia(media, mediaType);
-    } else {
-        console.error('Failed to fetch media details.');
+    try {
+        const response = await fetch(`https://api.themoviedb.org/3/${mediaType}/${mediaId}?api_key=${apiKey}`);
+        if (response.ok) {
+            const media = await response.json();
+            displaySelectedMedia(media, mediaType);
+        } else {
+            handleError('Failed to fetch media details.');
+        }
+    } catch (error) {
+        handleError('An error occurred while fetching media details:', error);
     }
 }
