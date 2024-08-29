@@ -173,6 +173,11 @@ async function displaySelectedMedia(media, mediaType) {
                 case 'smashystream':
                     endpoint = `https://player.smashy.stream/tv/${media.id}?s=${seasonNumber}&e=${episodeNumber}`;
                     break;
+                case 'anime':
+                    // Example: https://anime.autoembed.cc/embed/your-anime-title-2024-episode-1
+                    const animeTitle = media.name.replace(/\s+/g, '-').toLowerCase();
+                    endpoint = `https://anime.autoembed.cc/embed/${animeTitle}-episode-${episodeNumber}`;
+                    break;
                 case 'trailer':
                     const trailerResponse = await fetch(`https://api.themoviedb.org/3/tv/${media.id}/videos?api_key=${apiKey}`);
                     const trailerData = await trailerResponse.json();
@@ -208,6 +213,11 @@ async function displaySelectedMedia(media, mediaType) {
                 case 'smashystream':
                     endpoint = `https://player.smashy.stream/movie/${media.id}`;
                     break;
+                case 'anime':
+                    // Example: https://anime.autoembed.cc/embed/your-anime-title-2024-episode-1
+                    const animeTitle = media.title.replace(/\s+/g, '-').toLowerCase();
+                    endpoint = `https://anime.autoembed.cc/embed/${animeTitle}-episode-1`;
+                    break;
                 case 'trailer':
                     const trailerResponse = await fetch(`https://api.themoviedb.org/3/movie/${media.id}/videos?api_key=${apiKey}`);
                     const trailerData = await trailerResponse.json();
@@ -230,6 +240,7 @@ async function displaySelectedMedia(media, mediaType) {
         videoPlayer.classList.remove('hidden');
         movieInfo.classList.add('hidden');
     }
+
 
 
     async function updateEpisodes() {
