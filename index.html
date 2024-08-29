@@ -27,16 +27,32 @@
             height: 24px;
         }
 
+        #searchInput {
+            padding-right: 4rem; /* Space for the search button */
+            border: 1px solid #333; /* Border for better visibility */
+        }
+
+        #searchButton {
+            position: absolute;
+            inset-y-0: 0; /* Align to the right edge */
+            right: 0; /* Align to the right */
+            width: 4rem; /* Fixed width */
+            height: 100%; /* Full height */
+            display: flex; /* Center text inside */
+            align-items: center; /* Center text vertically */
+            justify-content: center; /* Center text horizontally */
+        }
+
         @media (max-width: 768px) {
             .social-buttons {
                 flex-direction: row; /* Ensure buttons are in a row on small screens */
                 gap: 12px; /* Adjust gap between buttons */
             }
             #searchInput {
-                padding-right: 4rem; /* Adjust padding to make space for the button */
+                padding-right: 3rem; /* Adjust padding on smaller screens */
             }
             #searchButton {
-                width: 100%;
+                width: 100%; /* Full width button on smaller screens */
                 margin-top: 8px;
                 padding: 0.5rem; /* Adjust padding on smaller screens */
             }
