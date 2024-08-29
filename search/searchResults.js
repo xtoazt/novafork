@@ -1,4 +1,4 @@
-
+// Utility function to handle errors
 function handleError(message, error) {
     console.error(message, error);
     alert(message);
@@ -17,7 +17,7 @@ async function getApiKey() {
     }
 }
 
-
+// Function to debounce input events
 function debounce(func, delay) {
     let timeoutId;
     return function(...args) {
@@ -26,8 +26,22 @@ function debounce(func, delay) {
     };
 }
 
+// Function to display a loading spinner
+function showLoading() {
+    const searchSuggestions = document.getElementById('searchSuggestions');
+    searchSuggestions.innerHTML = '<div class="spinner"></div>';
+    searchSuggestions.classList.remove('hidden');
+}
 
-async function displaySearchSuggestions(results) {
+// Function to highlight matching text
+function highlightText(text, query) {
+    if (!query) return text;
+    const regex = new RegExp(`(${query})`, 'gi');
+    return text.replace(regex, '<span class="highlight">$1</span>');
+}
+
+// Function to display search suggestions
+async function displaySearchSuggestions(results, query) {
     const searchSuggestions = document.getElementById('searchSuggestions');
 
     if (results.length === 0) {
@@ -40,13 +54,14 @@ async function displaySearchSuggestions(results) {
         const mediaTypeLabel = media.media_type === 'movie' ? 'Movie' : 'TV Show';
         const mediaTitle = media.title || media.name;
         const mediaRating = media.vote_average ? media.vote_average.toFixed(1) : 'N/A';
+        const highlightedTitle = highlightText(mediaTitle, query);
 
         return `
-            <div class="suggestion-item p-4 hover:bg-zinc-700 cursor-pointer rounded-lg transition-transform transform hover:scale-105" data-id="${media.id}" data-type="${media.media_type}">
+            <div class="suggestion-item p-4 cursor-pointer rounded-lg" data-id="${media.id}" data-type="${media.media_type}">
                 <div class="flex items-center">
                     <img src="https://image.tmdb.org/t/p/w45${media.poster_path}" alt="${mediaTitle}" class="w-16 h-24 object-cover rounded-md mr-4">
                     <div class="flex-1">
-                        <h4 class="text-lg font-semibold text-white truncate">${mediaTitle}</h4>
+                        <h4 class="text-lg font-semibold text-white truncate">${highlightedTitle}</h4>
                         <p class="text-gray-400 text-sm">${mediaTypeLabel}</p>
                         <p class="text-yellow-400 text-sm">${mediaRating}/10</p>
                     </div>
@@ -58,6 +73,7 @@ async function displaySearchSuggestions(results) {
     searchSuggestions.innerHTML = suggestionsHTML;
     searchSuggestions.classList.remove('hidden');
 
+    // Attach click events to suggestions
     searchSuggestions.querySelectorAll('.suggestion-item').forEach(item => {
         item.addEventListener('click', async () => {
             const mediaId = item.getAttribute('data-id');
@@ -69,9 +85,12 @@ async function displaySearchSuggestions(results) {
             }
         });
     });
+
+    // Set up keyboard navigation
+    setupKeyboardNavigation(searchSuggestions);
 }
 
-
+// Function to handle search input changes
 async function handleSearchInput() {
     const searchInput = document.getElementById('searchInput');
     const searchInputValue = searchInput.value.trim();
@@ -87,11 +106,13 @@ async function handleSearchInput() {
         return;
     }
 
+    showLoading(); // Show spinner while fetching data
+
     try {
         const response = await fetch(`https://api.themoviedb.org/3/search/multi?api_key=${apiKey}&query=${encodeURIComponent(searchInputValue)}`);
         if (response.ok) {
             const data = await response.json();
-            displaySearchSuggestions(data.results);
+            displaySearchSuggestions(data.results, searchInputValue);
         } else {
             handleError('Failed to fetch search results.');
         }
@@ -100,9 +121,37 @@ async function handleSearchInput() {
     }
 }
 
-
+// Debounced event listener for search input
 document.getElementById('searchInput').addEventListener('input', debounce(handleSearchInput, 300));
 
+// Function to set up keyboard navigation for suggestions
+function setupKeyboardNavigation(container) {
+    const items = container.querySelectorAll('.suggestion-item');
+    let currentIndex = -1;
+
+    function selectItem(index) {
+        items.forEach((item, i) => item.classList.toggle('selected', i === index));
+    }
+
+    document.addEventListener('keydown', (event) => {
+        if (event.key === 'ArrowDown') {
+            currentIndex = (currentIndex + 1) % items.length;
+            selectItem(currentIndex);
+            event.preventDefault();
+        } else if (event.key === 'ArrowUp') {
+            currentIndex = (currentIndex - 1 + items.length) % items.length;
+            selectItem(currentIndex);
+            event.preventDefault();
+        } else if (event.key === 'Enter') {
+            if (currentIndex >= 0 && currentIndex < items.length) {
+                items[currentIndex].click();
+                event.preventDefault();
+            }
+        }
+    });
+}
+
+// Event listener for random button click
 document.getElementById('randomButton').addEventListener('click', async function() {
     const apiKey = await getApiKey();
 
@@ -142,7 +191,7 @@ async function fetchPopularMovies(apiKey, page = 1) {
     }
 }
 
-
+// Function to update pagination controls
 function updatePaginationControls(currentPage, totalPages) {
     const prevPageButton = document.getElementById('prevPage');
     const nextPageButton = document.getElementById('nextPage');
@@ -166,7 +215,7 @@ function changePage(page) {
     });
 }
 
-
+// Function to fetch selected media details
 async function fetchSelectedMedia(apiKey, mediaId, mediaType) {
     try {
         const response = await fetch(`https://api.themoviedb.org/3/${mediaType}/${mediaId}?api_key=${apiKey}`);

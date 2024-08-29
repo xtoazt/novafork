@@ -166,7 +166,7 @@ button:active {
     opacity: 0.95;
 }
 
-/* Search suggestions styles */
+/* Search suggestions container */
 #searchSuggestions {
     position: absolute;
     top: 100%;
@@ -174,39 +174,67 @@ button:active {
     right: 0;
     max-height: 400px;
     overflow-y: auto;
-    background-color: #1e1e2a;
-    border: 1px solid #2b2b3e;
+    background-color: #000; /* Black background */
+    border: 1px solid #222; /* Very dark gray border for subtle contrast */
     border-radius: 0.5rem;
     padding: 0.5rem;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.7); /* Deep shadow for contrast */
     transition: opacity 0.3s ease, transform 0.3s ease;
     z-index: 1000;
-    box-sizing: border-box; /* Ensure padding and border are included in the width */
+    box-sizing: border-box;
+    color: #e0e0e0; /* Light text color for readability */
 }
 
+/* Individual suggestion item */
 #searchSuggestions .suggestion-item {
     padding: 12px;
-    border-bottom: 1px solid #2b2b3e;
+    border-bottom: 1px solid #333; /* Dark gray border for each item */
     display: flex;
     align-items: center;
-    transition: background-color 0.3s ease, transform 0.3s ease;
+    transition: background-color 0.3s ease, transform 0.3s ease, padding 0.3s ease;
     cursor: pointer;
     box-sizing: border-box;
+    border-radius: 0.5rem; /* Rounded corners for individual items */
 }
 
+/* Remove border for the last item */
 #searchSuggestions .suggestion-item:last-child {
     border-bottom: none;
 }
 
+/* Hover state */
 #searchSuggestions .suggestion-item:hover {
-    background-color: #292940;
-    transform: scale(1.03);
+    background-color: #1a1a1a; /* Slightly lighter black on hover */
+    transform: scale(1.03); /* Subtle scaling effect on hover */
+    padding: 12px 16px; /* Add extra padding on hover */
 }
 
-/* Prevent horizontal overflow */
-#searchSuggestions {
-    overflow-x: hidden;
+/* Highlighted text */
+.highlight {
+    background-color: #a74ac7; /* Vibrant purple highlight */
+    color: #ffffff; /* White text color for highlight */
+    padding: 0 2px; /* Padding around the highlighted text */
+    border-radius: 0.2rem; /* Rounded corners for highlight */
 }
+
+/* Responsive design */
+@media (max-width: 600px) {
+    #searchSuggestions {
+        max-height: 300px; /* Adjust max-height for smaller screens */
+    }
+
+    #searchSuggestions .suggestion-item {
+        flex-direction: column;
+        align-items: center;
+        padding: 8px;
+    }
+
+    #searchSuggestions .suggestion-item img {
+        width: 120px;
+        height: 160px;
+    }
+}
+
 
 
 /* Container max-width */
