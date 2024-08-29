@@ -21,6 +21,26 @@
             height: 24px;
             margin: 0 8px;
         }
+
+        #searchInput {
+            padding-right: 4rem; /* Adjust padding to make space for the button */
+        }
+
+        @media (max-width: 768px) {
+            #searchInput {
+                padding-right: 3rem; /* Adjust padding on smaller screens */
+            }
+            #searchButton {
+                width: 100%;
+                margin-top: 8px;
+                padding: 0.5rem; /* Adjust padding on smaller screens */
+            }
+            .social-buttons {
+                display: flex;
+                justify-content: center;
+                margin-bottom: 16px;
+            }
+        }
     </style>
 </head>
 <body>
@@ -35,17 +55,17 @@
 
 <div id="homePage" class="min-h-screen">
     <div class="container mx-auto px-4 py-8">
-        <header class="flex justify-between items-center py-4">
-            <h1 class="text-3xl font-bold text-purple-400">Nova</h1>
-            <div class="text-center text-sm text-zinc-400 mt-4">This website is not affiliated with novastream.to</div>
+        <header class="flex flex-col md:flex-row md:justify-between items-center py-4">
+            <h1 class="text-3xl font-bold text-purple-400 mb-2 md:mb-0">Nova</h1>
+            <div class="text-center text-sm text-zinc-400 mb-2 md:mb-0">This website is not affiliated with novastream.to</div>
             <div class="relative">
-                <select id="categorySelect">
+                <select id="categorySelect" class="border p-2 rounded bg-zinc-800 text-white border-zinc-700">
                     <option value="movie" selected>Movie</option>
                     <option value="tv">TV Show</option>
                 </select>
             </div>
         </header>
-        <div class="flex gap-4 mb-8">
+        <div class="flex flex-col md:flex-row gap-4 mb-8">
             <div class="relative flex-1">
                 <input type="text" id="searchInput" placeholder="Search for something" class="w-full p-3 rounded-l bg-zinc-800 border border-zinc-700 focus:border-purple-500 focus:outline-none">
                 <button id="searchButton" class="absolute inset-y-0 right-0 bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded-r">Search</button>
