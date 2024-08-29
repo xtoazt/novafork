@@ -158,29 +158,51 @@ async function displaySelectedMedia(media, mediaType) {
 
         async function getTvEmbedUrl(mediaId, seasonNumber, episodeNumber, provider, apiKey) {
             switch (provider) {
-                case 'vidsrc': return `https://vidsrc.cc/v2/embed/tv/${mediaId}/${seasonNumber}/${episodeNumber}`;
-                case 'vidsrcxyz': return `https://vidsrc.xyz/embed/tv/${mediaId}?season=${seasonNumber}&episode=${episodeNumber}`;
-                case 'embedsoap': return `https://www.embedsoap.com/embed/tv/?id=${mediaId}&s=${seasonNumber}&e=${episodeNumber}`;
-                case 'autoembed': return `https://player.autoembed.cc/embed/tv/${mediaId}/${seasonNumber}/${episodeNumber}`;
-                case 'smashystream': return `https://player.smashy.stream/tv/${mediaId}?s=${seasonNumber}&e=${episodeNumber}`;
-                case 'anime': return `https://anime.autoembed.cc/embed/${media.name.replace(/\s+/g, '-').toLowerCase()}-episode-${episodeNumber}`;
-                case 'trailer': return await fetchTrailer(mediaId, 'tv', apiKey);
-                default: throw new Error('Provider not recognized.');
+                case 'vidsrc':
+                    return `https://vidsrc.cc/v2/embed/tv/${mediaId}/${seasonNumber}/${episodeNumber}`;
+                case 'vidsrcxyz':
+                    return `https://vidsrc.xyz/embed/tv/${mediaId}?season=${seasonNumber}&episode=${episodeNumber}`;
+                case 'embedsoap':
+                    return `https://www.embedsoap.com/embed/tv/?id=${mediaId}&s=${seasonNumber}&e=${episodeNumber}`;
+                case 'autoembed':
+                    return `https://player.autoembed.cc/embed/tv/${mediaId}/${seasonNumber}/${episodeNumber}`;
+                case 'smashystream':
+                    return `https://player.smashy.stream/tv/${mediaId}?s=${seasonNumber}&e=${episodeNumber}`;
+                case 'anime':
+                    return `https://anime.autoembed.cc/embed/${media.name.replace(/\s+/g, '-').toLowerCase()}-episode-${episodeNumber}`;
+                case 'trailer':
+                    return await fetchTrailer(mediaId, 'tv', apiKey);
+                case 'nontongo':
+                    return `https://www.NontonGo.win/embed/tv/?id=${mediaId}&s=${seasonNumber}&e=${episodeNumber}`; // NontonGo API for TV shows with query parameters
+                default:
+                    throw new Error('Provider not recognized.');
             }
         }
 
         async function getMovieEmbedUrl(mediaId, provider, apiKey) {
             switch (provider) {
-                case 'vidsrc': return `https://vidsrc.cc/v2/embed/movie/${mediaId}`;
-                case 'vidsrcxyz': return `https://vidsrc.xyz/embed/movie/${mediaId}`;
-                case 'embedsoap': return `https://www.embedsoap.com/embed/movie/?id=${mediaId}`;
-                case 'autoembed': return `https://player.autoembed.cc/embed/movie/${mediaId}`;
-                case 'smashystream': return `https://player.smashy.stream/movie/${mediaId}`;
-                case 'anime': return `https://anime.autoembed.cc/embed/${media.title.replace(/\s+/g, '-').toLowerCase()}-episode-1`;
-                case 'trailer': return await fetchTrailer(mediaId, 'movie', apiKey);
-                default: throw new Error('Provider not recognized.');
+                case 'vidsrc':
+                    return `https://vidsrc.cc/v2/embed/movie/${mediaId}`;
+                case 'vidsrcxyz':
+                    return `https://vidsrc.xyz/embed/movie/${mediaId}`;
+                case 'embedsoap':
+                    return `https://www.embedsoap.com/embed/movie/?id=${mediaId}`;
+                case 'autoembed':
+                    return `https://player.autoembed.cc/embed/movie/${mediaId}`;
+                case 'smashystream':
+                    return `https://player.smashy.stream/movie/${mediaId}`;
+                case 'anime':
+                    return `https://anime.autoembed.cc/embed/${media.title.replace(/\s+/g, '-').toLowerCase()}-episode-1`;
+                case 'trailer':
+                    return await fetchTrailer(mediaId, 'movie', apiKey);
+                case 'nontongo':
+                    return `https://www.NontonGo.win/embed/movie/${mediaId}`; // NontonGo API for Movies
+                default:
+                    throw new Error('Provider not recognized.');
             }
         }
+
+
 
         async function updateEpisodes() {
             const seasonNumber = seasonSelect ? seasonSelect.value : '';
