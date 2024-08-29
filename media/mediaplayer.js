@@ -159,7 +159,6 @@ async function displaySelectedMedia(media, mediaType) {
         async function getTvEmbedUrl(mediaId, seasonNumber, episodeNumber, provider, apiKey) {
             switch (provider) {
                 case 'vidsrc': return `https://vidsrc.cc/v2/embed/tv/${mediaId}/${seasonNumber}/${episodeNumber}`;
-                case 'vidsrc2': return `https://vidsrc2.to/embed/tv/${mediaId}?season=${seasonNumber}&episode=${episodeNumber}`;
                 case 'vidsrcxyz': return `https://vidsrc.xyz/embed/tv/${mediaId}?season=${seasonNumber}&episode=${episodeNumber}`;
                 case 'embedsoap': return `https://www.embedsoap.com/embed/tv/?id=${mediaId}&s=${seasonNumber}&e=${episodeNumber}`;
                 case 'autoembed': return `https://player.autoembed.cc/embed/tv/${mediaId}/${seasonNumber}/${episodeNumber}`;
@@ -173,7 +172,6 @@ async function displaySelectedMedia(media, mediaType) {
         async function getMovieEmbedUrl(mediaId, provider, apiKey) {
             switch (provider) {
                 case 'vidsrc': return `https://vidsrc.cc/v2/embed/movie/${mediaId}`;
-                case 'vidsrc2': return `https://vidsrc2.to/embed/movie/${mediaId}`;
                 case 'vidsrcxyz': return `https://vidsrc.xyz/embed/movie/${mediaId}`;
                 case 'embedsoap': return `https://www.embedsoap.com/embed/movie/?id=${mediaId}`;
                 case 'autoembed': return `https://player.autoembed.cc/embed/movie/${mediaId}`;
