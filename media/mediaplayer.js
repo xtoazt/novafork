@@ -1,6 +1,7 @@
 async function getApiKey() {
     try {
-        const response = await fetch('apis/config.json'); // Update with the actual path to your config file
+        const response = await fetch('apis/config.json');
+        if (!response.ok) throw new Error('Network response was not ok');
         const config = await response.json();
         return config.apiKey;
     } catch (error) {
@@ -9,39 +10,32 @@ async function getApiKey() {
     }
 }
 
-async function fetchMediaData(mediaId, mediaType, apiKey) {
+async function fetchJson(url) {
     try {
-        const url = `https://api.themoviedb.org/3/${mediaType}/${mediaId}?api_key=${apiKey}`;
         const response = await fetch(url);
+        if (!response.ok) throw new Error('Network response was not ok');
         return await response.json();
     } catch (error) {
-        console.error('Failed to fetch media data:', error);
+        console.error(`Failed to fetch data from ${url}:`, error);
         throw error;
     }
+}
+
+async function fetchMediaData(mediaId, mediaType, apiKey) {
+    const url = `https://api.themoviedb.org/3/${mediaType}/${mediaId}?api_key=${apiKey}`;
+    return fetchJson(url);
 }
 
 async function fetchCastData(mediaId, mediaType, apiKey) {
-    try {
-        const url = `https://api.themoviedb.org/3/${mediaType}/${mediaId}/credits?api_key=${apiKey}`;
-        const response = await fetch(url);
-        return await response.json();
-    } catch (error) {
-        console.error('Failed to fetch cast data:', error);
-        throw error;
-    }
+    const url = `https://api.themoviedb.org/3/${mediaType}/${mediaId}/credits?api_key=${apiKey}`;
+    return fetchJson(url);
 }
 
 async function fetchTrailer(mediaId, mediaType, apiKey) {
-    try {
-        const url = `https://api.themoviedb.org/3/${mediaType}/${mediaId}/videos?api_key=${apiKey}`;
-        const response = await fetch(url);
-        const data = await response.json();
-        const trailer = data.results.find(video => video.type === 'Trailer' && video.site === 'YouTube');
-        return trailer ? `https://www.youtube.com/embed/${trailer.key}` : null;
-    } catch (error) {
-        console.error('Failed to fetch trailer:', error);
-        return null;
-    }
+    const url = `https://api.themoviedb.org/3/${mediaType}/${mediaId}/videos?api_key=${apiKey}`;
+    const data = await fetchJson(url);
+    const trailer = data.results.find(video => video.type === 'Trailer' && video.site === 'YouTube');
+    return trailer ? `https://www.youtube.com/embed/${trailer.key}` : null;
 }
 
 async function displaySelectedMedia(media, mediaType) {
@@ -53,41 +47,32 @@ async function displaySelectedMedia(media, mediaType) {
         return;
     }
 
-    let ratings = '';
-    let popularity = '';
-    let seasonSection = '';
-    let genres = '';
-    let runtime = '';
-    let language = '';
-    let castList = '';
-    let quality = 'HD'; // Placeholder for streaming quality
+    const mediaDataPromise = fetchMediaData(media.id, mediaType, apiKey);
+    const castDataPromise = fetchCastData(media.id, mediaType, apiKey);
 
     try {
-        const mediaData = await fetchMediaData(media.id, mediaType, apiKey);
+        const [mediaData, castData] = await Promise.all([mediaDataPromise, castDataPromise]);
 
-        genres = mediaData.genres ? mediaData.genres.map(genre => genre.name).join(', ') : 'Unknown Genre';
-        runtime = mediaType === 'tv' ? `${mediaData.episode_run_time ? mediaData.episode_run_time[0] : 'N/A'} min per episode` : `${mediaData.runtime || 'N/A'} min`;
-        language = mediaData.original_language ? mediaData.original_language.toUpperCase() : 'Unknown';
+        const genres = mediaData.genres ? mediaData.genres.map(genre => genre.name).join(', ') : 'Unknown Genre';
+        const runtime = mediaType === 'tv' ? `${mediaData.episode_run_time ? mediaData.episode_run_time[0] : 'N/A'} min per episode` : `${mediaData.runtime || 'N/A'} min`;
+        const language = mediaData.original_language ? mediaData.original_language.toUpperCase() : 'Unknown';
 
         const voteAverage = mediaData.vote_average || 0;
         const popularityScore = mediaData.popularity || 0;
-        const stars = Math.round(voteAverage / 2); // TMDB ratings are out of 10, so divide by 2 for 5-star scale
+        const stars = Math.round(voteAverage / 2);
 
-        ratings = `
+        const ratings = `
             <div class="flex items-center space-x-1 mb-2">
                 <span class="text-yellow-400">${'★'.repeat(stars)}</span>
                 <span class="text-gray-300">${'★'.repeat(5 - stars)}</span>
                 <span class="ml-2 text-sm text-gray-300">${voteAverage.toFixed(1)}/10</span>
             </div>
         `;
-        popularity = `
+        const popularity = `
             <div class="text-sm text-gray-300 mb-4">Popularity: <span class="font-semibold">${popularityScore.toFixed(1)}</span></div>
         `;
 
-        // Fetch cast information
-        const castData = await fetchCastData(media.id, mediaType, apiKey);
-        const cast = castData.cast || [];
-        castList = cast.slice(0, 5).map(actor =>
+        const castList = castData.cast.slice(0, 5).map(actor =>
             `<div class="flex-shrink-0 w-32 mx-2">
                 <img src="https://image.tmdb.org/t/p/w500${actor.profile_path}" alt="${actor.name}" class="w-full h-32 rounded-full object-cover shadow-md">
                 <div class="mt-2 text-center">
@@ -97,36 +82,24 @@ async function displaySelectedMedia(media, mediaType) {
             </div>`
         ).join('');
 
-        if (mediaType === 'tv') {
-            seasonSection = `
-                <div class="mt-4">
-                    <label for="seasonSelect" class="block text-xs font-medium text-gray-300">Select Season:</label>
-                    <select id="seasonSelect" class="dropdown mt-1 block w-full bg-gray-800 text-white rounded border border-gray-700 text-sm">
-                        ${mediaData.seasons.map(season =>
-                `<option value="${season.season_number}">Season ${season.season_number}: ${season.name}</option>`
-            ).join('')}
-                    </select>
+        const seasonSection = mediaType === 'tv' ? `
+            <div class="mt-4">
+                <label for="seasonSelect" class="block text-xs font-medium text-gray-300">Select Season:</label>
+                <select id="seasonSelect" class="dropdown mt-1 block w-full bg-gray-800 text-white rounded border border-gray-700 text-sm">
+                    ${mediaData.seasons.map(season =>
+            `<option value="${season.season_number}">Season ${season.season_number}: ${season.name}</option>`
+        ).join('')}
+                </select>
 
-                    <label for="episodeSelect" class="block text-xs font-medium text-gray-300 mt-2">Select Episode:</label>
-                    <select id="episodeSelect" class="dropdown mt-1 block w-full bg-gray-800 text-white rounded border border-gray-700 text-sm"></select>
-                    
-                    <div id="episodeImage" class="mt-4"></div>
-                </div>
-            `;
-        }
+                <label for="episodeSelect" class="block text-xs font-medium text-gray-300 mt-2">Select Episode:</label>
+                <select id="episodeSelect" class="dropdown mt-1 block w-full bg-gray-800 text-white rounded border border-gray-700 text-sm"></select>
+                
+                <div id="episodeImage" class="mt-4"></div>
+            </div>
+        ` : '';
 
-    } catch (error) {
-        ratings = 'Rating: Not available';
-        popularity = 'Popularity: Not available';
-        genres = 'Genres: Not available';
-        runtime = 'Runtime: Not available';
-        language = 'Language: Not available';
-        castList = 'Cast: Not available';
-        quality = 'Quality: Not available';
-    }
-
-    try {
         const templateResponse = await fetch('media/mediaTemplate.html');
+        if (!templateResponse.ok) throw new Error('Network response was not ok');
         const template = await templateResponse.text();
 
         const populatedHTML = template
@@ -142,7 +115,7 @@ async function displaySelectedMedia(media, mediaType) {
             .replace(/{{runtime}}/g, `Runtime: ${runtime}`)
             .replace(/{{language}}/g, `Language: ${language}`)
             .replace(/{{cast_list}}/g, castList)
-            .replace(/{{quality}}/g, quality);
+            .replace(/{{quality}}/g, 'HD'); // Placeholder for streaming quality
 
         selectedMovie.innerHTML = populatedHTML;
 
@@ -173,79 +146,9 @@ async function displaySelectedMedia(media, mediaType) {
                     return;
                 }
 
-                switch (provider) {
-                    case 'vidsrc':
-                        endpoint = `https://vidsrc.cc/v2/embed/tv/${media.id}/${seasonNumber}/${episodeNumber}`;
-                        break;
-                    case 'vidsrc2':
-                        endpoint = `https://vidsrc2.to/embed/tv/${media.id}?season=${seasonNumber}&episode=${episodeNumber}`;
-                        break;
-                    case 'vidsrcxyz':
-                        endpoint = `https://vidsrc.xyz/embed/tv/${media.id}?season=${seasonNumber}&episode=${episodeNumber}`;
-                        break;
-                    case 'embedsoap':
-                        endpoint = `https://www.embedsoap.com/embed/tv/?id=${media.id}&s=${seasonNumber}&e=${episodeNumber}`;
-                        break;
-                    case 'autoembed':
-                        endpoint = `https://player.autoembed.cc/embed/tv/${media.id}/${seasonNumber}/${episodeNumber}`;
-                        break;
-                    case 'smashystream':
-                        endpoint = `https://player.smashy.stream/tv/${media.id}?s=${seasonNumber}&e=${episodeNumber}`;
-                        break;
-                    case 'anime':
-                        const animeTitle = media.name.replace(/\s+/g, '-').toLowerCase();
-                        endpoint = `https://anime.autoembed.cc/embed/${animeTitle}-episode-${episodeNumber}`;
-                        break;
-                    case 'trailer':
-                        const trailerUrl = await fetchTrailer(media.id, 'tv', apiKey);
-                        if (trailerUrl) {
-                            endpoint = trailerUrl;
-                        } else {
-                            alert('Trailer not available.');
-                            return;
-                        }
-                        break;
-                    default:
-                        console.error('Provider not recognized.');
-                        return;
-                }
+                endpoint = getTvEmbedUrl(media.id, seasonNumber, episodeNumber, provider, apiKey);
             } else {
-                switch (provider) {
-                    case 'vidsrc':
-                        endpoint = `https://vidsrc.cc/v2/embed/movie/${media.id}`;
-                        break;
-                    case 'vidsrc2':
-                        endpoint = `https://vidsrc2.to/embed/movie/${media.id}`;
-                        break;
-                    case 'vidsrcxyz':
-                        endpoint = `https://vidsrc.xyz/embed/movie/${media.id}`;
-                        break;
-                    case 'embedsoap':
-                        endpoint = `https://www.embedsoap.com/embed/movie/?id=${media.id}`;
-                        break;
-                    case 'autoembed':
-                        endpoint = `https://player.autoembed.cc/embed/movie/${media.id}`;
-                        break;
-                    case 'smashystream':
-                        endpoint = `https://player.smashy.stream/movie/${media.id}`;
-                        break;
-                    case 'anime':
-                        const animeTitle = media.title.replace(/\s+/g, '-').toLowerCase();
-                        endpoint = `https://anime.autoembed.cc/embed/${animeTitle}-episode-1`;
-                        break;
-                    case 'trailer':
-                        const trailerUrl = await fetchTrailer(media.id, 'movie', apiKey);
-                        if (trailerUrl) {
-                            endpoint = trailerUrl;
-                        } else {
-                            alert('Trailer not available.');
-                            return;
-                        }
-                        break;
-                    default:
-                        console.error('Provider not recognized.');
-                        return;
-                }
+                endpoint = getMovieEmbedUrl(media.id, provider, apiKey);
             }
 
             videoPlayer.innerHTML = `<iframe src="${endpoint}" class="w-full" style="height: ${document.getElementById('poster').offsetHeight}px;" allowfullscreen></iframe>`;
@@ -253,25 +156,49 @@ async function displaySelectedMedia(media, mediaType) {
             movieInfo.classList.add('hidden');
         }
 
+        function getTvEmbedUrl(mediaId, seasonNumber, episodeNumber, provider, apiKey) {
+            switch (provider) {
+                case 'vidsrc': return `https://vidsrc.cc/v2/embed/tv/${mediaId}/${seasonNumber}/${episodeNumber}`;
+                case 'vidsrc2': return `https://vidsrc2.to/embed/tv/${mediaId}?season=${seasonNumber}&episode=${episodeNumber}`;
+                case 'vidsrcxyz': return `https://vidsrc.xyz/embed/tv/${mediaId}?season=${seasonNumber}&episode=${episodeNumber}`;
+                case 'embedsoap': return `https://www.embedsoap.com/embed/tv/?id=${mediaId}&s=${seasonNumber}&e=${episodeNumber}`;
+                case 'autoembed': return `https://player.autoembed.cc/embed/tv/${mediaId}/${seasonNumber}/${episodeNumber}`;
+                case 'smashystream': return `https://player.smashy.stream/tv/${mediaId}?s=${seasonNumber}&e=${episodeNumber}`;
+                case 'anime': return `https://anime.autoembed.cc/embed/${media.name.replace(/\s+/g, '-').toLowerCase()}-episode-${episodeNumber}`;
+                case 'trailer': return fetchTrailer(mediaId, 'tv', apiKey);
+                default: throw new Error('Provider not recognized.');
+            }
+        }
+
+        function getMovieEmbedUrl(mediaId, provider, apiKey) {
+            switch (provider) {
+                case 'vidsrc': return `https://vidsrc.cc/v2/embed/movie/${mediaId}`;
+                case 'vidsrc2': return `https://vidsrc2.to/embed/movie/${mediaId}`;
+                case 'vidsrcxyz': return `https://vidsrc.xyz/embed/movie/${mediaId}`;
+                case 'embedsoap': return `https://www.embedsoap.com/embed/movie/?id=${mediaId}`;
+                case 'autoembed': return `https://player.autoembed.cc/embed/movie/${mediaId}`;
+                case 'smashystream': return `https://player.smashy.stream/movie/${mediaId}`;
+                case 'anime': return `https://anime.autoembed.cc/embed/${media.title.replace(/\s+/g, '-').toLowerCase()}-episode-1`;
+                case 'trailer': return fetchTrailer(mediaId, 'movie', apiKey);
+                default: throw new Error('Provider not recognized.');
+            }
+        }
+
         async function updateEpisodes() {
             const seasonNumber = seasonSelect ? seasonSelect.value : '';
             if (!seasonNumber) return;
 
             try {
-                const response = await fetch(`https://api.themoviedb.org/3/tv/${media.id}/season/${seasonNumber}?api_key=${apiKey}`);
-                if (response.ok) {
-                    const season = await response.json();
-                    episodeSelect.innerHTML = season.episodes.map(episode =>
-                        `<option value="${episode.episode_number}" data-image="https://image.tmdb.org/t/p/w500${episode.still_path}">
-                            Episode ${episode.episode_number}: ${episode.name}
-                        </option>`
-                    ).join('');
-                    episodeSelect.dispatchEvent(new Event('change')); // Trigger change event to load images
-                } else {
-                    console.error('Failed to fetch season details.');
-                }
+                const url = `https://api.themoviedb.org/3/tv/${media.id}/season/${seasonNumber}?api_key=${apiKey}`;
+                const season = await fetchJson(url);
+                episodeSelect.innerHTML = season.episodes.map(episode =>
+                    `<option value="${episode.episode_number}" data-image="https://image.tmdb.org/t/p/w500${episode.still_path}">
+                        Episode ${episode.episode_number}: ${episode.name}
+                    </option>`
+                ).join('');
+                episodeSelect.dispatchEvent(new Event('change')); // Trigger change event to load images
             } catch (error) {
-                console.error('Failed to fetch episodes:', error);
+                console.error('Failed to fetch season details:', error);
             }
         }
 
@@ -281,19 +208,12 @@ async function displaySelectedMedia(media, mediaType) {
             if (!seasonNumber || !episodeNumber) return;
 
             try {
-                const imageResponse = await fetch(`https://api.themoviedb.org/3/tv/${media.id}/season/${seasonNumber}/episode/${episodeNumber}/images?api_key=${apiKey}`);
-                if (imageResponse.ok) {
-                    const imageData = await imageResponse.json();
-                    const imagesContainer = document.getElementById('episodeImage');
-                    if (imageData.stills.length > 0) {
-                        const firstImage = imageData.stills[0];
-                        imagesContainer.innerHTML = `<img src="https://image.tmdb.org/t/p/w500${firstImage.file_path}" alt="Episode ${episodeNumber}" class="w-full h-auto mt-2 rounded-lg shadow-md">`;
-                    } else {
-                        imagesContainer.innerHTML = '<p>No image available.</p>';
-                    }
-                } else {
-                    console.error('Failed to fetch episode images.');
-                }
+                const url = `https://api.themoviedb.org/3/tv/${media.id}/season/${seasonNumber}/episode/${episodeNumber}/images?api_key=${apiKey}`;
+                const imageData = await fetchJson(url);
+                const imagesContainer = document.getElementById('episodeImage');
+                imagesContainer.innerHTML = imageData.stills.length > 0
+                    ? `<img src="https://image.tmdb.org/t/p/w500${imageData.stills[0].file_path}" alt="Episode ${episodeNumber}" class="w-full h-auto mt-2 rounded-lg shadow-md">`
+                    : '<p>No image available.</p>';
             } catch (error) {
                 console.error('Failed to fetch episode images:', error);
             }
