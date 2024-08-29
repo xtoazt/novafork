@@ -167,10 +167,14 @@ async function displaySelectedMedia(media, mediaType) {
                 case 'anime': return `https://anime.autoembed.cc/embed/${media.name.replace(/\s+/g, '-').toLowerCase()}-episode-${episodeNumber}`;
                 case 'nontonGo': return `https://www.NontonGo.win/embed/tv/${mediaId}/${seasonNumber}/${episodeNumber}`;
                 case 'nontonGoAlt': return `https://www.NontonGo.win/embed/tv/?id=${mediaId}&s=${seasonNumber}&e=${episodeNumber}`;
+                case '2anime': return `https://2anime.xyz/embed/${media.name.replace(/\s+/g, '-').toLowerCase()}-episode-${episodeNumber}`;
+                case '2embed': return `https://www.2embed.skin/embedtv/${mediaId}&s=${seasonNumber}&e=${episodeNumber}`;
                 case 'trailer': return await fetchTrailer(mediaId, 'tv', apiKey);
                 default: throw new Error('Provider not recognized.');
             }
         }
+
+
         async function getMovieEmbedUrl(mediaId, provider, apiKey) {
             switch (provider) {
                 case 'vidsrc': return `https://vidsrc.cc/v2/embed/movie/${mediaId}`;
@@ -180,11 +184,16 @@ async function displaySelectedMedia(media, mediaType) {
                 case 'autoembed': return `https://player.autoembed.cc/embed/movie/${mediaId}`;
                 case 'smashystream': return `https://player.smashy.stream/movie/${mediaId}`;
                 case 'anime': return `https://anime.autoembed.cc/embed/${media.title.replace(/\s+/g, '-').toLowerCase()}-episode-1`;
+                case '2anime': return `https://2anime.xyz/embed/${media.title.replace(/\s+/g, '-').toLowerCase()}-episode-1`;
+                case '2embed': return `https://www.2embed.cc/embed/${mediaId}`;
                 case 'nontonGo': return `https://www.NontonGo.win/embed/movie/${mediaId}`;
                 case 'trailer': return await fetchTrailer(mediaId, 'movie', apiKey);
                 default: throw new Error('Provider not recognized.');
             }
         }
+
+
+
 
 
         async function updateEpisodes() {
