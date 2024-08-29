@@ -1,5 +1,18 @@
+// Function to fetch the API key from the configuration file
+async function getApiKey() {
+    try {
+        const response = await fetch('apis/config.json');
+        if (!response.ok) throw new Error('Network response was not ok');
+        const config = await response.json();
+        return config.apiKey;
+    } catch (error) {
+        console.error('Failed to fetch API key:', error);
+        return null;
+    }
+}
+
 // Function to display search suggestions
-function displaySearchSuggestions(results) {
+async function displaySearchSuggestions(results) {
     const searchSuggestions = document.getElementById('searchSuggestions');
 
     // If no results, show a "No suggestions" message
@@ -12,8 +25,8 @@ function displaySearchSuggestions(results) {
     // Generate the HTML for search suggestions
     const suggestionsHTML = results.map(media => {
         const mediaTypeLabel = media.media_type === 'movie' ? 'Movie' : 'TV Show';
-        const mediaTitle = media.title || media.name;
-        const mediaRating = media.vote_average.toFixed(1);
+        const mediaTitle = media.title || media.name; // Display title or name
+        const mediaRating = media.vote_average ? media.vote_average.toFixed(1) : 'N/A';
 
         return `
             <div class="suggestion-item p-4 hover:bg-zinc-700 cursor-pointer rounded-lg transition-transform transform hover:scale-105" data-id="${media.id}" data-type="${media.media_type}">
@@ -34,23 +47,31 @@ function displaySearchSuggestions(results) {
 
     // Attach event listeners to each suggestion item
     searchSuggestions.querySelectorAll('.suggestion-item').forEach(item => {
-        item.addEventListener('click', () => {
+        item.addEventListener('click', async () => {
             const mediaId = item.getAttribute('data-id');
             const mediaType = item.getAttribute('data-type');
-            fetchSelectedMedia(localStorage.getItem('apiKey'), mediaId, mediaType);
-            searchSuggestions.classList.add('hidden');
+            const apiKey = await getApiKey();
+            if (apiKey) {
+                fetchSelectedMedia(apiKey, mediaId, mediaType);
+                searchSuggestions.classList.add('hidden');
+            }
         });
     });
 }
 
 // Event listener for search button click
 document.getElementById('searchButton').addEventListener('click', async function() {
-    const apiKey = localStorage.getItem('apiKey');
     const searchInput = document.getElementById('searchInput');
     const searchInputValue = searchInput.value.trim();
+    const apiKey = await getApiKey();
 
     if (!searchInputValue) {
         alert('Please enter a search term.');
+        return;
+    }
+
+    if (!apiKey) {
+        alert('Failed to fetch API key.');
         return;
     }
 
@@ -69,7 +90,12 @@ document.getElementById('searchButton').addEventListener('click', async function
 
 // Event listener for random button click
 document.getElementById('randomButton').addEventListener('click', async function() {
-    const apiKey = localStorage.getItem('apiKey');
+    const apiKey = await getApiKey();
+
+    if (!apiKey) {
+        alert('Failed to fetch API key.');
+        return;
+    }
 
     try {
         const response = await fetch(`https://api.themoviedb.org/3/trending/all/week?api_key=${apiKey}`);
@@ -115,8 +141,11 @@ function updatePaginationControls(currentPage, totalPages) {
 
 // Function to change page
 function changePage(page) {
-    const apiKey = localStorage.getItem('apiKey');
-    fetchPopularMovies(apiKey, page);
+    getApiKey().then(apiKey => {
+        if (apiKey) {
+            fetchPopularMovies(apiKey, page);
+        }
+    });
 }
 
 // Function to fetch selected media details

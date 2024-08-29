@@ -146,9 +146,9 @@ async function displaySelectedMedia(media, mediaType) {
                     return;
                 }
 
-                endpoint = getTvEmbedUrl(media.id, seasonNumber, episodeNumber, provider, apiKey);
+                endpoint = await getTvEmbedUrl(media.id, seasonNumber, episodeNumber, provider, apiKey);
             } else {
-                endpoint = getMovieEmbedUrl(media.id, provider, apiKey);
+                endpoint = await getMovieEmbedUrl(media.id, provider, apiKey);
             }
 
             videoPlayer.innerHTML = `<iframe src="${endpoint}" class="w-full" style="height: ${document.getElementById('poster').offsetHeight}px;" allowfullscreen></iframe>`;
@@ -156,7 +156,7 @@ async function displaySelectedMedia(media, mediaType) {
             movieInfo.classList.add('hidden');
         }
 
-        function getTvEmbedUrl(mediaId, seasonNumber, episodeNumber, provider, apiKey) {
+        async function getTvEmbedUrl(mediaId, seasonNumber, episodeNumber, provider, apiKey) {
             switch (provider) {
                 case 'vidsrc': return `https://vidsrc.cc/v2/embed/tv/${mediaId}/${seasonNumber}/${episodeNumber}`;
                 case 'vidsrc2': return `https://vidsrc2.to/embed/tv/${mediaId}?season=${seasonNumber}&episode=${episodeNumber}`;
@@ -165,12 +165,12 @@ async function displaySelectedMedia(media, mediaType) {
                 case 'autoembed': return `https://player.autoembed.cc/embed/tv/${mediaId}/${seasonNumber}/${episodeNumber}`;
                 case 'smashystream': return `https://player.smashy.stream/tv/${mediaId}?s=${seasonNumber}&e=${episodeNumber}`;
                 case 'anime': return `https://anime.autoembed.cc/embed/${media.name.replace(/\s+/g, '-').toLowerCase()}-episode-${episodeNumber}`;
-                case 'trailer': return fetchTrailer(mediaId, 'tv', apiKey);
+                case 'trailer': return await fetchTrailer(mediaId, 'tv', apiKey);
                 default: throw new Error('Provider not recognized.');
             }
         }
 
-        function getMovieEmbedUrl(mediaId, provider, apiKey) {
+        async function getMovieEmbedUrl(mediaId, provider, apiKey) {
             switch (provider) {
                 case 'vidsrc': return `https://vidsrc.cc/v2/embed/movie/${mediaId}`;
                 case 'vidsrc2': return `https://vidsrc2.to/embed/movie/${mediaId}`;
@@ -179,7 +179,7 @@ async function displaySelectedMedia(media, mediaType) {
                 case 'autoembed': return `https://player.autoembed.cc/embed/movie/${mediaId}`;
                 case 'smashystream': return `https://player.smashy.stream/movie/${mediaId}`;
                 case 'anime': return `https://anime.autoembed.cc/embed/${media.title.replace(/\s+/g, '-').toLowerCase()}-episode-1`;
-                case 'trailer': return fetchTrailer(mediaId, 'movie', apiKey);
+                case 'trailer': return await fetchTrailer(mediaId, 'movie', apiKey);
                 default: throw new Error('Provider not recognized.');
             }
         }
@@ -217,6 +217,42 @@ async function displaySelectedMedia(media, mediaType) {
             } catch (error) {
                 console.error('Failed to fetch episode images:', error);
             }
+        }
+
+        // Search functionality
+        async function searchMedia(query) {
+            const url = `https://api.themoviedb.org/3/search/${mediaType}?api_key=${apiKey}&query=${encodeURIComponent(query)}`;
+            try {
+                const searchResults = await fetchJson(url);
+                return searchResults.results;
+            } catch (error) {
+                console.error('Failed to search media:', error);
+                return [];
+            }
+        }
+
+        function handleSearchInput(event) {
+            const query = event.target.value;
+            if (query.length < 3) { // Trigger search after 3 characters
+                return;
+            }
+
+            searchMedia(query).then(results => {
+                const searchResultsContainer = document.getElementById('searchResults');
+                if (searchResultsContainer) {
+                    searchResultsContainer.innerHTML = results.map(result =>
+                        `<div class="search-result-item" data-id="${result.id}" data-type="${mediaType}">
+                            <img src="https://image.tmdb.org/t/p/w500${result.poster_path}" alt="${result.title || result.name}" class="w-24 h-36 object-cover">
+                            <p class="text-white">${result.title || result.name}</p>
+                        </div>`
+                    ).join('');
+                }
+            });
+        }
+
+        const searchInput = document.getElementById('searchInput');
+        if (searchInput) {
+            searchInput.addEventListener('input', handleSearchInput);
         }
 
         if (playButton) {
