@@ -179,7 +179,7 @@ async function displaySelectedMedia(media, mediaType) {
                 case '2anime':
                     return `https://2anime.xyz/embed/${media.name.replace(/\s+/g, '-')}-dub-episode-${episodeNumber}`;
                 case '2animesub':
-                    return `https://2anime.xyz/embed/${media.name.replace(/\s+/g, '-')}episode-${episodeNumber}`;
+                    return `https://2anime.xyz/embed/${media.name.replace(/\s+/g, '-')}-episode-${episodeNumber}`;
                 case '2embed':
                     return `https://www.2embed.skin/embedtv/${mediaId}&s=${seasonNumber}&e=${episodeNumber}`;
                 case 'AdminHiHi':
