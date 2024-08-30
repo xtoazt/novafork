@@ -183,12 +183,17 @@ async function displaySelectedMedia(media, mediaType) {
                 case 'AdminHiHi':
                     const tvSlug = media.name.replace(/\s+/g, '-').toLowerCase();
                     return `https://embed.anicdn.top/v/${tvSlug}-dub/${episodeNumber}.html`;
+                case 'ryuk':
+                    const ryukTvSlug = media.name.replace(/\s+/g, '-').toLowerCase();
+                    return `https://player.ryuk.to?id=${ryukTvSlug}-dub-episode-${episodeNumber}/`;
                 case 'trailer':
                     return await fetchTrailer(mediaId, 'tv', apiKey);
                 default:
                     throw new Error('Provider not recognized.');
             }
         }
+
+
 
         async function getMovieEmbedUrl(mediaId, provider, apiKey) {
             switch (provider) {
@@ -213,15 +218,17 @@ async function displaySelectedMedia(media, mediaType) {
                 case 'nontonGo':
                     return `https://www.NontonGo.win/embed/movie/${mediaId}`;
                 case 'AdminHiHi':
-                    // Format the movie title and create the slug for the AdminHiHi provider
                     const movieSlug = media.title.replace(/\s+/g, '-').toLowerCase();
                     return `https://embed.anicdn.top/v/${movieSlug}-dub/1.html`;
+                case 'ryuk':
+                    return `https://player.ryuk.to?id=${media.title.replace(/\s+/g, '-').toLowerCase()}-episode-1`;
                 case 'trailer':
                     return await fetchTrailer(mediaId, 'movie', apiKey);
                 default:
                     throw new Error('Provider not recognized.');
             }
         }
+
 
 
 
