@@ -40,7 +40,14 @@ function highlightText(text, query) {
     return text.replace(regex, '<span class="highlight">$1</span>');
 }
 
-// Function to display search suggestions
+// Function to highlight matching text (keeping original case)
+function highlightText(text, query) {
+    if (!query) return text;
+    const regex = new RegExp(`(${query})`, 'gi');
+    return text.replace(regex, '<span class="highlight">$1</span>');
+}
+
+// Function to display search suggestions with preserved letter case
 async function displaySearchSuggestions(results, query) {
     const searchSuggestions = document.getElementById('searchSuggestions');
 
@@ -89,6 +96,7 @@ async function displaySearchSuggestions(results, query) {
     // Set up keyboard navigation
     setupKeyboardNavigation(searchSuggestions);
 }
+
 
 // Function to handle search input changes
 async function handleSearchInput() {

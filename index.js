@@ -1,6 +1,6 @@
 async function getApiKey() {
     try {
-        const response = await fetch('apis/config.json'); // Update with the actual path to your config file
+        const response = await fetch('apis/config.json'); // Ensure this path is correct
         const config = await response.json();
         return config.apiKey;
     } catch (error) {
@@ -8,7 +8,6 @@ async function getApiKey() {
         return null;
     }
 }
-
 
 document.addEventListener('DOMContentLoaded', async function () {
     const homePage = document.getElementById('homePage');

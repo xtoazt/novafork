@@ -177,14 +177,16 @@ async function displaySelectedMedia(media, mediaType) {
                 case 'nontonGoAlt':
                     return `https://www.NontonGo.win/embed/tv/?id=${mediaId}&s=${seasonNumber}&e=${episodeNumber}`;
                 case '2anime':
-                    return `https://2anime.xyz/embed/${media.name.replace(/\s+/g, '-').toLowerCase()}-episode-${episodeNumber}`;
+                    return `https://2anime.xyz/embed/${media.name.replace(/\s+/g, '-')}-dub-episode-${episodeNumber}`;
+                case '2animesub':
+                    return `https://2anime.xyz/embed/${media.name.replace(/\s+/g, '-')}episode-${episodeNumber}`;
                 case '2embed':
                     return `https://www.2embed.skin/embedtv/${mediaId}&s=${seasonNumber}&e=${episodeNumber}`;
                 case 'AdminHiHi':
-                    const tvSlug = media.name.replace(/\s+/g, '-').toLowerCase();
+                    const tvSlug = media.name.replace(/\s+/g, '-');
                     return `https://embed.anicdn.top/v/${tvSlug}-dub/${episodeNumber}.html`;
                 case 'ryuk':
-                    const ryukTvSlug = media.name.replace(/\s+/g, '-').toLowerCase();
+                    const ryukTvSlug = media.name.replace(/\s+/g, '-');
                     return `https://player.ryuk.to?id=${ryukTvSlug}-dub-episode-${episodeNumber}/`;
                 case 'trailer':
                     return await fetchTrailer(mediaId, 'tv', apiKey);
@@ -192,8 +194,6 @@ async function displaySelectedMedia(media, mediaType) {
                     throw new Error('Provider not recognized.');
             }
         }
-
-
 
         async function getMovieEmbedUrl(mediaId, provider, apiKey) {
             switch (provider) {
@@ -212,13 +212,15 @@ async function displaySelectedMedia(media, mediaType) {
                 case 'anime':
                     return `https://anime.autoembed.cc/embed/${media.title.replace(/\s+/g, '-').toLowerCase()}-episode-1`;
                 case '2anime':
-                    return `https://2anime.xyz/embed/${media.title.replace(/\s+/g, '-').toLowerCase()}-episode-1`;
+                    return `https://2anime.xyz/embed/${media.title.replace(/\s+/g, '-').toLowerCase()}-dub-episode-1`;
+                case '2animesub':
+                    return `https://2anime.xyz/embed/${media.name.replace(/\s+/g, '-')}episode-${episodeNumber}`;
                 case '2embed':
                     return `https://www.2embed.cc/embed/${mediaId}`;
                 case 'nontonGo':
                     return `https://www.NontonGo.win/embed/movie/${mediaId}`;
                 case 'AdminHiHi':
-                    const movieSlug = media.title.replace(/\s+/g, '-').toLowerCase();
+                    const movieSlug = media.title.replace(/\s+/g, '-');
                     return `https://embed.anicdn.top/v/${movieSlug}-dub/1.html`;
                 case 'ryuk':
                     return `https://player.ryuk.to?id=${media.title.replace(/\s+/g, '-').toLowerCase()}-episode-1`;
@@ -228,12 +230,6 @@ async function displaySelectedMedia(media, mediaType) {
                     throw new Error('Provider not recognized.');
             }
         }
-
-
-
-
-
-
 
         async function updateEpisodes() {
             const seasonNumber = seasonSelect ? seasonSelect.value : '';
