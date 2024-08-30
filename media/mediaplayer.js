@@ -177,9 +177,9 @@ async function displaySelectedMedia(media, mediaType) {
                 case 'nontonGoAlt':
                     return `https://www.NontonGo.win/embed/tv/?id=${mediaId}&s=${seasonNumber}&e=${episodeNumber}`;
                 case '2anime':
-                    return `https://2anime.xyz/embed/${media.name.replace(/\s+/g, '-')}-season-${seasonNumber}-dub-episode-${episodeNumber}`;
+                    return `https://2anime.xyz/embed/${media.name.replace(/\s+/g, '-')}-dub-episode-${episodeNumber}`;
                 case '2animesub':
-                    return `https://2anime.xyz/embed/${media.name.replace(/\s+/g, '-')}-season-${seasonNumber}-episode-${episodeNumber}`;
+                    return `https://2anime.xyz/embed/${media.name.replace(/\s+/g, '-')}-episode-${episodeNumber}`;
                 case '2embed':
                     return `https://www.2embed.skin/embedtv/${mediaId}&s=${seasonNumber}&e=${episodeNumber}`;
                 case 'AdminHiHi':
@@ -212,9 +212,9 @@ async function displaySelectedMedia(media, mediaType) {
                 case 'anime':
                     return `https://anime.autoembed.cc/embed/${media.title.replace(/\s+/g, '-').toLowerCase()}-episode-1`;
                 case '2anime':
-                    return `https://2anime.xyz/embed/${media.title.replace(/\s+/g, '-').toLowerCase()}-season.-dub-episode-1`;
+                    return `https://2anime.xyz/embed/${media.title.replace(/\s+/g, '-').toLowerCase()}-dub-episode-${episodeNumber}`;
                 case '2animesub':
-                    return `https://2anime.xyz/embed/${media.name.replace(/\s+/g, '-').toLowerCase()}-season-${seasonNumber}-episode-${episodeNumber}`;
+                    return `https://2anime.xyz/embed/${media.name.replace(/\s+/g, '-')}episode-${episodeNumber}`;
                 case '2embed':
                     return `https://www.2embed.cc/embed/${mediaId}`;
                 case 'nontonGo':
