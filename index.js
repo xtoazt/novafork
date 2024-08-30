@@ -56,12 +56,15 @@ document.addEventListener('DOMContentLoaded', async function () {
             const data = await response.json();
             displaySearchResults(data.results);
             searchSuggestions.classList.add('hidden');
+
+            // Update the URL to reflect the search query and remove media ID parameters
+            const newUrl = `${window.location.origin}${window.location.pathname}?query=${encodeURIComponent(searchInputValue)}&category=${selectedCategory}`;
+            window.history.pushState({ searchInputValue, selectedCategory }, '', newUrl);
         } else {
             handleError('Failed to fetch search results.');
         }
     }
 
-    // Fetch search suggestions on input
     searchInput.addEventListener('input', async function() {
         const query = searchInput.value;
         if (query.length > 2) {
@@ -118,17 +121,16 @@ document.addEventListener('DOMContentLoaded', async function () {
         if (response.ok) {
             const media = await response.json();
 
-            // Update the URL with the media ID, type, and poster path
-            const posterPath = media.poster_path ? `https://image.tmdb.org/t/p/w300${media.poster_path}` : '';
-            const newUrl = `${window.location.origin}${window.location.pathname}?mediaId=${mediaId}&mediaType=${mediaType}&posterPath=${encodeURIComponent(posterPath)}`;
-            window.history.pushState({ mediaId, mediaType, posterPath }, '', newUrl);
+            // Update the URL with the media ID and type
+            const newUrl = `${window.location.origin}${window.location.pathname}?mediaId=${mediaId}&mediaType=${mediaType}`;
+            window.history.pushState({ mediaId, mediaType }, '', newUrl);
 
             displaySelectedMedia(media, mediaType);
             fetchMediaTrailer(mediaId, mediaType);  // Fetch and display the trailer
 
             // Set the poster image
-            if (posterImage) {
-                posterImage.src = posterPath;
+            if (posterImage && media.poster_path) {
+                posterImage.src = `https://image.tmdb.org/t/p/w300${media.poster_path}`;
                 posterImage.alt = media.title || media.name;
             }
         } else {
@@ -220,12 +222,8 @@ document.addEventListener('DOMContentLoaded', async function () {
     const urlParams = new URLSearchParams(window.location.search);
     const mediaIdFromUrl = urlParams.get('mediaId');
     const mediaTypeFromUrl = urlParams.get('mediaType');
-    const posterPathFromUrl = urlParams.get('posterPath');
     if (mediaIdFromUrl && mediaTypeFromUrl) {
         fetchSelectedMedia(mediaIdFromUrl, mediaTypeFromUrl);
-        if (posterPathFromUrl && posterImage) {
-            posterImage.src = decodeURIComponent(posterPathFromUrl);
-        }
     }
 
     // Fetch popular media and upcoming media on page load
