@@ -1,6 +1,13 @@
+// Utility function to handle errors
+function handleError(message, error) {
+    console.error(message, error);
+    alert(message);
+}
+
+// Function to fetch the API key from the configuration file
 async function getApiKey() {
     try {
-        const response = await fetch('apis/config.json'); // Ensure this path is correct
+        const response = await fetch('apis/config.json');
         const config = await response.json();
         return config.apiKey;
     } catch (error) {
@@ -15,6 +22,9 @@ document.addEventListener('DOMContentLoaded', async function () {
     const closeBanner = document.getElementById('closeBanner');
     const categorySelect = document.getElementById('categorySelect');
     const popularMedia = document.getElementById('popularMedia');
+    const videoPlayerContainer = document.getElementById('videoPlayerContainer');
+    const videoPlayer = document.getElementById('videoPlayer');
+    const posterImage = document.getElementById('posterImage'); // Assuming you have an element for the poster
 
     closeBanner.addEventListener('click', () => {
         welcomeBanner.style.display = 'none';
@@ -37,6 +47,7 @@ document.addEventListener('DOMContentLoaded', async function () {
     // Fetch the API key
     const API_KEY = await getApiKey();
 
+    // Function to handle search
     async function search() {
         const searchInputValue = searchInput.value;
         const selectedCategory = categorySelect.value;
@@ -45,9 +56,12 @@ document.addEventListener('DOMContentLoaded', async function () {
             const data = await response.json();
             displaySearchResults(data.results);
             searchSuggestions.classList.add('hidden');
+        } else {
+            handleError('Failed to fetch search results.');
         }
     }
 
+    // Fetch search suggestions on input
     searchInput.addEventListener('input', async function() {
         const query = searchInput.value;
         if (query.length > 2) {
@@ -64,6 +78,7 @@ document.addEventListener('DOMContentLoaded', async function () {
         }
     });
 
+    // Function to fetch popular media
     async function fetchPopularMedia(page = 1) {
         const selectedCategory = categorySelect.value;
         const response = await fetch(`https://api.themoviedb.org/3/trending/${selectedCategory}/week?api_key=${API_KEY}&page=${page}`);
@@ -76,6 +91,7 @@ document.addEventListener('DOMContentLoaded', async function () {
         }
     }
 
+    // Function to update pagination controls
     function updatePaginationControls(currentPage, totalPages) {
         const prevPageButton = document.getElementById('prevPage');
         const nextPageButton = document.getElementById('nextPage');
@@ -90,20 +106,56 @@ document.addEventListener('DOMContentLoaded', async function () {
         nextPageButton.onclick = () => changePage(currentPage + 1);
     }
 
+    // Function to change page
     function changePage(page) {
         fetchPopularMedia(page);
     }
 
+    // Function to fetch selected media details and update URL
     async function fetchSelectedMedia(mediaId, mediaType) {
+        // Fetch media details
         const response = await fetch(`https://api.themoviedb.org/3/${mediaType}/${mediaId}?api_key=${API_KEY}`);
         if (response.ok) {
             const media = await response.json();
+
+            // Update the URL with the media ID, type, and poster path
+            const posterPath = media.poster_path ? `https://image.tmdb.org/t/p/w300${media.poster_path}` : '';
+            const newUrl = `${window.location.origin}${window.location.pathname}?mediaId=${mediaId}&mediaType=${mediaType}&posterPath=${encodeURIComponent(posterPath)}`;
+            window.history.pushState({ mediaId, mediaType, posterPath }, '', newUrl);
+
             displaySelectedMedia(media, mediaType);
+            fetchMediaTrailer(mediaId, mediaType);  // Fetch and display the trailer
+
+            // Set the poster image
+            if (posterImage) {
+                posterImage.src = posterPath;
+                posterImage.alt = media.title || media.name;
+            }
         } else {
             console.error('Failed to fetch media details.');
         }
     }
 
+    // Function to fetch and display media trailer
+    async function fetchMediaTrailer(mediaId, mediaType) {
+        const response = await fetch(`https://api.themoviedb.org/3/${mediaType}/${mediaId}/videos?api_key=${API_KEY}`);
+        if (response.ok) {
+            const data = await response.json();
+            const trailer = data.results.find(video => video.type === 'Trailer' && video.site === 'YouTube');
+            if (trailer) {
+                videoPlayerContainer.classList.remove('hidden');
+                videoPlayer.src = `https://www.youtube.com/embed/${trailer.key}`;
+            } else {
+                videoPlayerContainer.classList.add('hidden');
+                videoPlayer.src = '';
+                alert('No trailer available for this media.');
+            }
+        } else {
+            console.error('Failed to fetch media trailer.');
+        }
+    }
+
+    // Function to display popular media cards
     function displayPopularMedia(results) {
         popularMedia.innerHTML = '';
 
@@ -130,6 +182,7 @@ document.addEventListener('DOMContentLoaded', async function () {
                 </div>
             `;
 
+            // Event listener to fetch and display selected media details
             mediaCard.addEventListener('click', function() {
                 fetchSelectedMedia(media.id, media.media_type);
             });
@@ -138,6 +191,7 @@ document.addEventListener('DOMContentLoaded', async function () {
         });
     }
 
+    // Function to fetch upcoming media
     async function fetchUpcomingMedia() {
         const response = await fetch(`https://api.themoviedb.org/3/movie/upcoming?api_key=${API_KEY}&language=en-US&page=1`);
         if (response.ok) {
@@ -149,6 +203,7 @@ document.addEventListener('DOMContentLoaded', async function () {
         }
     }
 
+    // Function to display upcoming media
     function displayUpcomingMedia(mediaList) {
         const upcomingMedia = document.getElementById('upcomingMedia');
         upcomingMedia.innerHTML = '';
@@ -161,11 +216,23 @@ document.addEventListener('DOMContentLoaded', async function () {
         });
     }
 
-    // Fetch popular media and upcoming media on load
+    // Check for media ID in the URL and fetch the corresponding media
+    const urlParams = new URLSearchParams(window.location.search);
+    const mediaIdFromUrl = urlParams.get('mediaId');
+    const mediaTypeFromUrl = urlParams.get('mediaType');
+    const posterPathFromUrl = urlParams.get('posterPath');
+    if (mediaIdFromUrl && mediaTypeFromUrl) {
+        fetchSelectedMedia(mediaIdFromUrl, mediaTypeFromUrl);
+        if (posterPathFromUrl && posterImage) {
+            posterImage.src = decodeURIComponent(posterPathFromUrl);
+        }
+    }
+
+    // Fetch popular media and upcoming media on page load
     fetchPopularMedia();
     fetchUpcomingMedia();
 
-    // Update popular media based on category change
+    // Update popular media when the category changes
     categorySelect.addEventListener('change', function() {
         fetchPopularMedia();
     });
