@@ -177,7 +177,7 @@ async function displaySelectedMedia(media, mediaType) {
                 case 'nontonGoAlt':
                     return `https://www.NontonGo.win/embed/tv/?id=${mediaId}&s=${seasonNumber}&e=${episodeNumber}`;
                 case '2anime':
-                    return `https://2anime.xyz/embed/${media.name.replace(/\s+/g, '-')}${seasonNumber}-dub-episode-${episodeNumber}`;
+                    return `https://2anime.xyz/embed/${media.name.replace(/\s+/g, '-')}-season-${seasonNumber}-dub-episode-${episodeNumber}`;
                 case '2animesub':
                     return `https://2anime.xyz/embed/${media.name.replace(/\s+/g, '-')}-season-${seasonNumber}-episode-${episodeNumber}`;
                 case '2embed':
