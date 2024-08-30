@@ -53,19 +53,26 @@
             </div>
             <button id="randomButton" class="bg-zinc-700 hover:bg-zinc-600 text-white font-bold py-2 px-4 rounded">Random Movie</button>
         </div>
-        <h2 class="text-xl font-semibold mb-4">Upcoming Media</h2>
+
+
+        <h2 class="text-xl font-semibold mb-6">Selected Media</h2>
+        <div id="selectedMovie" class="bg-zinc-800 p-4 rounded-lg flex mb-12">
+            <div id="videoPlayer" class="w-full h-full"></div>
+        </div>
+
+
+        <h2 class="text-xl font-semibold mb-6">Upcoming Media</h2>
         <div id="upcomingMedia" class="mb-8 ml-0"></div>
+
         <h2 class="text-xl font-semibold mb-4">Popular Media</h2>
         <div id="popularMedia" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4"></div>
+
         <div id="paginationControls" class="flex justify-center items-center mt-4">
             <button id="prevPage" class="bg-zinc-700 hover:bg-zinc-600 text-white font-bold py-2 px-4 rounded mx-2">Previous</button>
             <span id="currentPage" class="text-white mx-2">1</span>
             <button id="nextPage" class="bg-zinc-700 hover:bg-zinc-600 text-white font-bold py-2 px-4 rounded mx-2">Next</button>
         </div>
-        <h2 class="text-xl font-semibold mt-8 mb-4">Selected Media</h2>
-        <div id="selectedMovie" class="bg-zinc-800 p-4 rounded-lg flex">
-            <div id="videoPlayer" class="w-full h-full"></div>
-        </div>
+
         <footer class="text-center text-gray-400 mt-8">
             Made with <span id="homeHeartIcon" class="cursor-pointer" onmouseover="this.style.color='red'" onmouseout="this.style.color=''">♥</span> by Ambrosial. and improved by fanlim Latest version: 28/08/24
         </footer>
