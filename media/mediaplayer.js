@@ -158,39 +158,71 @@ async function displaySelectedMedia(media, mediaType) {
 
         async function getTvEmbedUrl(mediaId, seasonNumber, episodeNumber, provider, apiKey) {
             switch (provider) {
-                case 'vidsrc': return `https://vidsrc.cc/v2/embed/tv/${mediaId}/${seasonNumber}/${episodeNumber}`;
-                case 'vidsrc2': return `https://vidsrc2.to/embed/tv/${mediaId}?season=${seasonNumber}&episode=${episodeNumber}`;
-                case 'vidsrcxyz': return `https://vidsrc.xyz/embed/tv/${mediaId}?season=${seasonNumber}&episode=${episodeNumber}`;
-                case 'embedsoap': return `https://www.embedsoap.com/embed/tv/?id=${mediaId}&s=${seasonNumber}&e=${episodeNumber}`;
-                case 'autoembed': return `https://player.autoembed.cc/embed/tv/${mediaId}/${seasonNumber}/${episodeNumber}`;
-                case 'smashystream': return `https://player.smashy.stream/tv/${mediaId}?s=${seasonNumber}&e=${episodeNumber}`;
-                case 'anime': return `https://anime.autoembed.cc/embed/${media.name.replace(/\s+/g, '-').toLowerCase()}-episode-${episodeNumber}`;
-                case 'nontonGo': return `https://www.NontonGo.win/embed/tv/${mediaId}/${seasonNumber}/${episodeNumber}`;
-                case 'nontonGoAlt': return `https://www.NontonGo.win/embed/tv/?id=${mediaId}&s=${seasonNumber}&e=${episodeNumber}`;
-                case '2anime': return `https://2anime.xyz/embed/${media.name.replace(/\s+/g, '-').toLowerCase()}-episode-${episodeNumber}`;
-                case '2embed': return `https://www.2embed.skin/embedtv/${mediaId}&s=${seasonNumber}&e=${episodeNumber}`;
-                case 'trailer': return await fetchTrailer(mediaId, 'tv', apiKey);
-                default: throw new Error('Provider not recognized.');
+                case 'vidsrc':
+                    return `https://vidsrc.cc/v2/embed/tv/${mediaId}/${seasonNumber}/${episodeNumber}`;
+                case 'vidsrc2':
+                    return `https://vidsrc2.to/embed/tv/${mediaId}?season=${seasonNumber}&episode=${episodeNumber}`;
+                case 'vidsrcxyz':
+                    return `https://vidsrc.xyz/embed/tv/${mediaId}?season=${seasonNumber}&episode=${episodeNumber}`;
+                case 'embedsoap':
+                    return `https://www.embedsoap.com/embed/tv/?id=${mediaId}&s=${seasonNumber}&e=${episodeNumber}`;
+                case 'autoembed':
+                    return `https://player.autoembed.cc/embed/tv/${mediaId}/${seasonNumber}/${episodeNumber}`;
+                case 'smashystream':
+                    return `https://player.smashy.stream/tv/${mediaId}?s=${seasonNumber}&e=${episodeNumber}`;
+                case 'anime':
+                    return `https://anime.autoembed.cc/embed/${media.name.replace(/\s+/g, '-').toLowerCase()}-episode-${episodeNumber}`;
+                case 'nontonGo':
+                    return `https://www.NontonGo.win/embed/tv/${mediaId}/${seasonNumber}/${episodeNumber}`;
+                case 'nontonGoAlt':
+                    return `https://www.NontonGo.win/embed/tv/?id=${mediaId}&s=${seasonNumber}&e=${episodeNumber}`;
+                case '2anime':
+                    return `https://2anime.xyz/embed/${media.name.replace(/\s+/g, '-').toLowerCase()}-episode-${episodeNumber}`;
+                case '2embed':
+                    return `https://www.2embed.skin/embedtv/${mediaId}&s=${seasonNumber}&e=${episodeNumber}`;
+                case 'AdminHiHi':
+                    const tvSlug = media.name.replace(/\s+/g, '-').toLowerCase();
+                    return `https://embed.anicdn.top/v/${tvSlug}-dub/${episodeNumber}.html`;
+                case 'trailer':
+                    return await fetchTrailer(mediaId, 'tv', apiKey);
+                default:
+                    throw new Error('Provider not recognized.');
             }
         }
-
 
         async function getMovieEmbedUrl(mediaId, provider, apiKey) {
             switch (provider) {
-                case 'vidsrc': return `https://vidsrc.cc/v2/embed/movie/${mediaId}`;
-                case 'vidsrc2': return `https://vidsrc2.to/embed/movie/${mediaId}`;
-                case 'vidsrcxyz': return `https://vidsrc.xyz/embed/movie/${mediaId}`;
-                case 'embedsoap': return `https://www.embedsoap.com/embed/movie/?id=${mediaId}`;
-                case 'autoembed': return `https://player.autoembed.cc/embed/movie/${mediaId}`;
-                case 'smashystream': return `https://player.smashy.stream/movie/${mediaId}`;
-                case 'anime': return `https://anime.autoembed.cc/embed/${media.title.replace(/\s+/g, '-').toLowerCase()}-episode-1`;
-                case '2anime': return `https://2anime.xyz/embed/${media.title.replace(/\s+/g, '-').toLowerCase()}-episode-1`;
-                case '2embed': return `https://www.2embed.cc/embed/${mediaId}`;
-                case 'nontonGo': return `https://www.NontonGo.win/embed/movie/${mediaId}`;
-                case 'trailer': return await fetchTrailer(mediaId, 'movie', apiKey);
-                default: throw new Error('Provider not recognized.');
+                case 'vidsrc':
+                    return `https://vidsrc.cc/v2/embed/movie/${mediaId}`;
+                case 'vidsrc2':
+                    return `https://vidsrc2.to/embed/movie/${mediaId}`;
+                case 'vidsrcxyz':
+                    return `https://vidsrc.xyz/embed/movie/${mediaId}`;
+                case 'embedsoap':
+                    return `https://www.embedsoap.com/embed/movie/?id=${mediaId}`;
+                case 'autoembed':
+                    return `https://player.autoembed.cc/embed/movie/${mediaId}`;
+                case 'smashystream':
+                    return `https://player.smashy.stream/movie/${mediaId}`;
+                case 'anime':
+                    return `https://anime.autoembed.cc/embed/${media.title.replace(/\s+/g, '-').toLowerCase()}-episode-1`;
+                case '2anime':
+                    return `https://2anime.xyz/embed/${media.title.replace(/\s+/g, '-').toLowerCase()}-episode-1`;
+                case '2embed':
+                    return `https://www.2embed.cc/embed/${mediaId}`;
+                case 'nontonGo':
+                    return `https://www.NontonGo.win/embed/movie/${mediaId}`;
+                case 'AdminHiHi':
+                    // Format the movie title and create the slug for the AdminHiHi provider
+                    const movieSlug = media.title.replace(/\s+/g, '-').toLowerCase();
+                    return `https://embed.anicdn.top/v/${movieSlug}-dub/1.html`;
+                case 'trailer':
+                    return await fetchTrailer(mediaId, 'movie', apiKey);
+                default:
+                    throw new Error('Provider not recognized.');
             }
         }
+
 
 
 
