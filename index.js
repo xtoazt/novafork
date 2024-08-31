@@ -204,7 +204,7 @@ document.addEventListener('DOMContentLoaded', async function () {
                 <div class="absolute inset-0 bg-gradient-to-t from-black to-transparent opacity-40"></div>
             </div>
             <div class="w-full">
-                <h3 class="text-xl font-semibold text-white truncate">${media.title || media.name}</h3>
+                <h3 class="text-base font-semibold text-white truncate">${media.title || media.name}</h3>
                 <p class="text-gray-400 text-sm mt-1">${media.media_type === 'movie' ? '🎬 Movie' : '📺 TV Show'}</p>
                 <p class="text-gray-400 text-sm mt-1">Genres: ${genreNames}</p>
                 <div class="flex items-center mt-2">
