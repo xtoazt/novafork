@@ -11,11 +11,29 @@ async function getApiKey() {
         const config = await response.json();
         return config.apiKey;
     } catch (error) {
-        console.error('Failed to fetch API key:', error);
+        handleError('Failed to fetch API key.', error);
         return null;
     }
 }
 
+// Function to fetch genres
+async function fetchGenres(apiKey) {
+    try {
+        const response = await fetch(`https://api.themoviedb.org/3/genre/movie/list?api_key=${apiKey}&language=en-US`);
+        if (response.ok) {
+            const data = await response.json();
+            return data.genres;
+        } else {
+            handleError('Failed to fetch genres.');
+            return [];
+        }
+    } catch (error) {
+        handleError('An error occurred while fetching genres:', error);
+        return [];
+    }
+}
+
+// Initialize application
 document.addEventListener('DOMContentLoaded', async function () {
     const homePage = document.getElementById('homePage');
     const welcomeBanner = document.getElementById('welcomeBanner');
@@ -46,6 +64,14 @@ document.addEventListener('DOMContentLoaded', async function () {
 
     // Fetch the API key
     const API_KEY = await getApiKey();
+    if (!API_KEY) return;
+
+    // Fetch genres
+    const genres = await fetchGenres(API_KEY);
+    const genreMap = genres.reduce((map, genre) => {
+        map[genre.id] = genre.name;
+        return map;
+    }, {});
 
     // Function to handle search
     async function search() {
@@ -90,7 +116,7 @@ document.addEventListener('DOMContentLoaded', async function () {
             displayPopularMedia(data.results);
             updatePaginationControls(data.page, data.total_pages);
         } else {
-            console.error('Failed to fetch popular media.');
+            handleError('Failed to fetch popular media.');
         }
     }
 
@@ -134,7 +160,7 @@ document.addEventListener('DOMContentLoaded', async function () {
                 posterImage.alt = media.title || media.name;
             }
         } else {
-            console.error('Failed to fetch media details.');
+            handleError('Failed to fetch media details.');
         }
     }
 
@@ -153,7 +179,7 @@ document.addEventListener('DOMContentLoaded', async function () {
                 alert('No trailer available for this media.');
             }
         } else {
-            console.error('Failed to fetch media trailer.');
+            handleError('Failed to fetch media trailer.');
         }
     }
 
@@ -165,6 +191,7 @@ document.addEventListener('DOMContentLoaded', async function () {
             const mediaCard = document.createElement('div');
             mediaCard.classList.add('media-card', 'bg-gray-900', 'p-6', 'rounded-lg', 'shadow-lg', 'cursor-pointer', 'transition-transform', 'hover:scale-105', 'relative', 'flex', 'flex-col', 'items-start', 'group', 'overflow-hidden');
 
+            const genreNames = media.genre_ids.map(id => genreMap[id]).join(', ');
             const formattedDate = media.release_date ? new Date(media.release_date).toLocaleDateString() : (media.first_air_date ? new Date(media.first_air_date).toLocaleDateString() : 'Unknown Date');
             const ratingStars = Array.from({ length: 5 }, (_, i) => i < Math.round(media.vote_average / 2) ? '★' : '☆').join(' ');
 
@@ -176,6 +203,7 @@ document.addEventListener('DOMContentLoaded', async function () {
                 <div class="w-full">
                     <h3 class="text-xl font-semibold text-white truncate">${media.title || media.name}</h3>
                     <p class="text-gray-400 text-sm mt-1">${media.media_type === 'movie' ? '🎬 Movie' : '📺 TV Show'}</p>
+                    <p class="text-gray-400 text-sm mt-1">Genres: ${genreNames}</p>
                     <div class="flex items-center mt-2">
                         <span class="text-yellow-400 text-lg">${ratingStars}</span>
                         <span class="text-gray-300 text-sm ml-2">${media.vote_average.toFixed(1)}/10</span>
@@ -201,7 +229,7 @@ document.addEventListener('DOMContentLoaded', async function () {
             const upcomingMovies = data.results.filter(media => new Date(media.release_date) > new Date());
             displayUpcomingMedia(upcomingMovies);
         } else {
-            console.error('Failed to fetch upcoming media.');
+            handleError('Failed to fetch upcoming media.');
         }
     }
 
