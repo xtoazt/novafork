@@ -187,30 +187,33 @@ document.addEventListener('DOMContentLoaded', async function () {
     function displayPopularMedia(results) {
         popularMedia.innerHTML = '';
 
-        results.forEach(media => {
+        // Sort media results by rating in descending order
+        const sortedResults = results.sort((a, b) => b.vote_average - a.vote_average);
+
+        sortedResults.forEach(media => {
             const mediaCard = document.createElement('div');
             mediaCard.classList.add('media-card', 'bg-gray-900', 'p-6', 'rounded-lg', 'shadow-lg', 'cursor-pointer', 'transition-transform', 'hover:scale-105', 'relative', 'flex', 'flex-col', 'items-start', 'group', 'overflow-hidden');
 
-            const genreNames = media.genre_ids.map(id => genreMap[id]).join(', ');
+            const genreNames = media.genre_ids.map(id => genreMap[id] || 'Unknown').join(', ');
             const formattedDate = media.release_date ? new Date(media.release_date).toLocaleDateString() : (media.first_air_date ? new Date(media.first_air_date).toLocaleDateString() : 'Unknown Date');
             const ratingStars = Array.from({ length: 5 }, (_, i) => i < Math.round(media.vote_average / 2) ? '★' : '☆').join(' ');
 
             mediaCard.innerHTML = `
-                <div class="relative w-full h-80 overflow-hidden rounded-lg mb-4">
-                    <img src="https://image.tmdb.org/t/p/w300${media.poster_path}" alt="${media.title || media.name}" class="w-full h-full object-cover rounded-lg transition-transform duration-300 group-hover:scale-105">
-                    <div class="absolute inset-0 bg-gradient-to-t from-black to-transparent opacity-40"></div>
+            <div class="relative w-full h-80 overflow-hidden rounded-lg mb-4">
+                <img src="https://image.tmdb.org/t/p/w300${media.poster_path}" alt="${media.title || media.name}" class="w-full h-full object-cover rounded-lg transition-transform duration-300 group-hover:scale-105">
+                <div class="absolute inset-0 bg-gradient-to-t from-black to-transparent opacity-40"></div>
+            </div>
+            <div class="w-full">
+                <h3 class="text-xl font-semibold text-white truncate">${media.title || media.name}</h3>
+                <p class="text-gray-400 text-sm mt-1">${media.media_type === 'movie' ? '🎬 Movie' : '📺 TV Show'}</p>
+                <p class="text-gray-400 text-sm mt-1">Genres: ${genreNames}</p>
+                <div class="flex items-center mt-2">
+                    <span class="text-yellow-400 text-lg">${ratingStars}</span>
+                    <span class="text-gray-300 text-sm ml-2">${media.vote_average.toFixed(1)}/10</span>
                 </div>
-                <div class="w-full">
-                    <h3 class="text-xl font-semibold text-white truncate">${media.title || media.name}</h3>
-                    <p class="text-gray-400 text-sm mt-1">${media.media_type === 'movie' ? '🎬 Movie' : '📺 TV Show'}</p>
-                    <p class="text-gray-400 text-sm mt-1">Genres: ${genreNames}</p>
-                    <div class="flex items-center mt-2">
-                        <span class="text-yellow-400 text-lg">${ratingStars}</span>
-                        <span class="text-gray-300 text-sm ml-2">${media.vote_average.toFixed(1)}/10</span>
-                    </div>
-                    <p class="text-gray-300 text-sm mt-1">Release Date: ${formattedDate}</p>
-                </div>
-            `;
+                <p class="text-gray-300 text-sm mt-1">Release Date: ${formattedDate}</p>
+            </div>
+        `;
 
             // Event listener to fetch and display selected media details
             mediaCard.addEventListener('click', function() {
