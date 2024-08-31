@@ -107,18 +107,60 @@ document.addEventListener('DOMContentLoaded', async function () {
         }
     });
 
-    // Function to fetch popular media
     async function fetchPopularMedia(page = 1) {
         const selectedCategory = categorySelect.value;
-        const response = await fetch(`https://api.themoviedb.org/3/trending/${selectedCategory}/week?api_key=${API_KEY}&page=${page}`);
-        if (response.ok) {
-            const data = await response.json();
-            displayPopularMedia(data.results);
-            updatePaginationControls(data.page, data.total_pages);
+        let url = '';
+
+        if (selectedCategory === 'animation') {
+            // Fetch both movies and TV shows related to animation
+            const movieUrl = `https://api.themoviedb.org/3/discover/movie?api_key=${API_KEY}&with_genres=16&page=${page}`;
+            const tvUrl = `https://api.themoviedb.org/3/discover/tv?api_key=${API_KEY}&with_genres=16&page=${page}`;
+
+            try {
+                const [movieResponse, tvResponse] = await Promise.all([
+                    fetch(movieUrl),
+                    fetch(tvUrl)
+                ]);
+
+                if (movieResponse.ok && tvResponse.ok) {
+                    const [movieData, tvData] = await Promise.all([
+                        movieResponse.json(),
+                        tvResponse.json()
+                    ]);
+
+                    // Combine movie and TV show results
+                    const combinedResults = [...movieData.results, ...tvData.results];
+                    displayPopularMedia(combinedResults);
+                    updatePaginationControls(1, Math.max(movieData.total_pages, tvData.total_pages));
+                } else {
+                    handleError('Failed to fetch animation media.');
+                }
+            } catch (error) {
+                handleError('An error occurred while fetching animation media.', error);
+            }
+        } else if (selectedCategory === 'tv') {
+            // Fetch TV shows
+            url = `https://api.themoviedb.org/3/trending/tv/week?api_key=${API_KEY}&page=${page}`;
         } else {
-            handleError('Failed to fetch popular media.');
+            // Fetch movies (default)
+            url = `https://api.themoviedb.org/3/trending/movie/week?api_key=${API_KEY}&page=${page}`;
+        }
+
+        try {
+            const response = await fetch(url);
+            if (response.ok) {
+                const data = await response.json();
+                displayPopularMedia(data.results);
+                updatePaginationControls(data.page, data.total_pages);
+            } else {
+                handleError('Failed to fetch popular media.');
+            }
+        } catch (error) {
+            handleError('An error occurred while fetching popular media.', error);
         }
     }
+
+
 
     // Function to update pagination controls
     function updatePaginationControls(currentPage, totalPages) {
@@ -183,11 +225,10 @@ document.addEventListener('DOMContentLoaded', async function () {
         }
     }
 
-    // Function to display popular media cards
     function displayPopularMedia(results) {
         popularMedia.innerHTML = '';
 
-        // Sort media results by rating in descending order
+
         const sortedResults = results.sort((a, b) => b.vote_average - a.vote_average);
 
         sortedResults.forEach(media => {
@@ -198,6 +239,9 @@ document.addEventListener('DOMContentLoaded', async function () {
             const formattedDate = media.release_date ? new Date(media.release_date).toLocaleDateString() : (media.first_air_date ? new Date(media.first_air_date).toLocaleDateString() : 'Unknown Date');
             const ratingStars = Array.from({ length: 5 }, (_, i) => i < Math.round(media.vote_average / 2) ? '★' : '☆').join(' ');
 
+
+            const mediaType = media.media_type || (media.title ? 'movie' : 'tv');
+
             mediaCard.innerHTML = `
             <div class="relative w-full h-80 overflow-hidden rounded-lg mb-4">
                 <img src="https://image.tmdb.org/t/p/w300${media.poster_path}" alt="${media.title || media.name}" class="w-full h-full object-cover rounded-lg transition-transform duration-300 group-hover:scale-105">
@@ -205,7 +249,7 @@ document.addEventListener('DOMContentLoaded', async function () {
             </div>
             <div class="w-full">
                 <h3 class="text-base font-semibold text-white truncate">${media.title || media.name}</h3>
-                <p class="text-gray-400 text-sm mt-1">${media.media_type === 'movie' ? '🎬 Movie' : '📺 TV Show'}</p>
+                <p class="text-gray-400 text-sm mt-1">${mediaType === 'movie' ? '🎬 Movie' : mediaType === 'tv' ? '📺 TV Show' : '📽 Animation'}</p>
                 <p class="text-gray-400 text-sm mt-1">Genres: ${genreNames}</p>
                 <div class="flex items-center mt-2">
                     <span class="text-yellow-400 text-lg">${ratingStars}</span>
@@ -215,14 +259,14 @@ document.addEventListener('DOMContentLoaded', async function () {
             </div>
         `;
 
-            // Event listener to fetch and display selected media details
             mediaCard.addEventListener('click', function() {
-                fetchSelectedMedia(media.id, media.media_type);
+                fetchSelectedMedia(media.id, mediaType);
             });
 
             popularMedia.appendChild(mediaCard);
         });
     }
+
 
     // Function to fetch upcoming media
     async function fetchUpcomingMedia() {
