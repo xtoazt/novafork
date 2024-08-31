@@ -56,13 +56,21 @@
 
         <h2 class="text-xl font-semibold mb-6">Selected Media</h2>
         <div id="selectedMovie" class="bg-zinc-800 p-4 rounded-lg flex mb-12">
-            <div id="videoPlayer" class="w-full h-full"></div>
+            <div id="videoPlayer" class="w-full h-full">
+                <iframe id="videoIframe" class="w-full" style="height: 462px;" allowfullscreen></iframe>
+            </div>
         </div>
 
         <h2 class="text-xl font-semibold mb-6">Upcoming Media</h2>
         <div id="upcomingMedia" class="mb-8 ml-0"></div>
 
-        <h2 class="text-xl font-semibold mb-4">Popular Media</h2>
+        <!-- Toggle Button for Popular Media -->
+        <div class="flex justify-between items-center mb-4">
+            <h2 class="text-xl font-semibold">Popular Media</h2>
+            <button id="togglePopularMedia" class="bg-zinc-700 hover:bg-zinc-600 text-white font-bold py-2 px-4 rounded">Hide Popular Media</button>
+        </div>
+
+        <!-- Popular Media Section -->
         <div id="popularMedia" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4"></div>
 
         <div id="paginationControls" class="flex justify-center items-center mt-4">
@@ -93,5 +101,7 @@
 <script src="search/searchResults.js"></script>
 <!-- Include the main script -->
 <script type="module" src="index.js"></script>
+<!-- Include the media hider script -->
+<script src="media/mediahider/mediahider.js"></script>
 </body>
 </html>
