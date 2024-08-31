@@ -110,11 +110,13 @@ document.addEventListener('DOMContentLoaded', async function () {
     async function fetchPopularMedia(page = 1) {
         const selectedCategory = categorySelect.value;
         let url = '';
+        let moviePage = page;
+        let tvPage = page;
 
         if (selectedCategory === 'animation') {
             // Fetch both movies and TV shows related to animation
-            const movieUrl = `https://api.themoviedb.org/3/discover/movie?api_key=${API_KEY}&with_genres=16&page=${page}`;
-            const tvUrl = `https://api.themoviedb.org/3/discover/tv?api_key=${API_KEY}&with_genres=16&page=${page}`;
+            const movieUrl = `https://api.themoviedb.org/3/discover/movie?api_key=${API_KEY}&with_genres=16&page=${moviePage}`;
+            const tvUrl = `https://api.themoviedb.org/3/discover/tv?api_key=${API_KEY}&with_genres=16&page=${tvPage}`;
 
             try {
                 const [movieResponse, tvResponse] = await Promise.all([
@@ -130,8 +132,9 @@ document.addEventListener('DOMContentLoaded', async function () {
 
                     // Combine movie and TV show results
                     const combinedResults = [...movieData.results, ...tvData.results];
+                    const totalPages = Math.max(movieData.total_pages, tvData.total_pages);
                     displayPopularMedia(combinedResults);
-                    updatePaginationControls(1, Math.max(movieData.total_pages, tvData.total_pages));
+                    updatePaginationControls(page, totalPages);
                 } else {
                     handleError('Failed to fetch animation media.');
                 }
@@ -146,17 +149,19 @@ document.addEventListener('DOMContentLoaded', async function () {
             url = `https://api.themoviedb.org/3/trending/movie/week?api_key=${API_KEY}&page=${page}`;
         }
 
-        try {
-            const response = await fetch(url);
-            if (response.ok) {
-                const data = await response.json();
-                displayPopularMedia(data.results);
-                updatePaginationControls(data.page, data.total_pages);
-            } else {
-                handleError('Failed to fetch popular media.');
+        if (selectedCategory !== 'animation') {
+            try {
+                const response = await fetch(url);
+                if (response.ok) {
+                    const data = await response.json();
+                    displayPopularMedia(data.results);
+                    updatePaginationControls(data.page, data.total_pages);
+                } else {
+                    handleError('Failed to fetch popular media.');
+                }
+            } catch (error) {
+                handleError('An error occurred while fetching popular media.', error);
             }
-        } catch (error) {
-            handleError('An error occurred while fetching popular media.', error);
         }
     }
 
