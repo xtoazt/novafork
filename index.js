@@ -1,7 +1,9 @@
 // Utility function to handle errors
-function handleError(message, error) {
+function handleError(message, error, showAlert = false) {
     console.error(message, error);
-    alert(message);
+    if (showAlert) {
+        alert(message);
+    }
 }
 
 // Function to fetch the API key from the configuration file
@@ -73,6 +75,9 @@ document.addEventListener('DOMContentLoaded', async function () {
         return map;
     }, {});
 
+    // Ensure 'Crime' genre is correctly mapped
+    genreMap[80] = 'Crime';
+
     // Function to handle search
     async function search() {
         const searchInputValue = searchInput.value;
@@ -115,8 +120,9 @@ document.addEventListener('DOMContentLoaded', async function () {
 
         if (selectedCategory === 'animation') {
             // Fetch both movies and TV shows related to animation
-            const movieUrl = `https://api.themoviedb.org/3/discover/movie?api_key=${API_KEY}&with_genres=16&page=${moviePage}`;
-            const tvUrl = `https://api.themoviedb.org/3/discover/tv?api_key=${API_KEY}&with_genres=16&page=${tvPage}`;
+            const genreId = 16; // 16 is the genre ID for Animation
+            const movieUrl = `https://api.themoviedb.org/3/discover/movie?api_key=${API_KEY}&with_genres=${genreId}&page=${moviePage}`;
+            const tvUrl = `https://api.themoviedb.org/3/discover/tv?api_key=${API_KEY}&with_genres=${genreId}&page=${tvPage}`;
 
             try {
                 const [movieResponse, tvResponse] = await Promise.all([
@@ -136,25 +142,53 @@ document.addEventListener('DOMContentLoaded', async function () {
                     displayPopularMedia(combinedResults);
                     updatePaginationControls(page, totalPages);
                 } else {
-                    handleError('Failed to fetch animation media.');
+                    handleError(`Failed to fetch ${selectedCategory} media.`);
                 }
             } catch (error) {
-                handleError('An error occurred while fetching animation media.', error);
+                handleError(`An error occurred while fetching ${selectedCategory} media.`, error);
+            }
+        } else if (selectedCategory === 'crime') {
+            // Fetch both movies and TV shows related to crime
+            const genreId = 80; // 80 is the genre ID for Crime
+            const movieUrl = `https://api.themoviedb.org/3/discover/movie?api_key=${API_KEY}&with_genres=${genreId}&page=${moviePage}`;
+            const tvUrl = `https://api.themoviedb.org/3/discover/tv?api_key=${API_KEY}&with_genres=${genreId}&page=${tvPage}`;
+
+            try {
+                const [movieResponse, tvResponse] = await Promise.all([
+                    fetch(movieUrl),
+                    fetch(tvUrl)
+                ]);
+
+                if (movieResponse.ok && tvResponse.ok) {
+                    const [movieData, tvData] = await Promise.all([
+                        movieResponse.json(),
+                        tvResponse.json()
+                    ]);
+
+                    // Combine movie and TV show results
+                    const combinedResults = [...movieData.results, ...tvData.results];
+                    const totalPages = Math.max(movieData.total_pages, tvData.total_pages);
+                    displayPopularMedia(combinedResults);
+                    updatePaginationControls(page, totalPages);
+                } else {
+                    handleError(`Failed to fetch ${selectedCategory} media.`);
+                }
+            } catch (error) {
+                handleError(`An error occurred while fetching ${selectedCategory} media.`, error);
             }
         } else if (selectedCategory === 'tv') {
             // Fetch TV shows
             url = `https://api.themoviedb.org/3/trending/tv/week?api_key=${API_KEY}&page=${page}`;
         } else {
-            // Fetch movies (default)
+            // Fetch movies (default), excluding animation-related content
             url = `https://api.themoviedb.org/3/trending/movie/week?api_key=${API_KEY}&page=${page}`;
-        }
 
-        if (selectedCategory !== 'animation') {
             try {
                 const response = await fetch(url);
                 if (response.ok) {
                     const data = await response.json();
-                    displayPopularMedia(data.results);
+                    const filteredResults = data.results.filter(media => !media.genre_ids.includes(16)); // Exclude animation-related content
+                    displayPopularMedia(filteredResults);
                     updatePaginationControls(data.page, data.total_pages);
                 } else {
                     handleError('Failed to fetch popular media.');
@@ -162,10 +196,9 @@ document.addEventListener('DOMContentLoaded', async function () {
             } catch (error) {
                 handleError('An error occurred while fetching popular media.', error);
             }
+            return; // Return early to avoid further processing
         }
     }
-
-
 
     // Function to update pagination controls
     function updatePaginationControls(currentPage, totalPages) {
@@ -187,77 +220,110 @@ document.addEventListener('DOMContentLoaded', async function () {
         fetchPopularMedia(page);
     }
 
-    // Function to fetch selected media details and update URL
     async function fetchSelectedMedia(mediaId, mediaType) {
-        // Fetch media details
-        const response = await fetch(`https://api.themoviedb.org/3/${mediaType}/${mediaId}?api_key=${API_KEY}`);
-        if (response.ok) {
-            const media = await response.json();
+        try {
+            // Fetch media details
+            const response = await fetch(`https://api.themoviedb.org/3/${mediaType}/${mediaId}?api_key=${API_KEY}`);
+            if (response.ok) {
+                const media = await response.json();
 
-            // Update the URL with the media ID and type
-            const newUrl = `${window.location.origin}${window.location.pathname}?mediaId=${mediaId}&mediaType=${mediaType}`;
-            window.history.pushState({ mediaId, mediaType }, '', newUrl);
+                // Update the URL with the media ID and type
+                const newUrl = `${window.location.origin}${window.location.pathname}?mediaId=${mediaId}&mediaType=${mediaType}`;
+                window.history.pushState({ mediaId, mediaType }, '', newUrl);
 
-            displaySelectedMedia(media, mediaType);
-            fetchMediaTrailer(mediaId, mediaType);  // Fetch and display the trailer
+                displaySelectedMedia(media, mediaType);
+                await fetchMediaTrailer(mediaId, mediaType);  // Fetch and display the trailer
 
-            // Set the poster image
-            if (posterImage && media.poster_path) {
-                posterImage.src = `https://image.tmdb.org/t/p/w300${media.poster_path}`;
-                posterImage.alt = media.title || media.name;
+                // Set the poster image
+                if (posterImage && media.poster_path) {
+                    posterImage.src = `https://image.tmdb.org/t/p/w300${media.poster_path}`;
+                    posterImage.alt = media.title || media.name;
+                }
+
+                // Show the video player if a trailer is available
+                videoPlayerContainer.classList.remove('hidden');
+            } else {
+                // Log the error silently without showing an alert
+                handleError('Failed to fetch media details.', new Error('API response not OK'));
+                videoPlayerContainer.classList.add('hidden');
             }
-        } else {
-            handleError('Failed to fetch media details.');
+        } catch (error) {
+            // Log the error silently without showing an alert
+            handleError('An error occurred while fetching media details.', error);
+            videoPlayerContainer.classList.add('hidden');
         }
     }
 
     // Function to fetch and display media trailer
     async function fetchMediaTrailer(mediaId, mediaType) {
-        const response = await fetch(`https://api.themoviedb.org/3/${mediaType}/${mediaId}/videos?api_key=${API_KEY}`);
-        if (response.ok) {
-            const data = await response.json();
-            const trailer = data.results.find(video => video.type === 'Trailer' && video.site === 'YouTube');
-            if (trailer) {
-                videoPlayerContainer.classList.remove('hidden');
-                videoPlayer.src = `https://www.youtube.com/embed/${trailer.key}`;
+        try {
+            const response = await fetch(`https://api.themoviedb.org/3/${mediaType}/${mediaId}/videos?api_key=${API_KEY}`);
+            if (response.ok) {
+                const data = await response.json();
+                const trailer = data.results.find(video => video.type === 'Trailer' && video.site === 'YouTube');
+                if (trailer) {
+                    videoPlayer.src = `https://www.youtube.com/embed/${trailer.key}`;
+                } else {
+                    videoPlayer.src = '';
+                    console.log('No trailer available for this media.');
+                    videoPlayerContainer.classList.add('hidden');
+                }
             } else {
+                // Log the error silently without showing an alert
+                handleError('Failed to fetch media trailer.', new Error('API response not OK'));
                 videoPlayerContainer.classList.add('hidden');
-                videoPlayer.src = '';
-                alert('No trailer available for this media.');
             }
-        } else {
-            handleError('Failed to fetch media trailer.');
+        } catch (error) {
+            // Log the error silently without showing an alert
+            handleError('An error occurred while fetching media trailer.', error);
+            videoPlayerContainer.classList.add('hidden');
         }
     }
 
     function displayPopularMedia(results) {
         popularMedia.innerHTML = '';
 
-
+        // Sort results by rating for better display
         const sortedResults = results.sort((a, b) => b.vote_average - a.vote_average);
 
         sortedResults.forEach(media => {
             const mediaCard = document.createElement('div');
-            mediaCard.classList.add('media-card', 'bg-gray-900', 'p-6', 'rounded-lg', 'shadow-lg', 'cursor-pointer', 'transition-transform', 'hover:scale-105', 'relative', 'flex', 'flex-col', 'items-start', 'group', 'overflow-hidden');
+            mediaCard.classList.add(
+                'media-card',
+                'bg-gray-800',
+                'p-4',
+                'rounded-lg',
+                'shadow-lg',
+                'cursor-pointer',
+                'transition-transform',
+                'hover:scale-105',
+                'relative',
+                'flex',
+                'flex-col',
+                'items-start',
+                'group',
+                'overflow-hidden',
+                'max-w-sm',
+                'm-2',
+            );
 
             const genreNames = media.genre_ids.map(id => genreMap[id] || 'Unknown').join(', ');
             const formattedDate = media.release_date ? new Date(media.release_date).toLocaleDateString() : (media.first_air_date ? new Date(media.first_air_date).toLocaleDateString() : 'Unknown Date');
             const ratingStars = Array.from({ length: 5 }, (_, i) => i < Math.round(media.vote_average / 2) ? '★' : '☆').join(' ');
 
-
             const mediaType = media.media_type || (media.title ? 'movie' : 'tv');
 
             mediaCard.innerHTML = `
-            <div class="relative w-full h-80 overflow-hidden rounded-lg mb-4">
-                <img src="https://image.tmdb.org/t/p/w300${media.poster_path}" alt="${media.title || media.name}" class="w-full h-full object-cover rounded-lg transition-transform duration-300 group-hover:scale-105">
-                <div class="absolute inset-0 bg-gradient-to-t from-black to-transparent opacity-40"></div>
+            <div class="relative w-full h-64 overflow-hidden rounded-lg mb-4">
+                <img src="https://image.tmdb.org/t/p/w300${media.poster_path}" alt="${media.title || media.name}" class="w-full h-full object-cover rounded-lg transition-transform duration-300 group-hover:scale-110">
+                <div class="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-50"></div>
             </div>
-            <div class="w-full">
-                <h3 class="text-base font-semibold text-white truncate">${media.title || media.name}</h3>
-                <p class="text-gray-400 text-sm mt-1">${mediaType === 'movie' ? '🎬 Movie' : mediaType === 'tv' ? '📺 TV Show' : '📽 Animation'}</p>
+            <div class="flex-grow w-full">
+                <h3 class="text-lg font-semibold text-white truncate">${media.title || media.name}</h3>
+                <p class="text-gray-400 text-sm mt-2">${mediaType === 'movie' ? '🎬 Movie' : mediaType === 'tv' ? '📺 TV Show' : '📽 Animation'}</p>
                 <p class="text-gray-400 text-sm mt-1">Genres: ${genreNames}</p>
                 <div class="flex items-center mt-2">
-                    <span class="text-yellow-400 text-lg">${ratingStars}</span>
+                    <span class="text-yellow-400 text-base">${ratingStars}</span>
                     <span class="text-gray-300 text-sm ml-2">${media.vote_average.toFixed(1)}/10</span>
                 </div>
                 <p class="text-gray-300 text-sm mt-1">Release Date: ${formattedDate}</p>
@@ -270,19 +336,6 @@ document.addEventListener('DOMContentLoaded', async function () {
 
             popularMedia.appendChild(mediaCard);
         });
-    }
-
-
-    // Function to fetch upcoming media
-    async function fetchUpcomingMedia() {
-        const response = await fetch(`https://api.themoviedb.org/3/movie/upcoming?api_key=${API_KEY}&language=en-US&page=1`);
-        if (response.ok) {
-            const data = await response.json();
-            const upcomingMovies = data.results.filter(media => new Date(media.release_date) > new Date());
-            displayUpcomingMedia(upcomingMovies);
-        } else {
-            handleError('Failed to fetch upcoming media.');
-        }
     }
 
     // Function to display upcoming media
