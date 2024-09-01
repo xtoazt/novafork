@@ -185,6 +185,8 @@ async function displaySelectedMedia(media, mediaType) {
                     return `https://embed.anicdn.top/v/${tvSlug}-dub/${episodeNumber}.html`;
                 case 'trailer':
                     return await fetchTrailer(mediaId, 'tv', apiKey);
+                case 'moviesapi':
+                    return `https://moviesapi.club/tv/${mediaId}/${seasonNumber}/${episodeNumber}`; // New provider URL
                 default:
                     throw new Error('Provider not recognized.');
             }
@@ -217,6 +219,8 @@ async function displaySelectedMedia(media, mediaType) {
                     return `https://embed.anicdn.top/v/${movieSlug}-dub/1.html`;
                 case 'trailer':
                     return await fetchTrailer(mediaId, 'movie', apiKey);
+                case 'moviesapi':
+                    return `https://moviesapi.club/movie/${mediaId}`; // New provider URL
                 default:
                     throw new Error('Provider not recognized.');
             }
