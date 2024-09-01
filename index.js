@@ -164,20 +164,6 @@ document.addEventListener('DOMContentLoaded', async function () {
             }
         } else if (selectedCategory === 'tv') {
             url = `https://api.themoviedb.org/3/trending/tv/week?api_key=${API_KEY}&page=${page}`;
-
-            try {
-                const response = await fetch(url);
-                if (response.ok) {
-                    const data = await response.json();
-                    const filteredResults = data.results.filter(media => !media.genre_ids.includes(16));
-                    displayPopularMedia(filteredResults);
-                    updatePaginationControls(data.page, data.total_pages);
-                } else {
-                    handleError('Failed to fetch TV shows.');
-                }
-            } catch (error) {
-                handleError('An error occurred while fetching TV shows.', error);
-            }
         } else {
             url = `https://api.themoviedb.org/3/trending/movie/week?api_key=${API_KEY}&page=${page}`;
 
@@ -194,6 +180,20 @@ document.addEventListener('DOMContentLoaded', async function () {
             } catch (error) {
                 handleError('An error occurred while fetching popular media.', error);
             }
+            return;
+        }
+
+        try {
+            const response = await fetch(url);
+            if (response.ok) {
+                const data = await response.json();
+                displayPopularMedia(data.results);
+                updatePaginationControls(data.page, data.total_pages);
+            } else {
+                handleError(`Failed to fetch ${selectedCategory} media.`);
+            }
+        } catch (error) {
+            handleError(`An error occurred while fetching ${selectedCategory} media.`, error);
         }
     }
 
@@ -241,21 +241,6 @@ document.addEventListener('DOMContentLoaded', async function () {
             handleError('An error occurred while fetching media details.', error);
             videoPlayerContainer.classList.add('hidden');
         }
-    }
-
-    function displaySelectedMedia(media, mediaType) {
-        const title = media.title || media.name;
-        const releaseDate = media.release_date || media.first_air_date;
-        const formattedDate = releaseDate ? new Date(releaseDate).toLocaleDateString() : 'Unknown Date';
-        const genreNames = media.genre_ids.map(id => genreMap[id] || 'Unknown').join(', ');
-
-        const ratingStars = Array.from({ length: 5 }, (_, i) => i < Math.round(media.vote_average / 2) ? '★' : '☆').join(' ');
-
-        document.getElementById('mediaTitle').textContent = title;
-        document.getElementById('mediaOverview').textContent = media.overview || 'No overview available.';
-        document.getElementById('mediaGenres').textContent = genreNames;
-        document.getElementById('mediaReleaseDate').textContent = `Release Date: ${formattedDate}`;
-        document.getElementById('mediaRating').textContent = `${ratingStars} (${media.vote_average.toFixed(1)}/10)`;
     }
 
     async function fetchMediaTrailer(mediaId, mediaType) {
