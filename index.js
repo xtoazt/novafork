@@ -1,4 +1,3 @@
-// Utility function to handle errors
 function handleError(message, error, showAlert = false) {
     console.error(message, error);
     if (showAlert) {
@@ -6,7 +5,6 @@ function handleError(message, error, showAlert = false) {
     }
 }
 
-// Function to fetch the API key from the configuration file
 async function getApiKey() {
     try {
         const response = await fetch('apis/config.json');
@@ -18,7 +16,6 @@ async function getApiKey() {
     }
 }
 
-// Function to fetch genres
 async function fetchGenres(apiKey) {
     try {
         const response = await fetch(`https://api.themoviedb.org/3/genre/movie/list?api_key=${apiKey}&language=en-US`);
@@ -35,7 +32,6 @@ async function fetchGenres(apiKey) {
     }
 }
 
-// Initialize application
 document.addEventListener('DOMContentLoaded', async function () {
     const homePage = document.getElementById('homePage');
     const welcomeBanner = document.getElementById('welcomeBanner');
@@ -44,13 +40,12 @@ document.addEventListener('DOMContentLoaded', async function () {
     const popularMedia = document.getElementById('popularMedia');
     const videoPlayerContainer = document.getElementById('videoPlayerContainer');
     const videoPlayer = document.getElementById('videoPlayer');
-    const posterImage = document.getElementById('posterImage'); // Assuming you have an element for the poster
+    const posterImage = document.getElementById('posterImage');
 
     closeBanner.addEventListener('click', () => {
         welcomeBanner.style.display = 'none';
     });
 
-    // Show home page directly
     homePage.classList.remove('hidden');
 
     const searchInput = document.getElementById('searchInput');
@@ -64,21 +59,17 @@ document.addEventListener('DOMContentLoaded', async function () {
         }
     });
 
-    // Fetch the API key
     const API_KEY = await getApiKey();
     if (!API_KEY) return;
 
-    // Fetch genres
     const genres = await fetchGenres(API_KEY);
     const genreMap = genres.reduce((map, genre) => {
         map[genre.id] = genre.name;
         return map;
     }, {});
 
-    // Ensure 'Crime' genre is correctly mapped
     genreMap[80] = 'Crime';
 
-    // Function to handle search
     async function search() {
         const searchInputValue = searchInput.value;
         const selectedCategory = categorySelect.value;
@@ -88,7 +79,6 @@ document.addEventListener('DOMContentLoaded', async function () {
             displaySearchResults(data.results);
             searchSuggestions.classList.add('hidden');
 
-            // Update the URL to reflect the search query and remove media ID parameters
             const newUrl = `${window.location.origin}${window.location.pathname}?query=${encodeURIComponent(searchInputValue)}&category=${selectedCategory}`;
             window.history.pushState({ searchInputValue, selectedCategory }, '', newUrl);
         } else {
@@ -119,8 +109,7 @@ document.addEventListener('DOMContentLoaded', async function () {
         let tvPage = page;
 
         if (selectedCategory === 'animation') {
-            // Fetch both movies and TV shows related to animation
-            const genreId = 16; // 16 is the genre ID for Animation
+            const genreId = 16;
             const movieUrl = `https://api.themoviedb.org/3/discover/movie?api_key=${API_KEY}&with_genres=${genreId}&page=${moviePage}`;
             const tvUrl = `https://api.themoviedb.org/3/discover/tv?api_key=${API_KEY}&with_genres=${genreId}&page=${tvPage}`;
 
@@ -136,7 +125,6 @@ document.addEventListener('DOMContentLoaded', async function () {
                         tvResponse.json()
                     ]);
 
-                    // Combine movie and TV show results
                     const combinedResults = [...movieData.results, ...tvData.results];
                     const totalPages = Math.max(movieData.total_pages, tvData.total_pages);
                     displayPopularMedia(combinedResults);
@@ -148,8 +136,7 @@ document.addEventListener('DOMContentLoaded', async function () {
                 handleError(`An error occurred while fetching ${selectedCategory} media.`, error);
             }
         } else if (selectedCategory === 'crime') {
-            // Fetch both movies and TV shows related to crime
-            const genreId = 80; // 80 is the genre ID for Crime
+            const genreId = 80;
             const movieUrl = `https://api.themoviedb.org/3/discover/movie?api_key=${API_KEY}&with_genres=${genreId}&page=${moviePage}`;
             const tvUrl = `https://api.themoviedb.org/3/discover/tv?api_key=${API_KEY}&with_genres=${genreId}&page=${tvPage}`;
 
@@ -165,7 +152,6 @@ document.addEventListener('DOMContentLoaded', async function () {
                         tvResponse.json()
                     ]);
 
-                    // Combine movie and TV show results
                     const combinedResults = [...movieData.results, ...tvData.results];
                     const totalPages = Math.max(movieData.total_pages, tvData.total_pages);
                     displayPopularMedia(combinedResults);
@@ -177,17 +163,29 @@ document.addEventListener('DOMContentLoaded', async function () {
                 handleError(`An error occurred while fetching ${selectedCategory} media.`, error);
             }
         } else if (selectedCategory === 'tv') {
-            // Fetch TV shows
             url = `https://api.themoviedb.org/3/trending/tv/week?api_key=${API_KEY}&page=${page}`;
+
+            try {
+                const response = await fetch(url);
+                if (response.ok) {
+                    const data = await response.json();
+                    const filteredResults = data.results.filter(media => !media.genre_ids.includes(16));
+                    displayPopularMedia(filteredResults);
+                    updatePaginationControls(data.page, data.total_pages);
+                } else {
+                    handleError('Failed to fetch TV shows.');
+                }
+            } catch (error) {
+                handleError('An error occurred while fetching TV shows.', error);
+            }
         } else {
-            // Fetch movies (default), excluding animation-related content
             url = `https://api.themoviedb.org/3/trending/movie/week?api_key=${API_KEY}&page=${page}`;
 
             try {
                 const response = await fetch(url);
                 if (response.ok) {
                     const data = await response.json();
-                    const filteredResults = data.results.filter(media => !media.genre_ids.includes(16)); // Exclude animation-related content
+                    const filteredResults = data.results.filter(media => !media.genre_ids.includes(16));
                     displayPopularMedia(filteredResults);
                     updatePaginationControls(data.page, data.total_pages);
                 } else {
@@ -196,11 +194,9 @@ document.addEventListener('DOMContentLoaded', async function () {
             } catch (error) {
                 handleError('An error occurred while fetching popular media.', error);
             }
-            return; // Return early to avoid further processing
         }
     }
 
-    // Function to update pagination controls
     function updatePaginationControls(currentPage, totalPages) {
         const prevPageButton = document.getElementById('prevPage');
         const nextPageButton = document.getElementById('nextPage');
@@ -215,46 +211,53 @@ document.addEventListener('DOMContentLoaded', async function () {
         nextPageButton.onclick = () => changePage(currentPage + 1);
     }
 
-    // Function to change page
     function changePage(page) {
         fetchPopularMedia(page);
     }
 
     async function fetchSelectedMedia(mediaId, mediaType) {
         try {
-            // Fetch media details
             const response = await fetch(`https://api.themoviedb.org/3/${mediaType}/${mediaId}?api_key=${API_KEY}`);
             if (response.ok) {
                 const media = await response.json();
 
-                // Update the URL with the media ID and type
                 const newUrl = `${window.location.origin}${window.location.pathname}?mediaId=${mediaId}&mediaType=${mediaType}`;
                 window.history.pushState({ mediaId, mediaType }, '', newUrl);
 
                 displaySelectedMedia(media, mediaType);
-                await fetchMediaTrailer(mediaId, mediaType);  // Fetch and display the trailer
+                await fetchMediaTrailer(mediaId, mediaType);
 
-                // Set the poster image
                 if (posterImage && media.poster_path) {
                     posterImage.src = `https://image.tmdb.org/t/p/w300${media.poster_path}`;
                     posterImage.alt = media.title || media.name;
                 }
 
-                // Show the video player if a trailer is available
                 videoPlayerContainer.classList.remove('hidden');
             } else {
-                // Log the error silently without showing an alert
                 handleError('Failed to fetch media details.', new Error('API response not OK'));
                 videoPlayerContainer.classList.add('hidden');
             }
         } catch (error) {
-            // Log the error silently without showing an alert
             handleError('An error occurred while fetching media details.', error);
             videoPlayerContainer.classList.add('hidden');
         }
     }
 
-    // Function to fetch and display media trailer
+    function displaySelectedMedia(media, mediaType) {
+        const title = media.title || media.name;
+        const releaseDate = media.release_date || media.first_air_date;
+        const formattedDate = releaseDate ? new Date(releaseDate).toLocaleDateString() : 'Unknown Date';
+        const genreNames = media.genre_ids.map(id => genreMap[id] || 'Unknown').join(', ');
+
+        const ratingStars = Array.from({ length: 5 }, (_, i) => i < Math.round(media.vote_average / 2) ? '★' : '☆').join(' ');
+
+        document.getElementById('mediaTitle').textContent = title;
+        document.getElementById('mediaOverview').textContent = media.overview || 'No overview available.';
+        document.getElementById('mediaGenres').textContent = genreNames;
+        document.getElementById('mediaReleaseDate').textContent = `Release Date: ${formattedDate}`;
+        document.getElementById('mediaRating').textContent = `${ratingStars} (${media.vote_average.toFixed(1)}/10)`;
+    }
+
     async function fetchMediaTrailer(mediaId, mediaType) {
         try {
             const response = await fetch(`https://api.themoviedb.org/3/${mediaType}/${mediaId}/videos?api_key=${API_KEY}`);
@@ -265,16 +268,13 @@ document.addEventListener('DOMContentLoaded', async function () {
                     videoPlayer.src = `https://www.youtube.com/embed/${trailer.key}`;
                 } else {
                     videoPlayer.src = '';
-                    console.log('No trailer available for this media.');
                     videoPlayerContainer.classList.add('hidden');
                 }
             } else {
-                // Log the error silently without showing an alert
                 handleError('Failed to fetch media trailer.', new Error('API response not OK'));
                 videoPlayerContainer.classList.add('hidden');
             }
         } catch (error) {
-            // Log the error silently without showing an alert
             handleError('An error occurred while fetching media trailer.', error);
             videoPlayerContainer.classList.add('hidden');
         }
@@ -283,7 +283,6 @@ document.addEventListener('DOMContentLoaded', async function () {
     function displayPopularMedia(results) {
         popularMedia.innerHTML = '';
 
-        // Sort results by rating for better display
         const sortedResults = results.sort((a, b) => b.vote_average - a.vote_average);
 
         sortedResults.forEach(media => {
@@ -338,7 +337,6 @@ document.addEventListener('DOMContentLoaded', async function () {
         });
     }
 
-    // Function to display upcoming media
     function displayUpcomingMedia(mediaList) {
         const upcomingMedia = document.getElementById('upcomingMedia');
         upcomingMedia.innerHTML = '';
@@ -351,7 +349,6 @@ document.addEventListener('DOMContentLoaded', async function () {
         });
     }
 
-    // Check for media ID in the URL and fetch the corresponding media
     const urlParams = new URLSearchParams(window.location.search);
     const mediaIdFromUrl = urlParams.get('mediaId');
     const mediaTypeFromUrl = urlParams.get('mediaType');
@@ -359,11 +356,9 @@ document.addEventListener('DOMContentLoaded', async function () {
         fetchSelectedMedia(mediaIdFromUrl, mediaTypeFromUrl);
     }
 
-    // Fetch popular media and upcoming media on page load
     fetchPopularMedia();
     fetchUpcomingMedia();
 
-    // Update popular media when the category changes
     categorySelect.addEventListener('change', function() {
         fetchPopularMedia();
     });
