@@ -1,25 +1,25 @@
-
 .dropdown {
-    background-color: #2d2d2d;
-    border: 1px solid #444;
-    color: #ddd;
-    padding: 8px;
-    border-radius: 4px;
-    font-size: 14px;
+    background-color: #1a1a1a;
+    border: 1px solid #666;
+    color: #e5e5e5;
+    padding: 10px;
+    border-radius: 6px;
+    font-size: 15px;
     font-family: 'Arial', sans-serif;
-    transition: background-color 0.3s, border-color 0.3s;
+    transition: background-color 0.3s, border-color 0.3s, color 0.3s;
     position: relative;
 }
 
 .dropdown:focus {
     outline: none;
-    border-color: #5c5c5c;
-    background-color: #333;
+    border-color: #7a7a7a;
+    background-color: #2a2a2a;
+    color: #ffffff;
 }
 
 .dropdown option {
-    background-color: #2d2d2d;
-    color: #ddd;
+    background-color: #1a1a1a;
+    color: #e5e5e5;
     padding-left: 40px;
     background-repeat: no-repeat;
     background-size: cover;
@@ -28,7 +28,8 @@
 
 .dropdown optgroup {
     font-weight: bold;
-    padding-top: 8px;
+    padding-top: 10px;
+    color: #b3b3b3;
 }
 
 .dropdown option::before {

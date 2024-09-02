@@ -1,30 +1,25 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <title>Nova</title>
     <link rel="icon" type="image/x-icon" href="https://raw.githubusercontent.com/ambr0sial/nova/main/logo.png">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
-    <meta content="Novafork" property="og:title"/>
-    <meta content="Click, watch, enjoy. Novafork breaks down the paywall, ensuring that quality content is accessible to everyone." property="og:description"/>
-    <meta content="https://novafork.com" property="og:url"/>
-    <meta content="https://raw.githubusercontent.com/ambr0sial/nova/main/logo.png" property="og:image"/>
-    <meta content="#A17FC0" data-react-helmet="true" name="theme-color"/>
+    <meta content="Novafork" property="og:title" />
+    <meta content="Click, watch, enjoy. Novafork breaks down the paywall, ensuring that quality content is accessible to everyone." property="og:description" />
+    <meta content="https://novafork.com" property="og:url" />
+    <meta content="https://raw.githubusercontent.com/ambr0sial/nova/main/logo.png" property="og:image" />
+    <meta content="#A17FC0" data-react-helmet="true" name="theme-color" />
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="themes/themes.css">
     <link rel="stylesheet" href="themes/mediacard.css">
     <link rel="stylesheet" href="themes/category.css">
-    <style>
-        .social-buttons img {
-            width: 24px;
-            height: 24px;
-            margin: 0 8px;
-        }
-    </style>
 </head>
+
 <body>
-<div class="social-buttons">
+<div class="social-buttons flex justify-center py-6">
     <a href="https://ko-fi.com/fanlim" target="_blank" id="kofiButton">
         <img src="https://assets-global.website-files.com/5c14e387dab576fe667689cf/64f1a9ddd0246590df69e9ef_ko-fi_logo_02-p-500.png" alt="Ko-Fi">
     </a>
@@ -34,12 +29,12 @@
 </div>
 
 <div id="homePage" class="min-h-screen">
-    <div class="container mx-auto px-4 py-8">
-        <header class="flex justify-between items-center py-4">
-            <h1 class="text-3xl font-bold text-purple-400">Nova</h1>
-            <div class="text-center text-sm text-zinc-400 mt-4">This website is not affiliated with novastream.to</div>
+    <div class="container mx-auto px-6 py-8">
+        <header>
+            <h1 class="font-bold">Nova</h1>
+            <div class="text-sm text-zinc-400 text-center mt-4">This website is not affiliated with novastream.to</div>
             <div class="relative">
-                <select id="categorySelect">
+                <select id="categorySelect" class="p-2">
                     <option value="movie">Movies</option>
                     <option value="tv">TV Shows</option>
                     <option value="animation">Animation</option>
@@ -47,41 +42,42 @@
                 </select>
             </div>
         </header>
-        <div class="flex gap-4 mb-8">
+
+        <div class="flex gap-4 my-8">
             <div class="relative flex-1">
-                <input type="text" id="searchInput" placeholder="Search for something" class="w-full p-3 rounded-l bg-zinc-800 border border-zinc-700 focus:border-purple-500 focus:outline-none">
-                <button id="searchButton" class="absolute inset-y-0 right-0 bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded-r">Search</button>
+                <input type="text" id="searchInput" placeholder="Search for something" class="w-full p-3 bg-zinc-800 border focus:border-purple-500 focus:outline-none rounded-l">
+                <button id="searchButton" class="absolute inset-y-0 right-0 text-white font-bold py-2 px-6 rounded-r">Search</button>
                 <div id="searchSuggestions" class="absolute w-full bg-zinc-800 text-white rounded-b-lg mt-1 hidden"></div>
             </div>
-            <button id="randomButton" class="bg-zinc-700 hover:bg-zinc-600 text-white font-bold py-2 px-4 rounded">Random Movie</button>
+            <button id="randomButton" class="bg-zinc-700 text-white font-bold py-2 px-6 rounded">Random Movie</button>
         </div>
 
-        <h2 class="text-xl font-semibold mb-6">Selected Media</h2>
-        <div id="selectedMovie" class="bg-zinc-800 p-4 rounded-lg flex mb-12">
+        <h2 class="section-title">Selected Media</h2>
+        <div id="selectedMovie" class="p-6 rounded-lg flex mb-12">
             <div id="videoPlayer" class="w-full h-full">
                 <iframe id="videoIframe" class="w-full" style="height: 462px;" allowfullscreen></iframe>
             </div>
         </div>
 
-        <h2 class="text-xl font-semibold mb-6">Upcoming Media</h2>
-        <div id="upcomingMedia" class="mb-8 ml-0"></div>
+        <h2 class="section-title">Upcoming Media</h2>
+        <div id="upcomingMedia" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 mb-8"></div>
 
         <!-- Toggle Button for Popular Media -->
         <div class="flex justify-between items-center mb-4">
-            <h2 class="text-xl font-semibold">Trending Media</h2>
-            <button id="togglePopularMedia" class="bg-zinc-700 hover:bg-zinc-600 text-white font-bold py-2 px-4 rounded">Hide Popular Media</button>
+            <h2 class="section-title">Trending Media</h2>
+            <button id="togglePopularMedia" class="bg-zinc-700 text-white font-bold py-2 px-6 rounded">Hide Popular Media</button>
         </div>
 
         <!-- Popular Media Section -->
         <div id="popularMedia" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4"></div>
 
-        <div id="paginationControls" class="flex justify-center items-center mt-4">
-            <button id="prevPage" class="bg-zinc-700 hover:bg-zinc-600 text-white font-bold py-2 px-4 rounded mx-2">Previous</button>
-            <span id="currentPage" class="text-white mx-2">1</span>
-            <button id="nextPage" class="bg-zinc-700 hover:bg-zinc-600 text-white font-bold py-2 px-4 rounded mx-2">Next</button>
+        <div id="paginationControls" class="flex justify-center items-center mt-6">
+            <button id="prevPage" class="bg-zinc-700 text-white font-bold py-2 px-6 rounded">Previous</button>
+            <span id="currentPage" class="text-white mx-4">1</span>
+            <button id="nextPage" class="bg-zinc-700 text-white font-bold py-2 px-6 rounded">Next</button>
         </div>
 
-        <footer class="text-center text-gray-400 mt-8">
+        <footer class="text-center text-gray-400 mt-12">
             Made with <span id="homeHeartIcon" class="cursor-pointer" onmouseover="this.style.color='red'" onmouseout="this.style.color=''">♥</span> by Ambrosial. and improved by fanlim Latest version: 28/08/24
         </footer>
         <div class="text-center text-sm text-zinc-400 mt-4">
@@ -90,7 +86,7 @@
         <div class="text-center text-sm text-zinc-400 mt-4">
             Please note: The media player on this site does not control how media appears. It only provides duration information to third-party embed players.
         </div>
-        <div id="welcomeBanner" class="fixed bottom-0 left-0 right-0 bg-gray-800 text-white p-4 text-center">
+        <div id="welcomeBanner" class="fixed bottom-0 left-0 right-0 bg-gray-800 text-white p-4 text-center rounded-t-lg">
             <button id="closeBanner" class="text-gray-300 hover:text-white float-right mt-1 mr-1">×</button>
             <p>Welcome to NovaFork! Thanks for visiting our website. Enjoy endless hours of free content!</p>
         </div>
@@ -106,4 +102,5 @@
 <!-- Include the media hider script -->
 <script src="media/mediahider/mediahider.js"></script>
 </body>
+
 </html>
