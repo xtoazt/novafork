@@ -162,6 +162,33 @@ document.addEventListener('DOMContentLoaded', async function () {
             } catch (error) {
                 handleError(`An error occurred while fetching ${selectedCategory} media.`, error);
             }
+        } else if (selectedCategory === 'horror') { // New condition for Horror
+            const genreId = 27;
+            const movieUrl = `https://api.themoviedb.org/3/discover/movie?api_key=${API_KEY}&with_genres=${genreId}&page=${moviePage}`;
+            const tvUrl = `https://api.themoviedb.org/3/discover/tv?api_key=${API_KEY}&with_genres=${genreId}&page=${tvPage}`;
+
+            try {
+                const [movieResponse, tvResponse] = await Promise.all([
+                    fetch(movieUrl),
+                    fetch(tvUrl)
+                ]);
+
+                if (movieResponse.ok && tvResponse.ok) {
+                    const [movieData, tvData] = await Promise.all([
+                        movieResponse.json(),
+                        tvResponse.json()
+                    ]);
+
+                    const combinedResults = [...movieData.results, ...tvData.results];
+                    const totalPages = Math.max(movieData.total_pages, tvData.total_pages);
+                    displayPopularMedia(combinedResults);
+                    updatePaginationControls(page, totalPages);
+                } else {
+                    handleError(`Failed to fetch ${selectedCategory} media.`);
+                }
+            } catch (error) {
+                handleError(`An error occurred while fetching ${selectedCategory} media.`, error);
+            }
         } else if (selectedCategory === 'tv') {
             url = `https://api.themoviedb.org/3/trending/tv/week?api_key=${API_KEY}&page=${page}`;
         } else {
@@ -196,6 +223,7 @@ document.addEventListener('DOMContentLoaded', async function () {
             handleError(`An error occurred while fetching ${selectedCategory} media.`, error);
         }
     }
+
 
     function updatePaginationControls(currentPage, totalPages) {
         const prevPageButton = document.getElementById('prevPage');
