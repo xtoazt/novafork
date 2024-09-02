@@ -160,6 +160,8 @@ async function displaySelectedMedia(media, mediaType) {
             switch (provider) {
                 case 'vidsrc':
                     return `https://vidsrc.cc/v2/embed/tv/${mediaId}/${seasonNumber}/${episodeNumber}`;
+                case 'vidsrcpro':
+                    return `https://vidsrc.pro/embed/tv/${mediaId}/${seasonNumber}/${episodeNumber}`; // New URL for VidSrcPro
                 case 'vidsrc2':
                     return `https://vidsrc2.to/embed/tv/${mediaId}?season=${seasonNumber}&episode=${episodeNumber}`;
                 case 'vidsrcxyz':
@@ -177,7 +179,7 @@ async function displaySelectedMedia(media, mediaType) {
                 case 'nontonGoAlt':
                     return `https://www.NontonGo.win/embed/tv/?id=${mediaId}&s=${seasonNumber}&e=${episodeNumber}`;
                 case '2animesub':
-                    return `https://2anime.xyz/embed/${media.name.replace(/\s+/g, '-')}-episode-${episodeNumber}`;
+                    return `https://2anime.xyz/embed/${media.name.replace(/\s+/g, '-').toLowerCase()}-episode-${episodeNumber}`;
                 case '2embed':
                     return `https://www.2embed.skin/embedtv/${mediaId}&s=${seasonNumber}&e=${episodeNumber}`;
                 case 'AdminHiHi':
@@ -191,6 +193,7 @@ async function displaySelectedMedia(media, mediaType) {
                     throw new Error('Provider not recognized.');
             }
         }
+
 
         async function getMovieEmbedUrl(mediaId, provider, apiKey) {
             switch (provider) {
@@ -217,14 +220,17 @@ async function displaySelectedMedia(media, mediaType) {
                 case 'AdminHiHi':
                     const movieSlug = media.title.replace(/\s+/g, '-');
                     return `https://embed.anicdn.top/v/${movieSlug}-dub/1.html`;
+                case 'vidsrcpro':
+                    return `https://vidsrc.pro/embed/movie/${mediaId}`; // New provider URL
                 case 'trailer':
                     return await fetchTrailer(mediaId, 'movie', apiKey);
                 case 'moviesapi':
-                    return `https://moviesapi.club/movie/${mediaId}`; // New provider URL
+                    return `https://moviesapi.club/movie/${mediaId}`; // Existing provider URL
                 default:
                     throw new Error('Provider not recognized.');
             }
         }
+
 
         async function updateEpisodes() {
             const seasonNumber = seasonSelect ? seasonSelect.value : '';
