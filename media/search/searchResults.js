@@ -1,4 +1,3 @@
-// Utility function to handle errors
 function handleError(message, error) {
     console.error(message, error);
     alert(message);
@@ -42,8 +41,10 @@ function debounce(func, delay) {
 // Function to display a loading spinner
 function showLoading() {
     const searchSuggestions = document.getElementById('searchSuggestions');
-    searchSuggestions.innerHTML = '<div class="spinner"></div>';
-    searchSuggestions.classList.remove('hidden');
+    if (searchSuggestions) {
+        searchSuggestions.innerHTML = '<div class="spinner"></div>';
+        searchSuggestions.classList.remove('hidden');
+    }
 }
 
 // Function to highlight matching text
@@ -57,6 +58,8 @@ function highlightText(text, query) {
 async function displaySearchSuggestions(results, query, genreMap) {
     const searchSuggestions = document.getElementById('searchSuggestions');
 
+    if (!searchSuggestions) return;
+
     if (results.length === 0) {
         searchSuggestions.innerHTML = '<div class="p-2 text-gray-500">No suggestions available</div>';
         searchSuggestions.classList.remove('hidden');
@@ -68,7 +71,7 @@ async function displaySearchSuggestions(results, query, genreMap) {
         const mediaTitle = media.title || media.name;
         const mediaRating = media.vote_average ? media.vote_average.toFixed(1) : 'N/A';
         const highlightedTitle = highlightText(mediaTitle, query);
-        const genreNames = media.genre_ids.map(id => genreMap[id]).join(', ');
+        const genreNames = media.genre_ids.map(id => genreMap[id] || 'Unknown').join(', ');
 
         return `
             <div class="suggestion-item p-4 cursor-pointer rounded-lg" data-id="${media.id}" data-type="${media.media_type}">
@@ -112,7 +115,8 @@ async function handleSearchInput() {
     const apiKey = await getApiKey();
 
     if (!searchInputValue) {
-        document.getElementById('searchSuggestions').innerHTML = '';
+        const searchSuggestions = document.getElementById('searchSuggestions');
+        if (searchSuggestions) searchSuggestions.innerHTML = '';
         return;
     }
 
@@ -231,14 +235,16 @@ async function fetchTopRatedMedia(apiKey, page = 1) {
 // Function to display search results
 function displaySearchResults(results) {
     const mediaContainer = document.getElementById('mediaContainer');
+    if (!mediaContainer) return;
+
     mediaContainer.innerHTML = '';
 
     results.forEach(media => {
         const mediaCard = document.createElement('div');
         mediaCard.classList.add('media-card', 'bg-gray-900', 'p-6', 'rounded-lg', 'shadow-lg', 'cursor-pointer', 'transition-transform', 'hover:scale-105', 'relative', 'flex', 'flex-col', 'items-start');
 
-        const genreNames = media.genre_ids.map(id => genreMap[id]).join(', ');
-        const formattedDate = new Date(media.release_date).toLocaleDateString();
+        const genreNames = media.genre_ids.map(id => genreMap[id] || 'Unknown').join(', ');
+        const formattedDate = media.release_date ? new Date(media.release_date).toLocaleDateString() : 'N/A';
         const ratingStars = '⭐'.repeat(Math.round(media.vote_average / 2));
 
         mediaCard.innerHTML = `
@@ -286,6 +292,8 @@ async function fetchUpcomingMedia(apiKey) {
 // Function to display upcoming media
 function displayUpcomingMedia(mediaList) {
     const upcomingMedia = document.getElementById('upcomingMedia');
+    if (!upcomingMedia) return;
+
     upcomingMedia.innerHTML = '';
 
     mediaList.forEach(media => {
@@ -302,13 +310,19 @@ function updatePaginationControls(currentPage, totalPages) {
     const nextPageButton = document.getElementById('nextPage');
     const currentPageSpan = document.getElementById('currentPage');
 
-    currentPageSpan.textContent = currentPage;
+    if (currentPageSpan) {
+        currentPageSpan.textContent = currentPage;
+    }
 
-    prevPageButton.disabled = currentPage === 1;
-    nextPageButton.disabled = currentPage === totalPages;
+    if (prevPageButton) {
+        prevPageButton.disabled = currentPage === 1;
+        prevPageButton.onclick = () => changePage(currentPage - 1);
+    }
 
-    prevPageButton.onclick = () => changePage(currentPage - 1);
-    nextPageButton.onclick = () => changePage(currentPage + 1);
+    if (nextPageButton) {
+        nextPageButton.disabled = currentPage === totalPages;
+        nextPageButton.onclick = () => changePage(currentPage + 1);
+    }
 }
 
 // Function to change page based on category selection
@@ -344,19 +358,15 @@ async function fetchSelectedMedia(apiKey, mediaId, mediaType) {
 document.querySelectorAll('input[name="mediaType"]').forEach(radio => {
     radio.addEventListener('change', function() {
         const type = this.value;
-        if (type === 'popular') {
-            getApiKey().then(apiKey => {
-                if (apiKey) {
+        getApiKey().then(apiKey => {
+            if (apiKey) {
+                if (type === 'popular') {
                     fetchPopularMedia(apiKey);
-                }
-            });
-        } else if (type === 'top_rated') {
-            getApiKey().then(apiKey => {
-                if (apiKey) {
+                } else if (type === 'top_rated') {
                     fetchTopRatedMedia(apiKey);
                 }
-            });
-        }
+            }
+        });
     });
 });
 
