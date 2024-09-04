@@ -1,16 +1,13 @@
-function handleError(message, error, showAlert = false) {
+function handleError(message, error) {
     console.error(message, error);
-    if (showAlert) {
-        alert(message);
-    }
+    alert(message);
 }
 
+// Function to fetch the API key from the configuration file
 async function getApiKey() {
     try {
         const response = await fetch('apis/config.json');
-        if (!response.ok) {
-            throw new Error('Failed to load API key config.');
-        }
+        if (!response.ok) throw new Error('Network response was not ok');
         const config = await response.json();
         return config.apiKey;
     } catch (error) {
@@ -19,331 +16,366 @@ async function getApiKey() {
     }
 }
 
+// Function to fetch genres
 async function fetchGenres(apiKey) {
     try {
         const response = await fetch(`https://api.themoviedb.org/3/genre/movie/list?api_key=${apiKey}&language=en-US`);
-        if (!response.ok) {
-            throw new Error('Failed to fetch genres.');
-        }
+        if (!response.ok) throw new Error('Network response was not ok');
         const data = await response.json();
         return data.genres;
     } catch (error) {
-        handleError('An error occurred while fetching genres:', error);
+        handleError('Failed to fetch genres.', error);
         return [];
     }
 }
 
-document.addEventListener('DOMContentLoaded', async function () {
-    const homePage = document.getElementById('homePage');
-    const welcomeBanner = document.getElementById('welcomeBanner');
-    const closeBanner = document.getElementById('closeBanner');
-    const categorySelect = document.getElementById('categorySelect');
-    const popularMedia = document.getElementById('popularMedia');
-    const videoPlayerContainer = document.getElementById('videoPlayerContainer');
-    const videoPlayer = document.getElementById('videoPlayer');
-    const posterImage = document.getElementById('posterImage');
+// Function to debounce input events
+function debounce(func, delay) {
+    let timeoutId;
+    return function(...args) {
+        clearTimeout(timeoutId);
+        timeoutId = setTimeout(() => func.apply(this, args), delay);
+    };
+}
 
-    if (closeBanner) {
-        closeBanner.addEventListener('click', () => {
-            welcomeBanner.style.display = 'none';
-        });
+// Function to display a loading spinner
+function showLoading() {
+    const searchSuggestions = document.getElementById('searchSuggestions');
+    if (searchSuggestions) {
+        searchSuggestions.innerHTML = '<div class="spinner"></div>';
+        searchSuggestions.classList.remove('hidden');
     }
+}
 
-    if (homePage) {
-        homePage.classList.remove('hidden');
-    }
+// Function to highlight matching text
+function highlightText(text, query) {
+    if (!query) return text;
+    const regex = new RegExp(`(${query})`, 'gi');
+    return text.replace(regex, '<span class="highlight">$1</span>');
+}
 
-    const searchInput = document.getElementById('searchInput');
+// Function to display search suggestions with preserved letter case
+async function displaySearchSuggestions(results, query, genreMap) {
     const searchSuggestions = document.getElementById('searchSuggestions');
 
-    if (searchInput) {
-        document.getElementById('searchButton').addEventListener('click', search);
-        searchInput.addEventListener('keydown', async function (event) {
-            if (event.key === 'Enter') {
-                event.preventDefault();
-                search();
-            }
-        });
+    if (!searchSuggestions) return;
 
-        searchInput.addEventListener('input', async function () {
-            const query = searchInput.value;
-            if (query.length > 2) {
-                const selectedCategory = categorySelect.value;
-                const response = await fetch(`https://api.themoviedb.org/3/search/${selectedCategory}?api_key=${API_KEY}&query=${query}`);
-                if (response.ok) {
-                    const data = await response.json();
-                    displaySearchSuggestions(data.results);
-                } else {
-                    searchSuggestions.classList.add('hidden');
-                }
-            } else {
+    if (results.length === 0) {
+        searchSuggestions.innerHTML = '<div class="p-2 text-gray-500">No suggestions available</div>';
+        searchSuggestions.classList.remove('hidden');
+        return;
+    }
+
+    const suggestionsHTML = results.map(media => {
+        const mediaTypeLabel = media.media_type === 'movie' ? 'Movie' : 'TV Show';
+        const mediaTitle = media.title || media.name;
+        const mediaRating = media.vote_average ? media.vote_average.toFixed(1) : 'N/A';
+        const highlightedTitle = highlightText(mediaTitle, query);
+        const genreNames = media.genre_ids.map(id => genreMap[id] || 'Unknown').join(', ');
+
+        return `
+            <div class="suggestion-item p-4 cursor-pointer rounded-lg" data-id="${media.id}" data-type="${media.media_type}">
+                <div class="flex items-center">
+                    <img src="https://image.tmdb.org/t/p/w45${media.poster_path}" alt="${mediaTitle}" class="w-16 h-24 object-cover rounded-md mr-4">
+                    <div class="flex-1">
+                        <h4 class="text-lg font-semibold text-white truncate">${highlightedTitle}</h4>
+                        <p class="text-gray-400 text-sm">${mediaTypeLabel}</p>
+                        <p class="text-yellow-400 text-sm">${mediaRating}/10</p>
+                        <p class="text-gray-400 text-sm">Genres: ${genreNames}</p>
+                    </div>
+                </div>
+            </div>
+        `;
+    }).join('');
+
+    searchSuggestions.innerHTML = suggestionsHTML;
+    searchSuggestions.classList.remove('hidden');
+
+    // Attach click events to suggestions
+    searchSuggestions.querySelectorAll('.suggestion-item').forEach(item => {
+        item.addEventListener('click', async () => {
+            const mediaId = item.getAttribute('data-id');
+            const mediaType = item.getAttribute('data-type');
+            const apiKey = await getApiKey();
+            if (apiKey) {
+                fetchSelectedMedia(apiKey, mediaId, mediaType);
                 searchSuggestions.classList.add('hidden');
             }
         });
+    });
+
+    // Set up keyboard navigation
+    setupKeyboardNavigation(searchSuggestions);
+}
+
+// Function to handle search input changes
+async function handleSearchInput() {
+    const searchInput = document.getElementById('searchInput');
+    const searchInputValue = searchInput.value.trim();
+    const apiKey = await getApiKey();
+
+    if (!searchInputValue) {
+        const searchSuggestions = document.getElementById('searchSuggestions');
+        if (searchSuggestions) searchSuggestions.innerHTML = '';
+        return;
     }
 
-    const API_KEY = await getApiKey();
-    if (!API_KEY) return;
+    if (!apiKey) {
+        handleError('Failed to fetch API key.');
+        return;
+    }
 
-    const genres = await fetchGenres(API_KEY);
-    const genreMap = genres.reduce((map, genre) => {
-        map[genre.id] = genre.name;
-        return map;
-    }, {});
+    showLoading(); // Show spinner while fetching data
 
-    genreMap[80] = 'Crime';
+    try {
+        const genres = await fetchGenres(apiKey); // Fetch genres
+        const genreMap = genres.reduce((map, genre) => {
+            map[genre.id] = genre.name;
+            return map;
+        }, {});
 
-    async function search() {
-        const searchInputValue = searchInput.value;
-        const selectedCategory = categorySelect.value;
-        const response = await fetch(`https://api.themoviedb.org/3/search/${selectedCategory}?api_key=${API_KEY}&query=${searchInputValue}`);
+        const response = await fetch(`https://api.themoviedb.org/3/search/multi?api_key=${apiKey}&query=${encodeURIComponent(searchInputValue)}`);
         if (response.ok) {
             const data = await response.json();
-            displaySearchResults(data.results);
-            searchSuggestions.classList.add('hidden');
-
-            const newUrl = `${window.location.origin}${window.location.pathname}?query=${encodeURIComponent(searchInputValue)}&category=${selectedCategory}`;
-            window.history.pushState({ searchInputValue, selectedCategory }, '', newUrl);
+            displaySearchSuggestions(data.results, searchInputValue, genreMap);
         } else {
             handleError('Failed to fetch search results.');
         }
+    } catch (error) {
+        handleError('An error occurred while fetching search results:', error);
+    }
+}
+
+// Debounced event listener for search input
+document.getElementById('searchInput').addEventListener('input', debounce(handleSearchInput, 300));
+
+// Function to set up keyboard navigation for suggestions
+function setupKeyboardNavigation(container) {
+    const items = container.querySelectorAll('.suggestion-item');
+    let currentIndex = -1;
+
+    function selectItem(index) {
+        items.forEach((item, i) => item.classList.toggle('selected', i === index));
     }
 
-// Function to fetch and display media based on the selected category
-    async function fetchPopularMedia(page = 1) {
-        const selectedCategory = categorySelect.value;
-        let url = '';
-        let moviePage = page;
-        let tvPage = page;
-
-        try {
-            if (selectedCategory === 'animation') {
-                const genreId = 16;
-                const movieUrl = `https://api.themoviedb.org/3/discover/movie?api_key=${API_KEY}&with_genres=${genreId}&page=${moviePage}`;
-                const tvUrl = `https://api.themoviedb.org/3/discover/tv?api_key=${API_KEY}&with_genres=${genreId}&page=${tvPage}`;
-
-                const [movieResponse, tvResponse] = await Promise.all([fetch(movieUrl), fetch(tvUrl)]);
-                if (movieResponse.ok && tvResponse.ok) {
-                    const [movieData, tvData] = await Promise.all([movieResponse.json(), tvResponse.json()]);
-                    const combinedResults = [...movieData.results, ...tvData.results];
-                    const totalPages = Math.max(movieData.total_pages, tvData.total_pages);
-                    displayPopularMedia(combinedResults);
-                    updatePaginationControls(page, totalPages);
-                } else {
-                    handleError(`Failed to fetch ${selectedCategory} media.`);
-                }
-            } else if (selectedCategory === 'crime') {
-                const genreId = 80;
-                const movieUrl = `https://api.themoviedb.org/3/discover/movie?api_key=${API_KEY}&with_genres=${genreId}&page=${moviePage}`;
-                const tvUrl = `https://api.themoviedb.org/3/discover/tv?api_key=${API_KEY}&with_genres=${genreId}&page=${tvPage}`;
-
-                const [movieResponse, tvResponse] = await Promise.all([fetch(movieUrl), fetch(tvUrl)]);
-                if (movieResponse.ok && tvResponse.ok) {
-                    const [movieData, tvData] = await Promise.all([movieResponse.json(), tvResponse.json()]);
-                    const combinedResults = [...movieData.results, ...tvData.results];
-                    const totalPages = Math.max(movieData.total_pages, tvData.total_pages);
-                    displayPopularMedia(combinedResults);
-                    updatePaginationControls(page, totalPages);
-                } else {
-                    handleError(`Failed to fetch ${selectedCategory} media.`);
-                }
-            } else if (selectedCategory === 'horror') {
-                const genreId = 27;
-                const movieUrl = `https://api.themoviedb.org/3/discover/movie?api_key=${API_KEY}&with_genres=${genreId}&page=${moviePage}`;
-                const tvUrl = `https://api.themoviedb.org/3/discover/tv?api_key=${API_KEY}&with_genres=${genreId}&page=${tvPage}`;
-
-                const [movieResponse, tvResponse] = await Promise.all([fetch(movieUrl), fetch(tvUrl)]);
-                if (movieResponse.ok && tvResponse.ok) {
-                    const [movieData, tvData] = await Promise.all([movieResponse.json(), tvResponse.json()]);
-                    const combinedResults = [...movieData.results, ...tvData.results];
-                    const totalPages = Math.max(movieData.total_pages, tvData.total_pages);
-                    displayPopularMedia(combinedResults);
-                    updatePaginationControls(page, totalPages);
-                } else {
-                    handleError(`Failed to fetch ${selectedCategory} media.`);
-                }
-            } else if (selectedCategory === 'tv') {
-                url = `https://api.themoviedb.org/3/trending/tv/week?api_key=${API_KEY}&page=${page}`;
-            } else {
-                url = `https://api.themoviedb.org/3/trending/movie/week?api_key=${API_KEY}&page=${page}`;
+    document.addEventListener('keydown', (event) => {
+        if (event.key === 'ArrowDown') {
+            currentIndex = (currentIndex + 1) % items.length;
+            selectItem(currentIndex);
+            event.preventDefault();
+        } else if (event.key === 'ArrowUp') {
+            currentIndex = (currentIndex - 1 + items.length) % items.length;
+            selectItem(currentIndex);
+            event.preventDefault();
+        } else if (event.key === 'Enter') {
+            if (currentIndex >= 0 && currentIndex < items.length) {
+                items[currentIndex].click();
+                event.preventDefault();
             }
-
-            if (url) {
-                const response = await fetch(url);
-                if (response.ok) {
-                    const data = await response.json();
-                    displayPopularMedia(data.results);
-                    updatePaginationControls(data.page, data.total_pages);
-                } else {
-                    handleError(`Failed to fetch ${selectedCategory} media.`);
-                }
-            }
-        } catch (error) {
-            handleError(`An error occurred while fetching ${selectedCategory} media.`, error);
         }
+    });
+}
+
+// Event listener for random button click
+document.getElementById('randomButton').addEventListener('click', async function() {
+    const apiKey = await getApiKey();
+
+    if (!apiKey) {
+        handleError('Failed to fetch API key.');
+        return;
     }
 
-
-    function updatePaginationControls(currentPage, totalPages) {
-        const prevPageButton = document.getElementById('prevPage');
-        const nextPageButton = document.getElementById('nextPage');
-        const currentPageSpan = document.getElementById('currentPage');
-
-        if (currentPageSpan) {
-            currentPageSpan.textContent = currentPage;
+    try {
+        const response = await fetch(`https://api.themoviedb.org/3/trending/all/week?api_key=${apiKey}`);
+        if (response.ok) {
+            const data = await response.json();
+            const randomMedia = data.results[Math.floor(Math.random() * data.results.length)];
+            fetchSelectedMedia(apiKey, randomMedia.id, randomMedia.media_type);
+        } else {
+            handleError('Failed to fetch trending media.');
         }
-
-        if (prevPageButton) {
-            prevPageButton.disabled = currentPage === 1;
-            prevPageButton.onclick = () => changePage(currentPage - 1);
-        }
-
-        if (nextPageButton) {
-            nextPageButton.disabled = currentPage === totalPages;
-            nextPageButton.onclick = () => changePage(currentPage + 1);
-        }
+    } catch (error) {
+        handleError('An error occurred while fetching trending media:', error);
     }
+});
 
-    function changePage(page) {
-        fetchPopularMedia(page);
-    }
-
-    async function fetchSelectedMedia(mediaId, mediaType) {
-        try {
-            const response = await fetch(`https://api.themoviedb.org/3/${mediaType}/${mediaId}?api_key=${API_KEY}`);
-            if (response.ok) {
-                const media = await response.json();
-
-                const newUrl = `${window.location.origin}${window.location.pathname}?mediaId=${mediaId}&mediaType=${mediaType}`;
-                window.history.pushState({ mediaId, mediaType }, '', newUrl);
-
-                displaySelectedMedia(media, mediaType);
-                await fetchMediaTrailer(mediaId, mediaType);
-
-                if (posterImage && media.poster_path) {
-                    posterImage.src = `https://image.tmdb.org/t/p/w300${media.poster_path}`;
-                    posterImage.alt = media.title || media.name;
-                }
-
-                videoPlayerContainer.classList.remove('hidden');
-            } else {
-                handleError('Failed to fetch media details.', new Error('API response not OK'));
-                videoPlayerContainer.classList.add('hidden');
-            }
-        } catch (error) {
-            handleError('An error occurred while fetching media details.', error);
-            videoPlayerContainer.classList.add('hidden');
+// Function to fetch popular media
+async function fetchPopularMedia(apiKey, page = 1) {
+    try {
+        const response = await fetch(`https://api.themoviedb.org/3/trending/all/week?api_key=${apiKey}&page=${page}`);
+        if (response.ok) {
+            const data = await response.json();
+            displaySearchResults(data.results);
+            updatePaginationControls(data.page, data.total_pages);
+            fetchUpcomingMedia(apiKey);
+        } else {
+            handleError('Failed to fetch popular media.');
         }
+    } catch (error) {
+        handleError('An error occurred while fetching popular media:', error);
     }
+}
 
-    async function fetchMediaTrailer(mediaId, mediaType) {
-        try {
-            const response = await fetch(`https://api.themoviedb.org/3/${mediaType}/${mediaId}/videos?api_key=${API_KEY}`);
-            if (response.ok) {
-                const data = await response.json();
-                const trailer = data.results.find(video => video.type === 'Trailer' && video.site === 'YouTube');
-                if (trailer) {
-                    videoPlayer.src = `https://www.youtube.com/embed/${trailer.key}`;
-                } else {
-                    videoPlayer.src = '';
-                    videoPlayerContainer.classList.add('hidden');
-                }
-            } else {
-                handleError('Failed to fetch media trailer.', new Error('API response not OK'));
-                videoPlayerContainer.classList.add('hidden');
-            }
-        } catch (error) {
-            handleError('An error occurred while fetching media trailer.', error);
-            videoPlayerContainer.classList.add('hidden');
+// Function to fetch top-rated media
+async function fetchTopRatedMedia(apiKey, page = 1) {
+    try {
+        const response = await fetch(`https://api.themoviedb.org/3/movie/top_rated?api_key=${apiKey}&page=${page}`);
+        if (response.ok) {
+            const data = await response.json();
+            displaySearchResults(data.results);
+            updatePaginationControls(data.page, data.total_pages);
+        } else {
+            handleError('Failed to fetch top-rated media.');
         }
+    } catch (error) {
+        handleError('An error occurred while fetching top-rated media:', error);
     }
+}
 
-    function displayPopularMedia(results) {
-        popularMedia.innerHTML = '';
+// Function to display search results
+function displaySearchResults(results) {
+    const mediaContainer = document.getElementById('mediaContainer');
+    if (!mediaContainer) return;
 
-        const sortedResults = results.sort((a, b) => b.vote_average - a.vote_average);
+    mediaContainer.innerHTML = '';
 
-        sortedResults.forEach(media => {
-            const mediaCard = document.createElement('div');
-            mediaCard.classList.add(
-                'media-card',
-                'bg-gray-800',
-                'p-4',
-                'rounded-lg',
-                'shadow-lg',
-                'cursor-pointer',
-                'transition-transform',
-                'hover:scale-105',
-                'relative',
-                'flex',
-                'flex-col',
-                'items-start',
-                'group',
-                'overflow-hidden',
-                'max-w-sm',
-                'm-2',
-            );
+    results.forEach(media => {
+        const mediaCard = document.createElement('div');
+        mediaCard.classList.add('media-card', 'bg-gray-900', 'p-6', 'rounded-lg', 'shadow-lg', 'cursor-pointer', 'transition-transform', 'hover:scale-105', 'relative', 'flex', 'flex-col', 'items-start');
 
-            const genreNames = media.genre_ids.map(id => genreMap[id] || 'Unknown').join(', ');
-            const formattedDate = media.release_date ? new Date(media.release_date).toLocaleDateString() : (media.first_air_date ? new Date(media.first_air_date).toLocaleDateString() : 'Unknown Date');
-            const ratingStars = Array.from({ length: 5 }, (_, i) => i < Math.round(media.vote_average / 2) ? '★' : '☆').join(' ');
+        const genreNames = media.genre_ids.map(id => genreMap[id] || 'Unknown').join(', ');
+        const formattedDate = media.release_date ? new Date(media.release_date).toLocaleDateString() : 'N/A';
+        const ratingStars = '⭐'.repeat(Math.round(media.vote_average / 2));
 
-            const mediaType = media.media_type || (media.title ? 'movie' : 'tv');
-
-            mediaCard.innerHTML = `
-            <div class="relative w-full h-64 overflow-hidden rounded-lg mb-4">
-                <img src="https://image.tmdb.org/t/p/w300${media.poster_path}" alt="${media.title || media.name}" class="w-full h-full object-cover rounded-lg transition-transform duration-300 group-hover:scale-110">
-                <div class="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-50"></div>
+        mediaCard.innerHTML = `
+            <div class="relative w-full h-48 mb-4">
+                <img src="https://image.tmdb.org/t/p/w500${media.poster_path}" alt="${media.title || media.name}" class="absolute inset-0 w-full h-full object-cover rounded-lg">
+                <div class="absolute inset-0 bg-gradient-to-t from-black to-transparent opacity-40"></div>
             </div>
-            <div class="flex-grow w-full">
-                <h3 class="text-lg font-semibold text-white truncate">${media.title || media.name}</h3>
-                <p class="text-gray-400 text-sm mt-2">${mediaType === 'movie' ? '🎬 Movie' : mediaType === 'tv' ? '📺 TV Show' : '📽 Animation'}</p>
+            <div class="w-full">
+                <h3 class="text-xl font-semibold text-white truncate">${media.title || media.name}</h3>
+                <p class="text-gray-400 text-sm mt-1">${media.media_type === 'movie' ? '🎬 Movie' : '📺 TV Show'}</p>
                 <p class="text-gray-400 text-sm mt-1">Genres: ${genreNames}</p>
                 <div class="flex items-center mt-2">
-                    <span class="text-yellow-400 text-base">${ratingStars}</span>
+                    <span class="text-yellow-400 text-lg">${ratingStars}</span>
                     <span class="text-gray-300 text-sm ml-2">${media.vote_average.toFixed(1)}/10</span>
                 </div>
                 <p class="text-gray-300 text-sm mt-1">Release Date: ${formattedDate}</p>
             </div>
         `;
 
-            mediaCard.addEventListener('click', function () {
-                fetchSelectedMedia(media.id, mediaType);
-            });
-
-            popularMedia.appendChild(mediaCard);
+        // Event listener to fetch and display selected media details
+        mediaCard.addEventListener('click', function() {
+            fetchSelectedMedia(apiKey, media.id, media.media_type);
         });
+
+        mediaContainer.appendChild(mediaCard);
+    });
+}
+
+// Function to fetch upcoming media
+async function fetchUpcomingMedia(apiKey) {
+    try {
+        const response = await fetch(`https://api.themoviedb.org/3/movie/upcoming?api_key=${apiKey}&language=en-US&page=1`);
+        if (response.ok) {
+            const data = await response.json();
+            const upcomingMovies = data.results.filter(media => new Date(media.release_date) > new Date());
+            displayUpcomingMedia(upcomingMovies);
+        } else {
+            handleError('Failed to fetch upcoming media.');
+        }
+    } catch (error) {
+        handleError('An error occurred while fetching upcoming media:', error);
+    }
+}
+
+// Function to display upcoming media
+function displayUpcomingMedia(mediaList) {
+    const upcomingMedia = document.getElementById('upcomingMedia');
+    if (!upcomingMedia) return;
+
+    upcomingMedia.innerHTML = '';
+
+    mediaList.forEach(media => {
+        const mediaItem = document.createElement('div');
+        mediaItem.classList.add('text-zinc-300', 'mb-2');
+        mediaItem.innerHTML = `<span>${media.title}:</span> <span>${media.release_date}</span>`;
+        upcomingMedia.appendChild(mediaItem);
+    });
+}
+
+// Update pagination controls based on the current category
+function updatePaginationControls(currentPage, totalPages) {
+    const prevPageButton = document.getElementById('prevPage');
+    const nextPageButton = document.getElementById('nextPage');
+    const currentPageSpan = document.getElementById('currentPage');
+
+    if (currentPageSpan) {
+        currentPageSpan.textContent = currentPage;
     }
 
-    function displaySearchResults(results) {
-        const searchResultsContainer = document.getElementById('searchResultsContainer');
-        searchResultsContainer.innerHTML = '';
-        results.forEach(result => {
-            const resultCard = document.createElement('div');
-            resultCard.classList.add('result-card');
-            resultCard.innerHTML = `
-                <img src="https://image.tmdb.org/t/p/w500${result.poster_path}" alt="${result.title || result.name}">
-                <h3>${result.title || result.name}</h3>
-                <p>Release Date: ${result.release_date || result.first_air_date}</p>
-            `;
-            searchResultsContainer.appendChild(resultCard);
-        });
+    if (prevPageButton) {
+        prevPageButton.disabled = currentPage === 1;
+        prevPageButton.onclick = () => changePage(currentPage - 1);
     }
 
-    function displaySearchSuggestions(results) {
-        searchSuggestions.innerHTML = '';
-        results.forEach(result => {
-            const suggestionItem = document.createElement('li');
-            suggestionItem.textContent = result.title || result.name;
-            suggestionItem.addEventListener('click', () => {
-                searchInput.value = suggestionItem.textContent;
-                search();
-                searchSuggestions.classList.add('hidden');
-            });
-            searchSuggestions.appendChild(suggestionItem);
-        });
-        searchSuggestions.classList.remove('hidden');
+    if (nextPageButton) {
+        nextPageButton.disabled = currentPage === totalPages;
+        nextPageButton.onclick = () => changePage(currentPage + 1);
     }
+}
 
-    fetchPopularMedia();
+// Function to change page based on category selection
+function changePage(page) {
+    getApiKey().then(apiKey => {
+        if (apiKey) {
+            const type = document.querySelector('input[name="mediaType"]:checked').value;
+            if (type === 'popular') {
+                fetchPopularMedia(apiKey, page);
+            } else if (type === 'top_rated') {
+                fetchTopRatedMedia(apiKey, page);
+            }
+        }
+    });
+}
+
+// Function to fetch selected media details
+async function fetchSelectedMedia(apiKey, mediaId, mediaType) {
+    try {
+        const response = await fetch(`https://api.themoviedb.org/3/${mediaType}/${mediaId}?api_key=${apiKey}`);
+        if (response.ok) {
+            const media = await response.json();
+            displaySelectedMedia(media, mediaType);
+        } else {
+            handleError('Failed to fetch media details.');
+        }
+    } catch (error) {
+        handleError('An error occurred while fetching media details:', error);
+    }
+}
+
+// Handle media type changes
+document.querySelectorAll('input[name="mediaType"]').forEach(radio => {
+    radio.addEventListener('change', function() {
+        const type = this.value;
+        getApiKey().then(apiKey => {
+            if (apiKey) {
+                if (type === 'popular') {
+                    fetchPopularMedia(apiKey);
+                } else if (type === 'top_rated') {
+                    fetchTopRatedMedia(apiKey);
+                }
+            }
+        });
+    });
+});
+
+// Initial load
+document.addEventListener('DOMContentLoaded', function() {
+    getApiKey().then(apiKey => {
+        if (apiKey) {
+            fetchPopularMedia(apiKey);
+            fetchUpcomingMedia(apiKey);
+        }
+    });
 });
