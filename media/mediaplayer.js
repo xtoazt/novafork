@@ -54,13 +54,16 @@ async function displaySelectedMedia(media, mediaType) {
         const [mediaData, castData] = await Promise.all([mediaDataPromise, castDataPromise]);
 
         const genres = mediaData.genres ? mediaData.genres.map(genre => genre.name).join(', ') : 'Unknown Genre';
-        const runtime = mediaType === 'tv' ? `${mediaData.episode_run_time ? mediaData.episode_run_time[0] : 'N/A'} min per episode` : `${mediaData.runtime || 'N/A'} min`;
+        const runtime = mediaType === 'tv'
+            ? `${mediaData.episode_run_time ? mediaData.episode_run_time[0] : 'N/A'} min per episode`
+            : `${mediaData.runtime || 'N/A'} min`;
         const language = mediaData.original_language ? mediaData.original_language.toUpperCase() : 'Unknown';
 
         const voteAverage = mediaData.vote_average || 0;
         const popularityScore = mediaData.popularity || 0;
         const stars = Math.round(voteAverage / 2);
 
+        // Ratings and popularity
         const ratings = `
             <div class="flex items-center space-x-1 mb-2">
                 <span class="text-yellow-400">${'★'.repeat(stars)}</span>
@@ -72,16 +75,27 @@ async function displaySelectedMedia(media, mediaType) {
             <div class="text-sm text-gray-300 mb-4">Popularity: <span class="font-semibold">${popularityScore.toFixed(1)}</span></div>
         `;
 
-        const castList = castData.cast.slice(0, 5).map(actor =>
-            `<div class="flex-shrink-0 w-32 mx-2">
+        // Full cast list
+        const castList = castData.cast.map(actor => `
+            <div class="flex-shrink-0 w-32 mx-2">
                 <img src="https://image.tmdb.org/t/p/w500${actor.profile_path}" alt="${actor.name}" class="w-full h-32 rounded-full object-cover shadow-md">
                 <div class="mt-2 text-center">
                     <p class="text-white font-semibold">${actor.name}</p>
                     <p class="text-gray-400 text-sm">${actor.character}</p>
                 </div>
-            </div>`
-        ).join('');
+            </div>
+        `).join('');
 
+        // Cast List Section
+        const castListSection = `
+            <div class="mt-4">
+                <div id="castListContainer" class="flex overflow-x-scroll space-x-4">
+                    ${castList}
+                </div>
+            </div>
+        `;
+
+        // Season and episode section for TV shows
         const seasonSection = mediaType === 'tv' ? `
             <div class="mt-4">
                 <label for="seasonSelect" class="block text-xs font-medium text-gray-300">Select Season:</label>
@@ -98,6 +112,7 @@ async function displaySelectedMedia(media, mediaType) {
             </div>
         ` : '';
 
+        // Fetch template and replace placeholders
         const templateResponse = await fetch('media/mediaTemplate.html');
         if (!templateResponse.ok) throw new Error('Network response was not ok');
         const template = await templateResponse.text();
@@ -114,7 +129,7 @@ async function displaySelectedMedia(media, mediaType) {
             .replace(/{{genres}}/g, `Genres: ${genres}`)
             .replace(/{{runtime}}/g, `Runtime: ${runtime}`)
             .replace(/{{language}}/g, `Language: ${language}`)
-            .replace(/{{cast_list}}/g, castList)
+            .replace(/{{cast_list}}/g, castListSection)
             .replace(/{{quality}}/g, 'HD'); // Placeholder for streaming quality
 
         selectedMovie.innerHTML = populatedHTML;
@@ -155,6 +170,7 @@ async function displaySelectedMedia(media, mediaType) {
             videoPlayer.classList.remove('hidden');
             movieInfo.classList.add('hidden');
         }
+
 
         async function getTvEmbedUrl(mediaId, seasonNumber, episodeNumber, provider, apiKey) {
             switch (provider) {
