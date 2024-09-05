@@ -30,16 +30,22 @@ a:hover {
     gap: 2rem;
     padding: 1.5rem;
     transition: opacity 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease;
-    background: linear-gradient(135deg, #282843, #1a1a3c);
-    box-shadow: 0 8px 16px rgba(138, 43, 226, 0.4);
+    background: linear-gradient(135deg,
+    rgba(0, 0, 0, 0.96) 0%,
+    rgba(30, 30, 60, 0.8) 25%,
+    rgba(60, 52, 129, 0.5) 50%,
+    rgba(80, 70, 140, 0.4) 75%,
+    rgba(0, 0, 0, 0.9) 100%
+    );
+    box-shadow: 0 8px 16px rgba(194, 99, 228, 0.4), 0 4px 8px rgba(194, 99, 228, 0.4);
     border-radius: 0.75rem;
     position: relative;
 }
 
 #selectedMovie:hover {
     opacity: 0.9;
-    transform: translateY(-5px);
-    box-shadow: 0 12px 24px rgba(138, 43, 226, 0.6); /* Purple glow on hover */
+    transform: translateY(-5px) rotateX(1deg);
+    box-shadow: 0 12px 24px rgba(30, 20, 80, 0.6), 0 6px 12px rgba(0, 0, 0, 0.4);
 }
 
 /* Utility classes */
@@ -104,8 +110,8 @@ button {
 }
 
 button:hover {
-    background-color: #7a3cc9;
-    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3), 0 0 15px rgba(155, 93, 229, 0.6); /* Adds a glow effect */
+    background-color: #7733cd;
+    box-shadow: 0 6px 12px rgba(48, 38, 38, 0.91), 0 0 15px rgba(194, 99, 228, 0.4); /* Adds a glow effect */
     opacity: 0.9;
     transform: translateY(-2px);
 }
