@@ -123,11 +123,12 @@ document.addEventListener('DOMContentLoaded', async function () {
         let tvPage = page;
 
         try {
-            if (selectedCategory === 'animation') {
+            if (selectedCategory === 'latest') {
+                url = `https://api.themoviedb.org/3/trending/all/week?api_key=${API_KEY}&page=${page}`;
+            } else if (selectedCategory === 'animation') {
                 const genreId = 16;
                 const movieUrl = `https://api.themoviedb.org/3/discover/movie?api_key=${API_KEY}&with_genres=${genreId}&page=${moviePage}&language=en-US`;
                 const tvUrl = `https://api.themoviedb.org/3/discover/tv?api_key=${API_KEY}&with_genres=${genreId}&page=${tvPage}&language=en-US`;
-
                 const [movieResponse, tvResponse] = await Promise.all([fetch(movieUrl), fetch(tvUrl)]);
                 if (movieResponse.ok && tvResponse.ok) {
                     const [movieData, tvData] = await Promise.all([movieResponse.json(), tvResponse.json()]);
@@ -142,7 +143,6 @@ document.addEventListener('DOMContentLoaded', async function () {
                 const genreId = 80;
                 const movieUrl = `https://api.themoviedb.org/3/discover/movie?api_key=${API_KEY}&with_genres=${genreId}&page=${moviePage}&language=en-US`;
                 const tvUrl = `https://api.themoviedb.org/3/discover/tv?api_key=${API_KEY}&with_genres=${genreId}&page=${tvPage}&language=en-US`;
-
                 const [movieResponse, tvResponse] = await Promise.all([fetch(movieUrl), fetch(tvUrl)]);
                 if (movieResponse.ok && tvResponse.ok) {
                     const [movieData, tvData] = await Promise.all([movieResponse.json(), tvResponse.json()]);
@@ -157,7 +157,6 @@ document.addEventListener('DOMContentLoaded', async function () {
                 const genreId = 27;
                 const movieUrl = `https://api.themoviedb.org/3/discover/movie?api_key=${API_KEY}&with_genres=${genreId}&page=${moviePage}&language=en-US`;
                 const tvUrl = `https://api.themoviedb.org/3/discover/tv?api_key=${API_KEY}&with_genres=${genreId}&page=${tvPage}&language=en-US`;
-
                 const [movieResponse, tvResponse] = await Promise.all([fetch(movieUrl), fetch(tvUrl)]);
                 if (movieResponse.ok && tvResponse.ok) {
                     const [movieData, tvData] = await Promise.all([movieResponse.json(), tvResponse.json()]);
@@ -172,7 +171,6 @@ document.addEventListener('DOMContentLoaded', async function () {
                 const genreId = 28;
                 const movieUrl = `https://api.themoviedb.org/3/discover/movie?api_key=${API_KEY}&with_genres=${genreId}&page=${moviePage}&language=en-US`;
                 const tvUrl = `https://api.themoviedb.org/3/discover/tv?api_key=${API_KEY}&with_genres=${genreId}&page=${tvPage}&language=en-US`;
-
                 const [movieResponse, tvResponse] = await Promise.all([fetch(movieUrl), fetch(tvUrl)]);
                 if (movieResponse.ok && tvResponse.ok) {
                     const [movieData, tvData] = await Promise.all([movieResponse.json(), tvResponse.json()]);
@@ -187,7 +185,6 @@ document.addEventListener('DOMContentLoaded', async function () {
                 const genreId = 18;
                 const movieUrl = `https://api.themoviedb.org/3/discover/movie?api_key=${API_KEY}&with_genres=${genreId}&page=${moviePage}&language=en-US`;
                 const tvUrl = `https://api.themoviedb.org/3/discover/tv?api_key=${API_KEY}&with_genres=${genreId}&page=${tvPage}&language=en-US`;
-
                 const [movieResponse, tvResponse] = await Promise.all([fetch(movieUrl), fetch(tvUrl)]);
                 if (movieResponse.ok && tvResponse.ok) {
                     const [movieData, tvData] = await Promise.all([movieResponse.json(), tvResponse.json()]);
@@ -202,7 +199,6 @@ document.addEventListener('DOMContentLoaded', async function () {
                 const genreId = 878;
                 const movieUrl = `https://api.themoviedb.org/3/discover/movie?api_key=${API_KEY}&with_genres=${genreId}&page=${moviePage}&language=en-US`;
                 const tvUrl = `https://api.themoviedb.org/3/discover/tv?api_key=${API_KEY}&with_genres=${genreId}&page=${tvPage}&language=en-US`;
-
                 const [movieResponse, tvResponse] = await Promise.all([fetch(movieUrl), fetch(tvUrl)]);
                 if (movieResponse.ok && tvResponse.ok) {
                     const [movieData, tvData] = await Promise.all([movieResponse.json(), tvResponse.json()]);
@@ -234,6 +230,7 @@ document.addEventListener('DOMContentLoaded', async function () {
             handleError(`An error occurred while fetching ${selectedCategory} media.`, error);
         }
     }
+
 
 
 
