@@ -23,43 +23,49 @@ a:hover {
     transform: translateY(-2px);
 }
 
-/* Container styles with lighting and hover effect */
+/* Container styles matching the poster section */
 #selectedMovie {
     display: flex;
     flex-direction: column;
-    gap: 2rem;
-    padding: 1.5rem;
-    transition: opacity 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease;
-    background: linear-gradient(135deg,
-    rgba(0, 0, 0, 0.96) 0%,
-    rgba(30, 30, 60, 0.8) 25%,
-    rgba(60, 52, 129, 0.5) 50%,
-    rgba(80, 70, 140, 0.4) 75%,
-    rgba(0, 0, 0, 0.9) 100%
-    );
-    box-shadow: 0 8px 16px rgba(194, 99, 228, 0.4), 0 4px 8px rgba(194, 99, 228, 0.4);
-    border-radius: 0.75rem;
+    gap: 1.5rem;
+    padding: 1.5rem; /* Adjusted padding for consistency */
+    background: rgba(31, 41, 55, 0.8); /* Dark background with opacity similar to bg-gray-900 with 80% opacity */
+    border-radius: 0.75rem; /* Rounded corners to match poster's rounded-lg */
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.5), 0 4px 8px rgba(0, 0, 0, 0.3); /* Shadow to match shadow-2xl */
     position: relative;
+    overflow: hidden; /* Ensures no overflow of child elements */
+    border: 2px solid rgba(31, 41, 55, 0.6); /* Border to match the poster border */
 }
 
+/* Hover effect for container */
 #selectedMovie:hover {
-    opacity: 0.9;
-    transform: translateY(-5px) rotateX(1deg);
-    box-shadow: 0 12px 24px rgba(30, 20, 80, 0.6), 0 6px 12px rgba(0, 0, 0, 0.4);
+    opacity: 1; /* Full opacity on hover */
+    transform: translateY(-10px); /* Lift effect on hover */
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.6), 0 6px 12px rgba(0, 0, 0, 0.4); /* Enhanced shadow for hover state */
 }
 
 /* Utility classes */
 .rounded {
-    border-radius: 0.75rem;
+    border-radius: 0.75rem; /* Matches the container’s border radius */
 }
 
 .hover\:scale-105:hover {
-    transform: scale(1.05);
+    transform: scale(1.05); /* Maintains the scaling effect */
     transition: transform 0.3s ease-in-out;
 }
 
 .focus\:outline-none:focus {
-    outline: none;
+    outline: none; /* Removes outline on focus */
+}
+
+
+.hover\:scale-105:hover {
+    transform: scale(1.05); /* Maintains the scaling effect */
+    transition: transform 0.3s ease-in-out;
+}
+
+.focus\:outline-none:focus {
+    outline: none; /* Removes outline on focus */
 }
 
 .focus\:ring-2:focus {
