@@ -109,7 +109,6 @@ document.addEventListener('DOMContentLoaded', async function () {
         }
     }
 
-    // Function to fetch and display media based on the selected category
     async function fetchPopularMedia(page = 1) {
         const selectedCategory = categorySelect.value;
         let url = '';
@@ -125,7 +124,7 @@ document.addEventListener('DOMContentLoaded', async function () {
                 const [movieResponse, tvResponse] = await Promise.all([fetch(movieUrl), fetch(tvUrl)]);
                 if (movieResponse.ok && tvResponse.ok) {
                     const [movieData, tvData] = await Promise.all([movieResponse.json(), tvResponse.json()]);
-                    const combinedResults = [...movieData.results, ...tvData.results].slice(0, 12); // Limit to 12 results
+                    const combinedResults = [...movieData.results, ...tvData.results].slice(0, 12);
                     const totalPages = Math.max(movieData.total_pages, tvData.total_pages);
                     displayPopularMedia(combinedResults);
                     updatePaginationControls(page, totalPages);
@@ -140,7 +139,7 @@ document.addEventListener('DOMContentLoaded', async function () {
                 const [movieResponse, tvResponse] = await Promise.all([fetch(movieUrl), fetch(tvUrl)]);
                 if (movieResponse.ok && tvResponse.ok) {
                     const [movieData, tvData] = await Promise.all([movieResponse.json(), tvResponse.json()]);
-                    const combinedResults = [...movieData.results, ...tvData.results].slice(0, 12); // Limit to 12 results
+                    const combinedResults = [...movieData.results, ...tvData.results].slice(0, 12);
                     const totalPages = Math.max(movieData.total_pages, tvData.total_pages);
                     displayPopularMedia(combinedResults);
                     updatePaginationControls(page, totalPages);
@@ -155,7 +154,7 @@ document.addEventListener('DOMContentLoaded', async function () {
                 const [movieResponse, tvResponse] = await Promise.all([fetch(movieUrl), fetch(tvUrl)]);
                 if (movieResponse.ok && tvResponse.ok) {
                     const [movieData, tvData] = await Promise.all([movieResponse.json(), tvResponse.json()]);
-                    const combinedResults = [...movieData.results, ...tvData.results].slice(0, 12); // Limit to 12 results
+                    const combinedResults = [...movieData.results, ...tvData.results].slice(0, 12);
                     const totalPages = Math.max(movieData.total_pages, tvData.total_pages);
                     displayPopularMedia(combinedResults);
                     updatePaginationControls(page, totalPages);
@@ -172,7 +171,7 @@ document.addEventListener('DOMContentLoaded', async function () {
                 const response = await fetch(url);
                 if (response.ok) {
                     const data = await response.json();
-                    const results = data.results.slice(0, 12); // Limit to 12 results
+                    const results = data.results.slice(0, 12);
                     displayPopularMedia(results);
                     updatePaginationControls(data.page, data.total_pages);
                 } else {
@@ -272,21 +271,21 @@ document.addEventListener('DOMContentLoaded', async function () {
             const mediaType = media.media_type || (media.title ? 'movie' : 'tv');
 
             mediaCard.innerHTML = `
-            <div class="relative w-full h-64 overflow-hidden rounded-lg mb-4">
-                <img src="https://image.tmdb.org/t/p/w300${media.poster_path}" alt="${media.title || media.name}" class="w-full h-full object-cover rounded-lg transition-transform duration-300 group-hover:scale-110">
-                <div class="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-50"></div>
-            </div>
-            <div class="flex-grow w-full">
-                <h3 class="text-lg font-semibold text-white truncate">${media.title || media.name}</h3>
-                <p class="text-gray-400 text-sm mt-2">${mediaType === 'movie' ? '🎬 Movie' : mediaType === 'tv' ? '📺 TV Show' : '📽 Animation'}</p>
-                <p class="text-gray-400 text-sm mt-1">Genres: ${genreNames}</p>
-                <div class="flex items-center mt-2">
-                    <span class="text-yellow-400 text-base">${ratingStars}</span>
-                    <span class="text-gray-300 text-sm ml-2">${media.vote_average.toFixed(1)}/10</span>
+                <div class="relative w-full h-64 overflow-hidden rounded-lg mb-4">
+                    <img src="https://image.tmdb.org/t/p/w300${media.poster_path}" alt="${media.title || media.name}" class="w-full h-full object-cover rounded-lg transition-transform duration-300 group-hover:scale-110">
+                    <div class="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-50"></div>
                 </div>
-                <p class="text-gray-300 text-sm mt-1">Release Date: ${formattedDate}</p>
-            </div>
-        `;
+                <div class="flex-grow w-full">
+                    <h3 class="text-lg font-semibold text-white truncate">${media.title || media.name}</h3>
+                    <p class="text-gray-400 text-sm mt-2">${mediaType === 'movie' ? '🎬 Movie' : mediaType === 'tv' ? '📺 TV Show' : '📽 Animation'}</p>
+                    <p class="text-gray-400 text-sm mt-1">Genres: ${genreNames}</p>
+                    <div class="flex items-center mt-2">
+                        <span class="text-yellow-400 text-base">${ratingStars}</span>
+                        <span class="text-gray-300 text-sm ml-2">${media.vote_average.toFixed(1)}/10</span>
+                    </div>
+                    <p class="text-gray-300 text-sm mt-1">Release Date: ${formattedDate}</p>
+                </div>
+            `;
 
             mediaCard.addEventListener('click', function () {
                 fetchSelectedMedia(media.id, mediaType);
@@ -295,7 +294,6 @@ document.addEventListener('DOMContentLoaded', async function () {
             popularMedia.appendChild(mediaCard);
         });
     }
-
 
     function displaySearchResults(results) {
         const searchResultsContainer = document.getElementById('searchResultsContainer');
@@ -327,6 +325,16 @@ document.addEventListener('DOMContentLoaded', async function () {
         searchSuggestions.classList.remove('hidden');
     }
 
+    async function loadMediaFromUrlParams() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const mediaId = urlParams.get('mediaId');
+        const mediaType = urlParams.get('mediaType');
+
+        if (mediaId && mediaType) {
+            await fetchSelectedMedia(mediaId, mediaType);
+        }
+    }
+
     if (categorySelect) {
         categorySelect.addEventListener('change', function () {
             fetchPopularMedia();
@@ -334,4 +342,5 @@ document.addEventListener('DOMContentLoaded', async function () {
     }
 
     fetchPopularMedia();
+    loadMediaFromUrlParams();
 });
