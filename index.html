@@ -106,9 +106,6 @@
             <div>
                 Made with <span id="homeHeartIcon" class="cursor-pointer text-red-500 hover:text-red-600 transition duration-200 ease-in-out">♥</span> by Ambrosial and improved by fanlim. Latest version: 28/08/24
             </div>
-            <div class="mt-4">
-                <a href="disclaimer.html" class="text-blue-400 hover:underline">Read our Disclaimer</a>
-            </div>
         </footer>
 
         <div class="text-center text-sm text-gray-400 mt-4">
@@ -117,12 +114,33 @@
         <div class="text-center text-sm text-gray-400 mt-4">
             Please note: The media player on this site does not control how media appears. It only provides duration information to third-party embed players.
         </div>
-        <div id="welcomeBanner" class="fixed bottom-0 left-0 right-0 bg-gray-800 text-white p-4 text-center rounded-t-lg shadow-lg">
-            <button id="closeBanner" class="text-gray-300 hover:text-white float-right mt-1 mr-1 focus:outline-none">×</button>
-            <p>Welcome to NovaFork! Thanks for visiting our website. Enjoy endless hours of free content!</p>
-        </div>
     </div>
 </div>
+
+<!-- Disclaimer Button -->
+<button id="disclaimerButton" class="fixed bottom-4 right-4 bg-purple-600 text-white py-3 px-6 rounded-full shadow-lg hover:bg-purple-700 transition duration-300 ease-in-out flex items-center space-x-2">
+    <span class="font-semibold">Disclaimer</span>
+    <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+    </svg>
+</button>
+
+<!-- Disclaimer Popup -->
+<div id="disclaimerContent" class="fixed bottom-0 right-0 w-full md:w-1/3 bg-gray-900 text-white p-6 rounded-t-lg shadow-lg transform translate-y-full transition-transform duration-300 ease-in-out hidden">
+    <button id="closeDisclaimer" class="absolute top-2 right-2 text-gray-400 hover:text-white focus:outline-none">
+        <svg class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+    </button>
+    <h2 class="text-xl font-bold mb-4">Disclaimer</h2>
+    <p class="text-sm text-gray-400 mb-4">
+        NovaFork doesn't store files, but provides links to external services. Legal issues should be discussed with file providers and hosts. The files provided by video providers are not covered by Nova-Fork.
+    </p>
+    <p class="text-sm text-gray-400">
+        Please note: The media player on this site does not control how media appears. It only provides duration information to third-party embed players.
+    </p>
+</div>
+
 
 <!-- Include the updated media player script -->
 <script src="media/mediaplayer/mediaplayer.js"></script>
@@ -132,5 +150,7 @@
 <script type="module" src="index.js"></script>
 <!-- Include the media hider script -->
 <script src="media/mediahider/mediahider.js"></script>
+<!-- Include the disclaimer button script -->
+<script src="disclaimer/disclaimerbutton.js"></script>
 </body>
 </html>

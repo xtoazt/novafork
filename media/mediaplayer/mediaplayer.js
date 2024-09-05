@@ -209,6 +209,8 @@ async function displaySelectedMedia(media, mediaType) {
                     return `https://vidlink.pro/tv/${mediaId}/${seasonNumber}/${episodeNumber}?primaryColor=B20710&secondaryColor=170000`;
                 case 'vidsrcnl':
                     return `https://player.vidsrc.nl/embed/tv/${mediaId}/${seasonNumber}/${episodeNumber}`; // New URL for VidsrcNL
+                case 'vidsrc.rip':
+                    return `https://vidsrc.rip/embed/tv/${mediaId}/${seasonNumber}/${episodeNumber}`; // New URL for Vidsrc.rip
                 default:
                     throw new Error('Provider not recognized.');
             }
@@ -245,6 +247,8 @@ async function displaySelectedMedia(media, mediaType) {
                     return `https://vidlink.pro/movie/${mediaId}?primaryColor=B20710&secondaryColor=170000`;
                 case 'vidsrcnl':
                     return `https://player.vidsrc.nl/embed/movie/${mediaId}`;
+                case 'vidsrc.rip':
+                    return `https://vidsrc.rip/embed/movie/${mediaId}`;
                 case 'trailer':
                     return await fetchTrailer(mediaId, 'movie', apiKey);
                 case 'moviesapi':
@@ -253,6 +257,7 @@ async function displaySelectedMedia(media, mediaType) {
                     throw new Error('Provider not recognized.');
             }
         }
+
 
         async function updateEpisodes() {
             const seasonNumber = seasonSelect ? seasonSelect.value : '';
