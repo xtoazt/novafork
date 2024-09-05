@@ -97,9 +97,16 @@ document.addEventListener('DOMContentLoaded', async function () {
         const searchInputValue = searchInput.value;
         const selectedCategory = categorySelect.value;
         const response = await fetch(`https://api.themoviedb.org/3/search/${selectedCategory}?api_key=${API_KEY}&query=${searchInputValue}`);
+
         if (response.ok) {
             const data = await response.json();
+
+            // Display search results in the search results container
             displaySearchResults(data.results);
+
+            // Also display search results in the popular media area
+            displayPopularMedia(data.results);
+
             searchSuggestions.classList.add('hidden');
 
             const newUrl = `${window.location.origin}${window.location.pathname}?query=${encodeURIComponent(searchInputValue)}&category=${selectedCategory}`;
