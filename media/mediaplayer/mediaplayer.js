@@ -177,7 +177,7 @@ async function displaySelectedMedia(media, mediaType) {
                 case 'vidsrc':
                     return `https://vidsrc.cc/v2/embed/tv/${mediaId}/${seasonNumber}/${episodeNumber}`;
                 case 'vidsrcpro':
-                    return `https://vidsrc.pro/embed/tv/${mediaId}/${seasonNumber}/${episodeNumber}`; // Existing URL
+                    return `https://vidsrc.pro/embed/tv/${mediaId}/${seasonNumber}/${episodeNumber}`;
                 case 'vidsrc2':
                     return `https://vidsrc2.to/embed/tv/${mediaId}?season=${seasonNumber}&episode=${episodeNumber}`;
                 case 'vidsrcxyz':
@@ -204,9 +204,11 @@ async function displaySelectedMedia(media, mediaType) {
                 case 'trailer':
                     return await fetchTrailer(mediaId, 'tv', apiKey);
                 case 'moviesapi':
-                    return `https://moviesapi.club/tv/${mediaId}/${seasonNumber}/${episodeNumber}`; // Existing URL
+                    return `https://moviesapi.club/tv/${mediaId}/${seasonNumber}/${episodeNumber}`;
                 case 'vidlink':
-                    return `https://vidlink.pro/tv/${mediaId}/${seasonNumber}/${episodeNumber}`; // New URL for VidLink
+                    return `https://vidlink.pro/tv/${mediaId}/${seasonNumber}/${episodeNumber}?primaryColor=B20710&secondaryColor=170000`;
+                case 'vidsrcnl':
+                    return `https://player.vidsrc.nl/embed/tv/${mediaId}/${seasonNumber}/${episodeNumber}`; // New URL for VidsrcNL
                 default:
                     throw new Error('Provider not recognized.');
             }
@@ -238,19 +240,19 @@ async function displaySelectedMedia(media, mediaType) {
                     const movieSlug = media.title.replace(/\s+/g, '-');
                     return `https://embed.anicdn.top/v/${movieSlug}-dub/1.html`;
                 case 'vidsrcpro':
-                    return `https://vidsrc.pro/embed/movie/${mediaId}`; // Existing URL
+                    return `https://vidsrc.pro/embed/movie/${mediaId}`;
                 case 'vidlink':
-                    return `https://vidlink.pro/movie/${mediaId}`; // New URL for VidLink
+                    return `https://vidlink.pro/movie/${mediaId}?primaryColor=B20710&secondaryColor=170000`;
+                case 'vidsrcnl':
+                    return `https://player.vidsrc.nl/embed/movie/${mediaId}`;
                 case 'trailer':
                     return await fetchTrailer(mediaId, 'movie', apiKey);
                 case 'moviesapi':
-                    return `https://moviesapi.club/movie/${mediaId}`; // Existing URL
+                    return `https://moviesapi.club/movie/${mediaId}`;
                 default:
                     throw new Error('Provider not recognized.');
             }
         }
-
-
 
         async function updateEpisodes() {
             const seasonNumber = seasonSelect ? seasonSelect.value : '';
