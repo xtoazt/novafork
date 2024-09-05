@@ -7,7 +7,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
 
     popularMediaSection.style.display = isHidden ? 'none' : 'grid';
-    toggleButton.textContent = isHidden ? 'Show Popular Media' : 'Hide Popular Media';
+    toggleButton.textContent = isHidden ? 'Show Trending Media' : 'Hide Trending Media';
 
 
     toggleButton.addEventListener('click', function () {
@@ -15,7 +15,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
 
         popularMediaSection.style.display = isCurrentlyHidden ? 'grid' : 'none';
-        toggleButton.textContent = isCurrentlyHidden ? 'Hide Popular Media' : 'Show Popular Media';
+        toggleButton.textContent = isCurrentlyHidden ? 'Hide Trending Media' : 'Show Trending Media';
 
 
         localStorage.setItem('popularMediaHidden', !isCurrentlyHidden);
