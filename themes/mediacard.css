@@ -1,9 +1,8 @@
-/* General Styles for Media Cards */
 .media-card {
-    background-color: rgba(30, 30, 30, 0.9); /* Darker background for better contrast */
+    background-color: rgba(30, 30, 30, 0.9);
     padding: 1.5rem;
-    border-radius: 1.25rem; /* Slightly more rounded corners */
-    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.6); /* Enhanced shadow for depth */
+    border-radius: 1.25rem;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.6);
     cursor: pointer;
     transition: transform 0.3s ease, box-shadow 0.3s ease, background-color 0.3s ease, filter 0.3s ease;
     position: relative;
@@ -12,92 +11,69 @@
     align-items: start;
     overflow: hidden;
     text-align: left;
-    backdrop-filter: blur(10px); /* Slightly less blur for subtlety */
-    background: linear-gradient(135deg, rgba(30, 30, 30, 0.9), rgba(0, 0, 0, 0.6)); /* Gradient background for depth */
+    backdrop-filter: blur(10px);
+    background: linear-gradient(135deg, rgba(30, 30, 30, 0.9), rgba(0, 0, 0, 0.6));
 }
 
 .media-card:hover {
-    transform: scale(1.05) rotateY(2deg); /* Subtle rotation and scaling */
-    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.7), 0 0 20px rgba(138, 43, 226, 0.6); /* Enhanced shadow and glow */
-    background-color: rgba(35, 35, 35, 0.95); /* Slightly less transparent on hover */
-}
-
-.media-card::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    border-radius: 1.25rem; /* Adjusted to match card border radius */
-    background: linear-gradient(45deg, rgba(255, 255, 255, 0.1), transparent); /* Softer gradient */
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity 0.3s ease, transform 0.3s ease;
-}
-
-.media-card:hover::before {
-    opacity: 1;
-    transform: scale(1.05); /* Slightly enlarged glowing border on hover */
-    box-shadow: 0 0 25px 8px rgba(255, 255, 255, 0.3); /* Subtle glow effect */
+    transform: scale(1.05) rotateY(2deg);
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.7), 0 0 20px rgba(138, 43, 226, 0.6);
+    background-color: rgba(35, 35, 35, 0.95);
 }
 
 .media-card img {
     width: 100%;
-    height: 20rem; /* Adjusted height for better proportion */
+    height: 16rem;
     object-fit: cover;
-    border-radius: 1.25rem; /* Matching border radius */
+    border-radius: 1.25rem;
     transition: transform 0.3s ease, filter 0.3s ease, box-shadow 0.3s ease;
 }
 
 .media-card img:hover {
-    transform: scale(1.1) rotate(2deg); /* Slight rotation with scaling */
-    filter: brightness(1.2) contrast(1.2); /* Enhanced brightness and contrast */
-    box-shadow: 0 0 20px rgba(255, 255, 255, 0.4); /* More pronounced glow effect on image hover */
-}
-
-.media-card .overlay {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: linear-gradient(to top, rgba(0, 0, 0, 0.7), transparent); /* Slightly lighter overlay */
-    opacity: 0.6;
-    transition: opacity 0.3s ease;
-}
-
-.media-card:hover .overlay {
-    opacity: 0.75; /* Slightly darkens the overlay on hover */
+    transform: scale(1.1);
+    filter: brightness(1.3) contrast(1.3);
+    box-shadow: 0 0 20px rgba(255, 255, 255, 0.5);
 }
 
 .media-card .title {
-    font-size: 1.6rem; /* Increased font size for better readability */
-    font-weight: 700; /* Bold text for emphasis */
+    font-size: 1.6rem;
+    font-weight: 700;
     color: #ffffff;
-    margin-bottom: 0.5rem;
-    text-overflow: ellipsis;
-    overflow: hidden;
-    white-space: nowrap;
-    transition: color 0.3s ease, transform 0.3s ease;
+    margin-top: 0.5rem;
     position: relative;
     z-index: 2;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
 }
 
 .media-card:hover .title {
-    color: #ffeb3b; /* Bright yellow for emphasis */
-    transform: scale(1.1); /* Slightly enlarges the text on hover */
+    color: #ff5722;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.9);
+    transform: scale(1.05);
 }
 
-.media-card .info {
-    color: #b0b0b0;
-    font-size: 1rem; /* Increased font size for better readability */
+.media-card .info-section {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 1rem;
+}
+
+.media-card .author,
+.media-card .type {
+    font-size: 1rem;
     margin-bottom: 0.5rem;
-    transition: color 0.3s ease;
+    color: #d0d0d0;
 }
 
-.media-card:hover .info {
-    color: #c0c0c0; /* Lightens the info text on hover */
+.media-card .author::before {
+    content: 'Author: ';
+    font-weight: bold;
+    color: #ffffff;
+}
+
+.media-card .type::before {
+    content: 'Type: ';
+    font-weight: bold;
+    color: #ffffff;
 }
 
 .media-card .rating {
@@ -105,24 +81,47 @@
     align-items: center;
     color: #f5c518;
     transition: color 0.3s ease;
+    margin-bottom: 1rem;
 }
 
 .media-card .rating span {
-    font-size: 1.3rem; /* Slightly larger rating stars */
+    font-size: 1.3rem;
 }
 
 .media-card .rating .vote-average {
     color: #d0d0d0;
-    font-size: 1rem; /* Increased font size */
+    font-size: 1.1rem;
     margin-left: 0.5rem;
 }
 
 .media-card .release-date {
     color: #d0d0d0;
-    font-size: 1rem; /* Increased font size */
+    font-size: 1.1rem;
+    margin-top: 0.5rem;
     transition: color 0.3s ease;
 }
 
 .media-card:hover .release-date {
-    color: #e0e0e0; /* Lightens the release date text on hover */
+    color: #e0e0e0;
+}
+
+.media-card .genre {
+    font-size: 0.9rem;
+    color: #d0d0d0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.media-card .genre span {
+    background-color: rgba(255, 255, 255, 0.2);
+    padding: 0.25rem 0.5rem;
+    border-radius: 0.5rem;
+}
+
+.media-card .genre::before {
+    content: 'Genre: ';
+    font-weight: bold;
+    color: #ffffff;
+    margin-right: 0.5rem;
 }
