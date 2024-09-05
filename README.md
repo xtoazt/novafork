@@ -1,48 +1,69 @@
 
-
 <p align="center">
   <a href="https://github.com/ambr0sial/nova"><img src="logo.png" alt="Nova" width="128" /></a>
 </p>
 <p align="center">
-  Nova is a free streaming platform.
+  <strong>Nova</strong> – Your Gateway to Free Streaming
 </p>
 
-> **IMPORTANT**  
-> **NEW UPDATEE <33**
+> **UPDATE ALERT**  
+> **NEW FEATURES AVAILABLE!**
 
 # Nova ☄
 
-Nova is a dynamic streaming platform that lets you explore and watch a variety of movies. This project is a constantly updated fork of the original Nova, incorporating new ideas and features to keep the experience fresh and engaging. It utilizes The Movie Database (TMDb) API and the SuperEmbed/FREmbed API to fetch movie information and offers a user-friendly interface for everyone.
+## Overview
+
+Nova is a versatile streaming platform designed to bring you a diverse collection of movies right to your fingertips. Whether you're into the latest blockbusters or timeless classics, Nova has something for everyone.
+
+## Actively Maintained Fork
+
+This project is an actively maintained fork of the original Nova. It continually evolves with new ideas and features, ensuring that your viewing experience remains fresh and engaging.
+
+## API Integrations
+
+Nova seamlessly integrates with two key APIs:
+
+- **The Movie Database (TMDb) API**: Provides detailed movie information, including summaries, ratings, and more.
+- **vidsrc.pro API**: Allows you to stream any movie you want, with a wide range of options to choose from.
+
+## User-Friendly Interface
+
+Nova is designed with the user in mind. Its intuitive interface makes it easy to navigate through different genres, discover new movies, and start watching with just a few clicks.
 
 ## Getting Started ✨
 
 ### Online Usage 🎉
 
+Explore Nova online with ease—no setup required. Just dive in and start watching!
+
 ### Offline Usage 💾
+
+To use Nova locally, follow these steps:
 
 1. Clone the repository:
 
    ```bash
-   git clone https://github.com/fanlimgames/sussy-code
+   git clone https://github.com/fanlimgames/novafork
    ```
 
-2. Navigate to the project folder:
+2. Enter the project directory:
 
    ```bash
-   cd nova
+   cd novafork
    ```
 
 ## Hosting 🌐
 
-Feel free to host this website yourself! Just provide proper credit (a link to this repository or mention of my username is appreciated).
+You’re welcome to host Nova on your own server! Just be sure to give proper credit, either by linking to this repository or mentioning the original creators.
 
 ## Community & Support 💬
 
-Join our community on Discord to get updates, share feedback, or get support:
-- [Join the Nova Discord Server](https://discord.gg/YK62kpT5ex)
+Join our Discord community to stay updated, give feedback, or ask for help:
+- [Nova Discord Server](https://discord.gg/YK62kpT5ex)
 
 ## Contributing ❤
 
-Contributions are always welcome! Feel free to open pull requests.
+Contributions are greatly appreciated! If you’d like to help improve Nova, feel free to submit a pull request.
 
-#### Made with ❤ by ambr0sial and fanlim.
+#### Created with ❤ by ambr0sial and fanlim.
+
