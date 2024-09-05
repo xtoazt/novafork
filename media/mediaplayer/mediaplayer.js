@@ -177,7 +177,7 @@ async function displaySelectedMedia(media, mediaType) {
                 case 'vidsrc':
                     return `https://vidsrc.cc/v2/embed/tv/${mediaId}/${seasonNumber}/${episodeNumber}`;
                 case 'vidsrcpro':
-                    return `https://vidsrc.pro/embed/tv/${mediaId}/${seasonNumber}/${episodeNumber}`; // New URL for VidSrcPro
+                    return `https://vidsrc.pro/embed/tv/${mediaId}/${seasonNumber}/${episodeNumber}`; // Existing URL
                 case 'vidsrc2':
                     return `https://vidsrc2.to/embed/tv/${mediaId}?season=${seasonNumber}&episode=${episodeNumber}`;
                 case 'vidsrcxyz':
@@ -204,12 +204,13 @@ async function displaySelectedMedia(media, mediaType) {
                 case 'trailer':
                     return await fetchTrailer(mediaId, 'tv', apiKey);
                 case 'moviesapi':
-                    return `https://moviesapi.club/tv/${mediaId}/${seasonNumber}/${episodeNumber}`; // New provider URL
+                    return `https://moviesapi.club/tv/${mediaId}/${seasonNumber}/${episodeNumber}`; // Existing URL
+                case 'vidlink':
+                    return `https://vidlink.pro/tv/${mediaId}/${seasonNumber}/${episodeNumber}`; // New URL for VidLink
                 default:
                     throw new Error('Provider not recognized.');
             }
         }
-
 
         async function getMovieEmbedUrl(mediaId, provider, apiKey) {
             switch (provider) {
@@ -237,15 +238,18 @@ async function displaySelectedMedia(media, mediaType) {
                     const movieSlug = media.title.replace(/\s+/g, '-');
                     return `https://embed.anicdn.top/v/${movieSlug}-dub/1.html`;
                 case 'vidsrcpro':
-                    return `https://vidsrc.pro/embed/movie/${mediaId}`; // New provider URL
+                    return `https://vidsrc.pro/embed/movie/${mediaId}`; // Existing URL
+                case 'vidlink':
+                    return `https://vidlink.pro/movie/${mediaId}`; // New URL for VidLink
                 case 'trailer':
                     return await fetchTrailer(mediaId, 'movie', apiKey);
                 case 'moviesapi':
-                    return `https://moviesapi.club/movie/${mediaId}`; // Existing provider URL
+                    return `https://moviesapi.club/movie/${mediaId}`; // Existing URL
                 default:
                     throw new Error('Provider not recognized.');
             }
         }
+
 
 
         async function updateEpisodes() {
