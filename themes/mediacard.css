@@ -1,6 +1,6 @@
 .media-card {
     background-color: rgba(30, 30, 30, 0.9);
-    padding: 1.5rem;
+    padding: 1rem; /* Reduced padding for a more compact look */
     border-radius: 1.25rem;
     box-shadow: 0 8px 16px rgba(0, 0, 0, 0.6);
     cursor: pointer;
@@ -12,7 +12,7 @@
     overflow: hidden;
     text-align: left;
     backdrop-filter: blur(10px);
-    background: linear-gradient(135deg, rgba(30, 30, 30, 0.9), rgba(0, 0, 0, 0.6));
+    background: linear-gradient(135deg, rgba(10, 10, 10, 0.9), rgba(0, 0, 0, 0.6)); /* Enhanced gradient contrast */
 }
 
 .media-card:hover {
@@ -60,7 +60,7 @@
 .media-card .author,
 .media-card .type {
     font-size: 1rem;
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.25rem; /* Reduced margin for better spacing */
     color: #d0d0d0;
 }
 
@@ -81,7 +81,7 @@
     align-items: center;
     color: #f5c518;
     transition: color 0.3s ease;
-    margin-bottom: 1rem;
+    margin-bottom: 0.5rem; /* Reduced margin for better spacing */
 }
 
 .media-card .rating span {
