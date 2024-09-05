@@ -272,16 +272,19 @@ document.addEventListener('DOMContentLoaded', async function () {
             const mediaType = media.media_type || (media.title ? 'movie' : 'tv');
 
             mediaCard.innerHTML = `
-            <img src="https://image.tmdb.org/t/p/w300${media.poster_path}" alt="${media.title || media.name}">
-            <div class="info">
-                <h3>${media.title || media.name}</h3>
-                <p>${mediaType === 'movie' ? '🎬 Movie' : mediaType === 'tv' ? '📺 TV Show' : '📽 Animation'}</p>
-                <p>Genres: ${genreNames}</p>
-                <div class="rating">
-                    <span class="stars">${ratingStars}</span>
-                    <span class="rating-value">${media.vote_average.toFixed(1)}/10</span>
+            <div class="relative w-full h-64 overflow-hidden rounded-lg mb-4">
+                <img src="https://image.tmdb.org/t/p/w300${media.poster_path}" alt="${media.title || media.name}" class="w-full h-full object-cover rounded-lg transition-transform duration-300 group-hover:scale-110">
+                <div class="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-50"></div>
+            </div>
+            <div class="flex-grow w-full">
+                <h3 class="text-lg font-semibold text-white truncate">${media.title || media.name}</h3>
+                <p class="text-gray-400 text-sm mt-2">${mediaType === 'movie' ? '🎬 Movie' : mediaType === 'tv' ? '📺 TV Show' : '📽 Animation'}</p>
+                <p class="text-gray-400 text-sm mt-1">Genres: ${genreNames}</p>
+                <div class="flex items-center mt-2">
+                    <span class="text-yellow-400 text-base">${ratingStars}</span>
+                    <span class="text-gray-300 text-sm ml-2">${media.vote_average.toFixed(1)}/10</span>
                 </div>
-                <p>Release Date: ${formattedDate}</p>
+                <p class="text-gray-300 text-sm mt-1">Release Date: ${formattedDate}</p>
             </div>
         `;
 
