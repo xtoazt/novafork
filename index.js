@@ -109,7 +109,7 @@ document.addEventListener('DOMContentLoaded', async function () {
         }
     }
 
-// Function to fetch and display media based on the selected category
+    // Function to fetch and display media based on the selected category
     async function fetchPopularMedia(page = 1) {
         const selectedCategory = categorySelect.value;
         let url = '';
@@ -119,13 +119,13 @@ document.addEventListener('DOMContentLoaded', async function () {
         try {
             if (selectedCategory === 'animation') {
                 const genreId = 16;
-                const movieUrl = `https://api.themoviedb.org/3/discover/movie?api_key=${API_KEY}&with_genres=${genreId}&page=${moviePage}`;
-                const tvUrl = `https://api.themoviedb.org/3/discover/tv?api_key=${API_KEY}&with_genres=${genreId}&page=${tvPage}`;
+                const movieUrl = `https://api.themoviedb.org/3/discover/movie?api_key=${API_KEY}&with_genres=${genreId}&page=${moviePage}&language=en-US`;
+                const tvUrl = `https://api.themoviedb.org/3/discover/tv?api_key=${API_KEY}&with_genres=${genreId}&page=${tvPage}&language=en-US`;
 
                 const [movieResponse, tvResponse] = await Promise.all([fetch(movieUrl), fetch(tvUrl)]);
                 if (movieResponse.ok && tvResponse.ok) {
                     const [movieData, tvData] = await Promise.all([movieResponse.json(), tvResponse.json()]);
-                    const combinedResults = [...movieData.results, ...tvData.results];
+                    const combinedResults = [...movieData.results, ...tvData.results].slice(0, 12); // Limit to 12 results
                     const totalPages = Math.max(movieData.total_pages, tvData.total_pages);
                     displayPopularMedia(combinedResults);
                     updatePaginationControls(page, totalPages);
@@ -134,13 +134,13 @@ document.addEventListener('DOMContentLoaded', async function () {
                 }
             } else if (selectedCategory === 'crime') {
                 const genreId = 80;
-                const movieUrl = `https://api.themoviedb.org/3/discover/movie?api_key=${API_KEY}&with_genres=${genreId}&page=${moviePage}`;
-                const tvUrl = `https://api.themoviedb.org/3/discover/tv?api_key=${API_KEY}&with_genres=${genreId}&page=${tvPage}`;
+                const movieUrl = `https://api.themoviedb.org/3/discover/movie?api_key=${API_KEY}&with_genres=${genreId}&page=${moviePage}&language=en-US`;
+                const tvUrl = `https://api.themoviedb.org/3/discover/tv?api_key=${API_KEY}&with_genres=${genreId}&page=${tvPage}&language=en-US`;
 
                 const [movieResponse, tvResponse] = await Promise.all([fetch(movieUrl), fetch(tvUrl)]);
                 if (movieResponse.ok && tvResponse.ok) {
                     const [movieData, tvData] = await Promise.all([movieResponse.json(), tvResponse.json()]);
-                    const combinedResults = [...movieData.results, ...tvData.results];
+                    const combinedResults = [...movieData.results, ...tvData.results].slice(0, 12); // Limit to 12 results
                     const totalPages = Math.max(movieData.total_pages, tvData.total_pages);
                     displayPopularMedia(combinedResults);
                     updatePaginationControls(page, totalPages);
@@ -149,13 +149,13 @@ document.addEventListener('DOMContentLoaded', async function () {
                 }
             } else if (selectedCategory === 'horror') {
                 const genreId = 27;
-                const movieUrl = `https://api.themoviedb.org/3/discover/movie?api_key=${API_KEY}&with_genres=${genreId}&page=${moviePage}`;
-                const tvUrl = `https://api.themoviedb.org/3/discover/tv?api_key=${API_KEY}&with_genres=${genreId}&page=${tvPage}`;
+                const movieUrl = `https://api.themoviedb.org/3/discover/movie?api_key=${API_KEY}&with_genres=${genreId}&page=${moviePage}&language=en-US`;
+                const tvUrl = `https://api.themoviedb.org/3/discover/tv?api_key=${API_KEY}&with_genres=${genreId}&page=${tvPage}&language=en-US`;
 
                 const [movieResponse, tvResponse] = await Promise.all([fetch(movieUrl), fetch(tvUrl)]);
                 if (movieResponse.ok && tvResponse.ok) {
                     const [movieData, tvData] = await Promise.all([movieResponse.json(), tvResponse.json()]);
-                    const combinedResults = [...movieData.results, ...tvData.results];
+                    const combinedResults = [...movieData.results, ...tvData.results].slice(0, 12); // Limit to 12 results
                     const totalPages = Math.max(movieData.total_pages, tvData.total_pages);
                     displayPopularMedia(combinedResults);
                     updatePaginationControls(page, totalPages);
@@ -172,7 +172,8 @@ document.addEventListener('DOMContentLoaded', async function () {
                 const response = await fetch(url);
                 if (response.ok) {
                     const data = await response.json();
-                    displayPopularMedia(data.results);
+                    const results = data.results.slice(0, 12); // Limit to 12 results
+                    displayPopularMedia(results);
                     updatePaginationControls(data.page, data.total_pages);
                 } else {
                     handleError(`Failed to fetch ${selectedCategory} media.`);
@@ -182,7 +183,6 @@ document.addEventListener('DOMContentLoaded', async function () {
             handleError(`An error occurred while fetching ${selectedCategory} media.`, error);
         }
     }
-
 
     function updatePaginationControls(currentPage, totalPages) {
         const prevPageButton = document.getElementById('prevPage');
