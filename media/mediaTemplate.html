@@ -63,35 +63,20 @@
 </div>
 
 <div id="movieInfo" class="relative w-full sm:w-2/3 pl-6">
-    <!-- Background Image with Lighting Effect for Info Section -->
-    <div class="absolute inset-0 bg-cover bg-center rounded-xl" style="
-        background-image: url('https://image.tmdb.org/t/p/w500{{poster_path}}');
-        filter: blur(8px);
-        background-blend-mode: overlay;
-        background-color: rgba(0, 0, 0, 0.6);
-    "></div>
-    <div class="absolute inset-0 rounded-xl">
-        <div class="absolute inset-0 bg-gradient-radial from-purple-500/40 to-transparent opacity-80 pointer-events-none"></div>
-        <div class="absolute inset-0 bg-gradient-to-b from-transparent via-purple-400 to-transparent opacity-70 pointer-events-none"></div>
+    <h2 class="text-4xl font-extrabold text-white mb-3">{{title_or_name}}</h2>
+    <p class="text-lg text-gray-300 mb-4">{{release_date_or_first_air_date}}</p>
+    <p class="text-base text-gray-200 mb-6">{{overview}}</p>
+    <p class="text-sm text-gray-400 mb-4">Type: {{type}}</p>
+    {{ratings}}
+    {{popularity}}
+    {{quality}} <!-- Added Quality Information -->
+    <h3 class="text-xl font-semibold text-white mt-6 mb-3">Cast</h3>
+    <div class="flex overflow-x-auto pb-2 scrollbar-thin scrollbar-thumb-purple-700 scrollbar-track-gray-800 space-x-4">
+        {{cast_list}}
     </div>
-
-    <!-- Content -->
-    <div class="relative z-10 p-6 bg-gradient-to-b from-gray-900/80 to-gray-900/90 rounded-xl shadow-xl">
-        <h2 class="text-4xl font-extrabold text-white mb-3">{{title_or_name}}</h2>
-        <p class="text-lg text-gray-300 mb-4">{{release_date_or_first_air_date}}</p>
-        <p class="text-base text-gray-200 mb-6">{{overview}}</p>
-        <p class="text-sm text-gray-400 mb-4">Type: {{type}}</p>
-        {{ratings}}
-        {{popularity}}
-        {{quality}} <!-- Added Quality Information -->
-        <h3 class="text-xl font-semibold text-white mt-6 mb-3">Cast</h3>
-        <div class="flex overflow-x-auto pb-2 scrollbar-thin scrollbar-thumb-purple-700 scrollbar-track-gray-800 space-x-4">
-            {{cast_list}}
-        </div>
-        <button id="playButton" class="mt-6 bg-purple-700 hover:bg-purple-800 text-white font-bold py-3 px-6 rounded-lg shadow-lg transition duration-300 ease-in-out transform hover:scale-105">
-            Play
-        </button>
-    </div>
+    <button id="playButton" class="mt-6 bg-purple-700 hover:bg-purple-800 text-white font-bold py-3 px-6 rounded-lg shadow-lg transition duration-300 ease-in-out transform hover:scale-105">
+        Play
+    </button>
 </div>
 
 <div id="videoPlayer" class="w-full h-full rounded-2xl overflow-hidden hidden relative bg-gray-800">
