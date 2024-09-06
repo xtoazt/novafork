@@ -1,4 +1,3 @@
-// disclaimer/disclaimerbutton.js
 
 // Toggle Disclaimer Content
 document.getElementById('disclaimerButton').addEventListener('click', function() {
