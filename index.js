@@ -19,6 +19,9 @@ async function getApiKey() {
     }
 }
 
+
+
+
 async function fetchGenres(apiKey) {
     try {
         const response = await fetch(`https://api.themoviedb.org/3/genre/movie/list?api_key=${apiKey}&language=en-US`);
@@ -126,7 +129,7 @@ document.addEventListener('DOMContentLoaded', async function () {
             if (selectedCategory === 'latest') {
                 url = `https://api.themoviedb.org/3/trending/all/week?api_key=${API_KEY}&page=${page}`;
             } else if (selectedCategory === 'animation') {
-                const genreId = 16;
+                const genreId = 16; // Animation genre ID
                 const movieUrl = `https://api.themoviedb.org/3/discover/movie?api_key=${API_KEY}&with_genres=${genreId}&page=${moviePage}&language=en-US`;
                 const tvUrl = `https://api.themoviedb.org/3/discover/tv?api_key=${API_KEY}&with_genres=${genreId}&page=${tvPage}&language=en-US`;
                 const [movieResponse, tvResponse] = await Promise.all([fetch(movieUrl), fetch(tvUrl)]);
@@ -312,37 +315,37 @@ document.addEventListener('DOMContentLoaded', async function () {
         popularMedia.innerHTML = '';
 
         results.forEach(media => {
-            const mediaCard = document.createElement('div');
-            mediaCard.classList.add('media-card');
+            if (media.media_type === 'movie' || !media.media_type) {
+                const mediaCard = document.createElement('div');
+                mediaCard.classList.add('media-card');
 
-            const genreNames = media.genre_ids.map(id => genreMap[id] || 'Unknown').join(', ');
-            const formattedDate = media.release_date ? new Date(media.release_date).toLocaleDateString() : (media.first_air_date ? new Date(media.first_air_date).toLocaleDateString() : 'Unknown Date');
-            const ratingStars = Array.from({ length: 5 }, (_, i) => i < Math.round(media.vote_average / 2) ? '★' : '☆').join(' ');
+                const genreNames = media.genre_ids.map(id => genreMap[id] || 'Unknown').join(', ');
+                const formattedDate = media.release_date ? new Date(media.release_date).toLocaleDateString() : 'Unknown Date';
+                const ratingStars = Array.from({ length: 5 }, (_, i) => i < Math.round(media.vote_average / 2) ? '★' : '☆').join(' ');
 
-            const mediaType = media.media_type || (media.title ? 'movie' : 'tv');
-
-            mediaCard.innerHTML = `
-                <div class="relative w-full h-64 overflow-hidden rounded-lg mb-4">
-                    <img src="https://image.tmdb.org/t/p/w300${media.poster_path}" alt="${media.title || media.name}" class="w-full h-full object-cover rounded-lg transition-transform duration-300 group-hover:scale-110">
-                    <div class="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-50"></div>
-                </div>
-                <div class="flex-grow w-full">
-                    <h3 class="text-lg font-semibold text-white truncate">${media.title || media.name}</h3>
-                    <p class="text-gray-400 text-sm mt-2">${mediaType === 'movie' ? '🎬 Movie' : mediaType === 'tv' ? '📺 TV Show' : '📽 Animation'}</p>
-                    <p class="text-gray-400 text-sm mt-1">Genres: ${genreNames}</p>
-                    <div class="flex items-center mt-2">
-                        <span class="text-yellow-400 text-base">${ratingStars}</span>
-                        <span class="text-gray-300 text-sm ml-2">${media.vote_average.toFixed(1)}/10</span>
+                mediaCard.innerHTML = `
+                    <div class="relative w-full h-64 overflow-hidden rounded-lg mb-4">
+                        <img src="https://image.tmdb.org/t/p/w300${media.poster_path}" alt="${media.title || media.name}" class="w-full h-full object-cover rounded-lg transition-transform duration-300 group-hover:scale-110">
+                        <div class="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-50"></div>
                     </div>
-                    <p class="text-gray-300 text-sm mt-1">Release Date: ${formattedDate}</p>
-                </div>
-            `;
+                    <div class="flex-grow w-full">
+                        <h3 class="text-lg font-semibold text-white truncate">${media.title || media.name}</h3>
+                        <p class="text-gray-400 text-sm mt-2">🎬 Movie</p>
+                        <p class="text-gray-400 text-sm mt-1">Genres: ${genreNames}</p>
+                        <div class="flex items-center mt-2">
+                            <span class="text-yellow-400 text-base">${ratingStars}</span>
+                            <span class="text-gray-300 text-sm ml-2">${media.vote_average.toFixed(1)}/10</span>
+                        </div>
+                        <p class="text-gray-300 text-sm mt-1">Release Date: ${formattedDate}</p>
+                    </div>
+                `;
 
-            mediaCard.addEventListener('click', function () {
-                fetchSelectedMedia(media.id, mediaType);
-            });
+                mediaCard.addEventListener('click', function () {
+                    fetchSelectedMedia(media.id, 'movie');
+                });
 
-            popularMedia.appendChild(mediaCard);
+                popularMedia.appendChild(mediaCard);
+            }
         });
     }
 
