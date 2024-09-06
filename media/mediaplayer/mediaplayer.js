@@ -206,7 +206,10 @@ async function displaySelectedMedia(media, mediaType) {
                 case 'moviesapi':
                     return `https://moviesapi.club/tv/${mediaId}/${seasonNumber}/${episodeNumber}`;
                 case 'vidlink':
+                    return `https://vidlink.pro/tv/${mediaId}/${seasonNumber}/${episodeNumber}`;
+                case 'vidlinkdub':
                     return `https://vidlink.pro/tv/${mediaId}/${seasonNumber}/${episodeNumber}?player=jw&multiLang=true`;
+
                 case 'vidsrcnl':
                     return `https://player.vidsrc.nl/embed/tv/${mediaId}/${seasonNumber}/${episodeNumber}`; // New URL for VidsrcNL
                 case 'vidsrc.rip':
@@ -244,6 +247,8 @@ async function displaySelectedMedia(media, mediaType) {
                 case 'vidsrcpro':
                     return `https://vidsrc.pro/embed/movie/${mediaId}`;
                 case 'vidlink':
+                    return `https://vidlink.pro/movie/${mediaId}`;
+                case 'vidlinkdub':
                     return `https://vidlink.pro/movie/${mediaId}?player=jw&multiLang=true`;
                 case 'vidsrcnl':
                     return `https://player.vidsrc.nl/embed/movie/${mediaId}`;
