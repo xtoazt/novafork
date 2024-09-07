@@ -264,8 +264,10 @@ document.addEventListener('DOMContentLoaded', async function () {
             if (response.ok) {
                 const media = await response.json();
 
-                const newUrl = `${window.location.origin}${window.location.pathname}?mediaId=${mediaId}&mediaType=${mediaType}`;
-                window.history.pushState({ mediaId, mediaType }, '', newUrl);
+                // Generate a URL-friendly title
+                const titleSlug = media.title ? media.title.toLowerCase().replace(/[^a-z0-9]+/g, '-') : media.name.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+                const newUrl = `${window.location.origin}${window.location.pathname}?title=${encodeURIComponent(titleSlug)}`;
+                window.history.pushState({ mediaId, mediaType, title: media.title || media.name }, '', newUrl);
 
                 displaySelectedMedia(media, mediaType);
                 await fetchMediaTrailer(mediaId, mediaType);
@@ -285,6 +287,8 @@ document.addEventListener('DOMContentLoaded', async function () {
             videoPlayerContainer.classList.add('hidden');
         }
     }
+
+
 
     async function fetchMediaTrailer(mediaId, mediaType) {
         try {
@@ -321,22 +325,25 @@ document.addEventListener('DOMContentLoaded', async function () {
 
             const mediaType = media.media_type || (media.title ? 'movie' : 'tv');
 
+            // Generate a URL-friendly title
+            const titleSlug = media.title ? media.title.toLowerCase().replace(/[^a-z0-9]+/g, '-') : media.name.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+
             mediaCard.innerHTML = `
-                <div class="relative w-full h-64 overflow-hidden rounded-lg mb-4">
-                    <img src="https://image.tmdb.org/t/p/w300${media.poster_path}" alt="${media.title || media.name}" class="w-full h-full object-cover rounded-lg transition-transform duration-300 group-hover:scale-110">
-                    <div class="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-50"></div>
+            <div class="relative w-full h-64 overflow-hidden rounded-lg mb-4">
+                <img src="https://image.tmdb.org/t/p/w300${media.poster_path}" alt="${media.title || media.name}" class="w-full h-full object-cover rounded-lg transition-transform duration-300 group-hover:scale-110">
+                <div class="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-50"></div>
+            </div>
+            <div class="flex-grow w-full">
+                <h3 class="text-lg font-semibold text-white truncate">${media.title || media.name}</h3>
+                <p class="text-gray-400 text-sm mt-2">${mediaType === 'movie' ? '🎬 Movie' : mediaType === 'tv' ? '📺 TV Show' : '📽 Animation'}</p>
+                <p class="text-gray-400 text-sm mt-1">Genres: ${genreNames}</p>
+                <div class="flex items-center mt-2">
+                    <span class="text-yellow-400 text-base">${ratingStars}</span>
+                    <span class="text-gray-300 text-sm ml-2">${media.vote_average.toFixed(1)}/10</span>
                 </div>
-                <div class="flex-grow w-full">
-                    <h3 class="text-lg font-semibold text-white truncate">${media.title || media.name}</h3>
-                    <p class="text-gray-400 text-sm mt-2">${mediaType === 'movie' ? '🎬 Movie' : mediaType === 'tv' ? '📺 TV Show' : '📽 Animation'}</p>
-                    <p class="text-gray-400 text-sm mt-1">Genres: ${genreNames}</p>
-                    <div class="flex items-center mt-2">
-                        <span class="text-yellow-400 text-base">${ratingStars}</span>
-                        <span class="text-gray-300 text-sm ml-2">${media.vote_average.toFixed(1)}/10</span>
-                    </div>
-                    <p class="text-gray-300 text-sm mt-1">Release Date: ${formattedDate}</p>
-                </div>
-            `;
+                <p class="text-gray-300 text-sm mt-1">Release Date: ${formattedDate}</p>
+            </div>
+        `;
 
             mediaCard.addEventListener('click', function () {
                 fetchSelectedMedia(media.id, mediaType);
@@ -345,6 +352,8 @@ document.addEventListener('DOMContentLoaded', async function () {
             popularMedia.appendChild(mediaCard);
         });
     }
+
+
 
     function displaySearchResults(results) {
         const searchResultsContainer = document.getElementById('searchResultsContainer');
@@ -378,13 +387,22 @@ document.addEventListener('DOMContentLoaded', async function () {
 
     async function loadMediaFromUrlParams() {
         const urlParams = new URLSearchParams(window.location.search);
-        const mediaId = urlParams.get('mediaId');
-        const mediaType = urlParams.get('mediaType');
+        const title = urlParams.get('title');
 
-        if (mediaId && mediaType) {
-            await fetchSelectedMedia(mediaId, mediaType);
+        if (title) {
+            // Convert the title slug back to a format you can use to fetch media
+            const response = await fetch(`https://api.themoviedb.org/3/search/multi?api_key=${API_KEY}&query=${encodeURIComponent(title)}`);
+            if (response.ok) {
+                const data = await response.json();
+                const media = data.results.find(item => (item.title && item.title.toLowerCase().replace(/[^a-z0-9]+/g, '-') === title) || (item.name && item.name.toLowerCase().replace(/[^a-z0-9]+/g, '-') === title));
+                if (media) {
+                    const mediaType = media.media_type || (media.title ? 'movie' : 'tv');
+                    await fetchSelectedMedia(media.id, mediaType);
+                }
+            }
         }
     }
+
 
     if (categorySelect) {
         categorySelect.addEventListener('change', function () {
