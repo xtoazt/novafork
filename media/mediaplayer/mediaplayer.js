@@ -291,14 +291,19 @@ async function displaySelectedMedia(media, mediaType) {
                 const url = `https://api.themoviedb.org/3/tv/${media.id}/season/${seasonNumber}/episode/${episodeNumber}/images?api_key=${apiKey}`;
                 const imageData = await fetchJson(url);
                 const imagesContainer = document.getElementById('episodeImage');
-                imagesContainer.innerHTML = imageData.stills.length > 0
-                    ? `<img src="https://image.tmdb.org/t/p/w500${imageData.stills[0].file_path}" alt="Episode ${episodeNumber}" class="w-full h-auto mt-2 rounded-lg shadow-md">`
-                    : '<p>No image available.</p>';
+
+                if (imageData.stills.length > 0) {
+                    const highQualityImageUrl = `https://image.tmdb.org/t/p/original${imageData.stills[0].file_path}`;
+                    imagesContainer.innerHTML = `
+                <img src="${highQualityImageUrl}" alt="Episode ${episodeNumber}" class="w-full h-auto mt-2 rounded-lg shadow-md">
+            `;
+                } else {
+                    imagesContainer.innerHTML = '<p>No image available.</p>';
+                }
             } catch (error) {
                 console.error('Failed to fetch episode images:', error);
             }
         }
-
         // Search functionality
         async function searchMedia(query) {
             const url = `https://api.themoviedb.org/3/search/${mediaType}?api_key=${apiKey}&query=${encodeURIComponent(query)}`;

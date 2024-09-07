@@ -2,22 +2,22 @@
     <!-- Poster with Enhanced Lighting Effect -->
     <div class="relative w-full h-full">
         <!-- Poster Background -->
-        <div class="absolute inset-0 bg-cover bg-center rounded-xl" style="background-image: url('https://image.tmdb.org/t/p/w500{{poster_path}}'); filter: blur(4px);"></div>
+        <div class="absolute inset-0 bg-cover bg-center rounded-xl" style="background-image: url('https://image.tmdb.org/t/p/w500{{poster_path}}'); filter: blur(6px); background-color: rgba(0, 0, 0, 0.3);"></div>
 
         <!-- Enhanced Lighting Effect -->
         <div class="absolute inset-0 rounded-xl">
-            <div class="absolute inset-0 bg-gradient-radial from-blue-500/40 to-transparent opacity-80 pointer-events-none"></div>
-            <div class="absolute inset-0 bg-gradient-to-b from-transparent via-blue-400 to-transparent opacity-70 pointer-events-none"></div>
+            <div class="absolute inset-0 bg-gradient-radial from-blue-500/50 to-transparent opacity-90 pointer-events-none"></div>
+            <div class="absolute inset-0 bg-gradient-to-b from-transparent via-blue-500 to-transparent opacity-80 pointer-events-none"></div>
         </div>
 
         <!-- Content -->
-        <div class="relative z-10 p-6 bg-gradient-to-b from-gray-900/80 to-gray-900/90 rounded-xl shadow-xl">
-            <img id="poster" src="https://image.tmdb.org/t/p/w500{{poster_path}}" alt="{{title_or_name}}" class="rounded-lg shadow-lg mb-4 max-w-full h-auto border-2 border-gray-700">
+        <div class="relative z-10 p-6 bg-gradient-to-b from-gray-900/80 to-gray-900/90 rounded-xl shadow-2xl border border-gray-700">
+            <img id="poster" src="https://image.tmdb.org/t/p/w500{{poster_path}}" alt="{{title_or_name}}" class="rounded-lg shadow-2xl mb-4 max-w-full h-auto border-4 border-gray-800">
             <div class="mt-4 space-y-4">
                 <!-- Language Select Dropdown -->
                 <div>
                     <label for="languageSelect" class="block text-sm font-semibold text-gray-200">Select Language:</label>
-                    <select id="languageSelect" class="mt-1 block w-full bg-gray-800 text-white rounded-lg border border-gray-700 focus:border-blue-400 focus:ring-blue-400 transition duration-200 ease-in-out">
+                    <select id="languageSelect" class="mt-1 block w-full bg-gray-800 text-white rounded-lg border border-gray-700 focus:border-blue-500 focus:ring-blue-500 transition duration-200 ease-in-out">
                         <option value="en">English</option>
                         <option value="fr">French</option>
                     </select>
@@ -26,7 +26,7 @@
                 <!-- Provider Select Dropdown -->
                 <div>
                     <label for="providerSelect" class="block text-sm font-semibold text-gray-200 mt-2">Select Content Provider:</label>
-                    <select id="providerSelect" class="mt-1 block w-full bg-gray-800 text-white rounded-lg border border-gray-700 focus:border-blue-400 focus:ring-blue-400 transition duration-200 ease-in-out">
+                    <select id="providerSelect" class="mt-1 block w-full bg-gray-800 text-white rounded-lg border border-gray-700 focus:border-blue-500 focus:ring-blue-500 transition duration-200 ease-in-out">
                         <optgroup label="Best Providers no ads">
                             <option value="vidlink">vidlink</option>
                             <option value="vidlinkdub">vidlink - different languages</option>
@@ -74,7 +74,7 @@
     <div class="flex overflow-x-auto pb-2 scrollbar-thin scrollbar-thumb-purple-700 scrollbar-track-gray-800 space-x-4">
         {{cast_list}}
     </div>
-    <button id="playButton" class="mt-6 bg-purple-700 hover:bg-purple-800 text-white font-bold py-3 px-6 rounded-lg shadow-lg transition duration-300 ease-in-out transform hover:scale-105">
+    <button id="playButton" class="mt-6 bg-purple-700 hover:bg-purple-800 text-white font-bold py-3 px-6 rounded-lg shadow-2xl transition duration-300 ease-in-out transform hover:scale-110">
         Play
     </button>
 </div>
@@ -82,10 +82,10 @@
 <div id="videoPlayer" class="w-full h-full rounded-2xl overflow-hidden hidden relative bg-gray-800">
     <div class="absolute inset-0 bg-cover bg-center rounded-2xl" style="
         background-image: url('https://image.tmdb.org/t/p/w500{{poster_path}}');
-        opacity: 0.5;
-        filter: blur(8px);
+        opacity: 0.6;
+        filter: blur(10px);
         background-blend-mode: overlay;
-        background-color: rgba(0, 0, 0, 0.5);
+        background-color: rgba(0, 0, 0, 0.6);
     "></div>
     <div class="relative z-10 h-full overflow-auto rounded-2xl p-4">
         <!-- The iframe will be injected here by updateVideo function -->
