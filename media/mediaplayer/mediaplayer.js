@@ -107,8 +107,6 @@ async function displaySelectedMedia(media, mediaType) {
 
                 <label for="episodeSelect" class="block text-xs font-medium text-gray-300 mt-2">Select Episode:</label>
                 <select id="episodeSelect" class="dropdown mt-1 block w-full bg-gray-800 text-white rounded border border-gray-700 text-sm"></select>
-                
-                <div id="episodeImage" class="mt-4"></div>
             </div>
         ` : '';
 
@@ -171,7 +169,6 @@ async function displaySelectedMedia(media, mediaType) {
             movieInfo.classList.add('hidden');
         }
 
-
         async function getTvEmbedUrl(mediaId, seasonNumber, episodeNumber, provider, apiKey) {
             switch (provider) {
                 case 'vidsrc':
@@ -209,7 +206,6 @@ async function displaySelectedMedia(media, mediaType) {
                     return `https://vidlink.pro/tv/${mediaId}/${seasonNumber}/${episodeNumber}`;
                 case 'vidlinkdub':
                     return `https://vidlink.pro/tv/${mediaId}/${seasonNumber}/${episodeNumber}?player=jw&multiLang=true`;
-
                 case 'vidsrcnl':
                     return `https://player.vidsrc.nl/embed/tv/${mediaId}/${seasonNumber}/${episodeNumber}`; // New URL for VidsrcNL
                 case 'vidsrc.rip':
@@ -263,7 +259,6 @@ async function displaySelectedMedia(media, mediaType) {
             }
         }
 
-
         async function updateEpisodes() {
             const seasonNumber = seasonSelect ? seasonSelect.value : '';
             if (!seasonNumber) return;
@@ -279,40 +274,6 @@ async function displaySelectedMedia(media, mediaType) {
                 episodeSelect.dispatchEvent(new Event('change')); // Trigger change event to load images
             } catch (error) {
                 console.error('Failed to fetch season details:', error);
-            }
-        }
-
-        async function updateEpisodeImage() {
-            const seasonNumber = seasonSelect ? seasonSelect.value : '';
-            const episodeNumber = episodeSelect ? episodeSelect.value : '';
-            if (!seasonNumber || !episodeNumber) return;
-
-            try {
-                const url = `https://api.themoviedb.org/3/tv/${media.id}/season/${seasonNumber}/episode/${episodeNumber}/images?api_key=${apiKey}`;
-                const imageData = await fetchJson(url);
-                const imagesContainer = document.getElementById('episodeImage');
-
-                if (imageData.stills.length > 0) {
-                    const highQualityImageUrl = `https://image.tmdb.org/t/p/original${imageData.stills[0].file_path}`;
-                    imagesContainer.innerHTML = `
-                <img src="${highQualityImageUrl}" alt="Episode ${episodeNumber}" class="w-full h-auto mt-2 rounded-lg shadow-md">
-            `;
-                } else {
-                    imagesContainer.innerHTML = '<p>No image available.</p>';
-                }
-            } catch (error) {
-                console.error('Failed to fetch episode images:', error);
-            }
-        }
-        // Search functionality
-        async function searchMedia(query) {
-            const url = `https://api.themoviedb.org/3/search/${mediaType}?api_key=${apiKey}&query=${encodeURIComponent(query)}`;
-            try {
-                const searchResults = await fetchJson(url);
-                return searchResults.results;
-            } catch (error) {
-                console.error('Failed to search media:', error);
-                return [];
             }
         }
 
@@ -369,7 +330,6 @@ async function displaySelectedMedia(media, mediaType) {
 
             if (episodeSelect) {
                 episodeSelect.addEventListener('change', async () => {
-                    await updateEpisodeImage();
                     await updateVideo();
                 });
             }

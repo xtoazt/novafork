@@ -80,8 +80,8 @@
 
         <h2 class="text-2xl font-bold mb-4">Selected Media</h2>
         <div id="selectedMovie" class="p-6 rounded-lg flex mb-12 bg-gray-800 shadow-lg">
-            <div id="videoPlayer" class="w-full h-full">
-                <iframe id="videoIframe" class="w-full" style="height: 462px;" allowfullscreen></iframe>
+            <div id="videoPlayer" class="w-full max-w-xs h-40 overflow-hidden bg-gray-900 rounded-lg">
+                <iframe id="videoIframe" class="w-full h-full" style="border: none;" allowfullscreen></iframe>
             </div>
         </div>
 
@@ -103,7 +103,6 @@
                 </div>
                 <div class="absolute top-2 right-2 bg-purple-600 text-white px-2 py-1 rounded-lg text-xs font-semibold">NEW</div>
             </div>
-
         </div>
 
         <div id="paginationControls" class="flex justify-center items-center mt-8 space-x-4">
