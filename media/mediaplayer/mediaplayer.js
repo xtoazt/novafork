@@ -209,7 +209,7 @@ async function displaySelectedMedia(media, mediaType) {
                 case 'moviesapi':
                     return `https://moviesapi.club/tv/${mediaId}/${seasonNumber}/${episodeNumber}`;
                 case 'vidlink':
-                    return `https://vidlink.pro/tv/${mediaId}/${seasonNumber}/${episodeNumber}?primaryColor=${primaryColor}&secondaryColor=${secondaryColor}&iconColor=${iconColor}&nextbutton=true`;
+                    return `https://vidlink.pro/tv/${mediaId}/${seasonNumber}/${episodeNumber}?primaryColor=${primaryColor}&secondaryColor=${secondaryColor}&iconColor=${iconColor}&nextbutton=true&autoplay=true`;
                 case 'vidlinkdub':
                     return `https://vidlink.pro/tv/${mediaId}/${seasonNumber}/${episodeNumber}?player=jw&multiLang=true`;
                 case 'vidsrcnl':
@@ -253,7 +253,7 @@ async function displaySelectedMedia(media, mediaType) {
                 case 'vidsrcpro':
                     return `https://vidsrc.pro/embed/movie/${mediaId}`;
                 case 'vidlink':
-                    return `https://vidlink.pro/movie/${mediaId}?primaryColor=${primaryColor}&secondaryColor=${secondaryColor}&iconColor=${iconColor}`;
+                    return `https://vidlink.pro/movie/${mediaId}?primaryColor=${primaryColor}&secondaryColor=${secondaryColor}&iconColor=${iconColor}&autoplay=true`;
                 case 'vidlinkdub':
                     return `https://vidlink.pro/movie/${mediaId}?player=jw&multiLang=true&primaryColor=${primaryColor}&secondaryColor=${secondaryColor}&iconColor=${iconColor}`;
                 case 'vidsrcnl':
