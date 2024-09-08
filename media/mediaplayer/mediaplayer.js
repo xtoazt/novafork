@@ -170,6 +170,12 @@ async function displaySelectedMedia(media, mediaType) {
         }
 
         async function getTvEmbedUrl(mediaId, seasonNumber, episodeNumber, provider, apiKey) {
+            const primaryColor = '8A2BE2';
+            const secondaryColor = 'D8BFD8';
+            const iconColor = '4B0082';
+
+
+
             switch (provider) {
                 case 'vidsrc':
                     return `https://vidsrc.cc/v2/embed/tv/${mediaId}/${seasonNumber}/${episodeNumber}`;
@@ -203,7 +209,7 @@ async function displaySelectedMedia(media, mediaType) {
                 case 'moviesapi':
                     return `https://moviesapi.club/tv/${mediaId}/${seasonNumber}/${episodeNumber}`;
                 case 'vidlink':
-                    return `https://vidlink.pro/tv/${mediaId}/${seasonNumber}/${episodeNumber}`;
+                    return `https://vidlink.pro/tv/${mediaId}/${seasonNumber}/${episodeNumber}?primaryColor=${primaryColor}&secondaryColor=${secondaryColor}&iconColor=${iconColor}&nextbutton=true`;
                 case 'vidlinkdub':
                     return `https://vidlink.pro/tv/${mediaId}/${seasonNumber}/${episodeNumber}?player=jw&multiLang=true`;
                 case 'vidsrcnl':
@@ -216,6 +222,10 @@ async function displaySelectedMedia(media, mediaType) {
         }
 
         async function getMovieEmbedUrl(mediaId, provider, apiKey) {
+            const primaryColor = '8A2BE2';
+            const secondaryColor = 'D8BFD8';
+            const iconColor = '4B0082';
+
             switch (provider) {
                 case 'vidsrc':
                     return `https://vidsrc.cc/v2/embed/movie/${mediaId}`;
@@ -243,9 +253,9 @@ async function displaySelectedMedia(media, mediaType) {
                 case 'vidsrcpro':
                     return `https://vidsrc.pro/embed/movie/${mediaId}`;
                 case 'vidlink':
-                    return `https://vidlink.pro/movie/${mediaId}`;
+                    return `https://vidlink.pro/movie/${mediaId}?primaryColor=${primaryColor}&secondaryColor=${secondaryColor}&iconColor=${iconColor}`;
                 case 'vidlinkdub':
-                    return `https://vidlink.pro/movie/${mediaId}?player=jw&multiLang=true`;
+                    return `https://vidlink.pro/movie/${mediaId}?player=jw&multiLang=true&primaryColor=${primaryColor}&secondaryColor=${secondaryColor}&iconColor=${iconColor}`;
                 case 'vidsrcnl':
                     return `https://player.vidsrc.nl/embed/movie/${mediaId}`;
                 case 'vidsrc.rip':
@@ -258,6 +268,7 @@ async function displaySelectedMedia(media, mediaType) {
                     throw new Error('Provider not recognized.');
             }
         }
+
 
         async function updateEpisodes() {
             const seasonNumber = seasonSelect ? seasonSelect.value : '';
