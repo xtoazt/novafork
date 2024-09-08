@@ -16,13 +16,22 @@ async function getApiKey() {
     }
 }
 
-// Function to fetch genres
-async function fetchGenres(apiKey) {
+async function fetchAllGenres(apiKey) {
     try {
-        const response = await fetch(`https://api.themoviedb.org/3/genre/movie/list?api_key=${apiKey}&language=en-US`);
-        if (!response.ok) throw new Error('Network response was not ok');
-        const data = await response.json();
-        return data.genres;
+        const [movieGenresResponse, tvGenresResponse] = await Promise.all([
+            fetch(`https://api.themoviedb.org/3/genre/movie/list?api_key=${apiKey}&language=en-US`),
+            fetch(`https://api.themoviedb.org/3/genre/tv/list?api_key=${apiKey}&language=en-US`)
+        ]);
+
+        if (!movieGenresResponse.ok || !tvGenresResponse.ok) throw new Error('Network response was not ok');
+
+        const [movieGenresData, tvGenresData] = await Promise.all([
+            movieGenresResponse.json(),
+            tvGenresResponse.json()
+        ]);
+
+        const genres = [...movieGenresData.genres, ...tvGenresData.genres];
+        return genres;
     } catch (error) {
         handleError('Failed to fetch genres.', error);
         return [];
@@ -108,10 +117,9 @@ async function displaySearchSuggestions(results, query, genreMap) {
     setupKeyboardNavigation(searchSuggestions);
 }
 
-// Function to handle search input changes
 async function handleSearchInput() {
     const searchInput = document.getElementById('searchInput');
-    const searchInputValue = searchInput.value.trim();
+    const searchInputValue = searchInput.value.trim().toLowerCase(); // Convert to lower case
     const apiKey = await getApiKey();
 
     if (!searchInputValue) {
@@ -128,7 +136,7 @@ async function handleSearchInput() {
     showLoading(); // Show spinner while fetching data
 
     try {
-        const genres = await fetchGenres(apiKey); // Fetch genres
+        const genres = await fetchAllGenres(apiKey); // Fetch all genres
         const genreMap = genres.reduce((map, genre) => {
             map[genre.id] = genre.name;
             return map;
@@ -145,6 +153,7 @@ async function handleSearchInput() {
         handleError('An error occurred while fetching search results:', error);
     }
 }
+
 
 // Debounced event listener for search input
 document.getElementById('searchInput').addEventListener('input', debounce(handleSearchInput, 300));
@@ -232,46 +241,59 @@ async function fetchTopRatedMedia(apiKey, page = 1) {
     }
 }
 
-// Function to display search results
-function displaySearchResults(results) {
-    const mediaContainer = document.getElementById('mediaContainer');
-    if (!mediaContainer) return;
+async function displaySearchSuggestions(results, query, genreMap) {
+    const searchSuggestions = document.getElementById('searchSuggestions');
 
-    mediaContainer.innerHTML = '';
+    if (!searchSuggestions) return;
 
-    results.forEach(media => {
-        const mediaCard = document.createElement('div');
-        mediaCard.classList.add('media-card', 'bg-gray-900', 'p-6', 'rounded-lg', 'shadow-lg', 'cursor-pointer', 'transition-transform', 'hover:scale-105', 'relative', 'flex', 'flex-col', 'items-start');
+    if (results.length === 0) {
+        searchSuggestions.innerHTML = '<div class="p-2 text-gray-500">No suggestions available</div>';
+        searchSuggestions.classList.remove('hidden');
+        return;
+    }
 
-        const genreNames = media.genre_ids.map(id => genreMap[id] || 'Unknown').join(', ');
-        const formattedDate = media.release_date ? new Date(media.release_date).toLocaleDateString() : 'N/A';
-        const ratingStars = '⭐'.repeat(Math.round(media.vote_average / 2));
+    const suggestionsHTML = results.map(media => {
+        const mediaTypeLabel = media.media_type === 'movie' ? 'Movie' : 'TV Show';
+        const mediaTitle = media.title || media.name;
+        const mediaRating = media.vote_average ? media.vote_average.toFixed(1) : 'N/A';
+        const highlightedTitle = highlightText(mediaTitle, query);
+        const genreNames = (media.genre_ids || []).map(id => genreMap[id] || 'Unknown').join(', ');
 
-        mediaCard.innerHTML = `
-            <div class="relative w-full h-48 mb-4">
-                <img src="https://image.tmdb.org/t/p/w500${media.poster_path}" alt="${media.title || media.name}" class="absolute inset-0 w-full h-full object-cover rounded-lg">
-                <div class="absolute inset-0 bg-gradient-to-t from-black to-transparent opacity-40"></div>
-            </div>
-            <div class="w-full">
-                <h3 class="text-xl font-semibold text-white truncate">${media.title || media.name}</h3>
-                <p class="text-gray-400 text-sm mt-1">${media.media_type === 'movie' ? '🎬 Movie' : '📺 TV Show'}</p>
-                <p class="text-gray-400 text-sm mt-1">Genres: ${genreNames}</p>
-                <div class="flex items-center mt-2">
-                    <span class="text-yellow-400 text-lg">${ratingStars}</span>
-                    <span class="text-gray-300 text-sm ml-2">${media.vote_average.toFixed(1)}/10</span>
+        return `
+            <div class="suggestion-item p-4 cursor-pointer rounded-lg" data-id="${media.id}" data-type="${media.media_type}">
+                <div class="flex items-center">
+                    <img src="https://image.tmdb.org/t/p/w45${media.poster_path}" alt="${mediaTitle}" class="w-16 h-24 object-cover rounded-md mr-4">
+                    <div class="flex-1">
+                        <h4 class="text-lg font-semibold text-white truncate">${highlightedTitle}</h4>
+                        <p class="text-gray-400 text-sm">${mediaTypeLabel}</p>
+                        <p class="text-yellow-400 text-sm">${mediaRating}/10</p>
+                        <p class="text-gray-400 text-sm">Genres: ${genreNames}</p>
+                    </div>
                 </div>
-                <p class="text-gray-300 text-sm mt-1">Release Date: ${formattedDate}</p>
             </div>
         `;
+    }).join('');
 
-        // Event listener to fetch and display selected media details
-        mediaCard.addEventListener('click', function() {
-            fetchSelectedMedia(apiKey, media.id, media.media_type);
+    searchSuggestions.innerHTML = suggestionsHTML;
+    searchSuggestions.classList.remove('hidden');
+
+    // Attach click events to suggestions
+    searchSuggestions.querySelectorAll('.suggestion-item').forEach(item => {
+        item.addEventListener('click', async () => {
+            const mediaId = item.getAttribute('data-id');
+            const mediaType = item.getAttribute('data-type');
+            const apiKey = await getApiKey();
+            if (apiKey) {
+                fetchSelectedMedia(apiKey, mediaId, mediaType);
+                searchSuggestions.classList.add('hidden');
+            }
         });
-
-        mediaContainer.appendChild(mediaCard);
     });
+
+    // Set up keyboard navigation
+    setupKeyboardNavigation(searchSuggestions);
 }
+
 
 // Function to fetch upcoming media
 async function fetchUpcomingMedia(apiKey) {
