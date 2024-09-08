@@ -264,12 +264,13 @@ document.addEventListener('DOMContentLoaded', async function () {
             if (response.ok) {
                 const media = await response.json();
 
-                // Generate a URL-friendly title
+                const releaseType = await getReleaseType(mediaId, mediaType);
+
                 const titleSlug = media.title ? media.title.toLowerCase().replace(/[^a-z0-9]+/g, '-') : media.name.toLowerCase().replace(/[^a-z0-9]+/g, '-');
                 const newUrl = `${window.location.origin}${window.location.pathname}?title=${encodeURIComponent(titleSlug)}`;
                 window.history.pushState({ mediaId, mediaType, title: media.title || media.name }, '', newUrl);
 
-                displaySelectedMedia(media, mediaType);
+                displaySelectedMedia(media, mediaType, releaseType);
                 await fetchMediaTrailer(mediaId, mediaType);
 
                 if (posterImage && media.poster_path) {
@@ -287,7 +288,87 @@ document.addEventListener('DOMContentLoaded', async function () {
             videoPlayerContainer.classList.add('hidden');
         }
     }
+    async function getReleaseType(mediaId, mediaType) {
+        try {
+            const response = await fetch(`https://api.themoviedb.org/3/${mediaType}/${mediaId}/release_dates?api_key=${API_KEY}`);
+            if (response.ok) {
+                const data = await response.json();
+                const releases = data.results.flatMap(result => result.release_dates);
+                console.log('Releases:', releases);
+                const currentDate = new Date();
+                const isDigitalRelease = releases.some(release =>
+                    (release.type === 4 || release.type === 6) && new Date(release.release_date) <= currentDate
+                );
 
+                const isInTheaters = mediaType === 'movie' && releases.some(release =>
+                    release.type === 3 && new Date(release.release_date) <= currentDate
+                );
+                const hasFutureRelease = releases.some(release =>
+                    new Date(release.release_date) > currentDate
+                );
+                if (isDigitalRelease) {
+                    return "HD";
+                } else if (isInTheaters) {
+                    return "Cam Quality";
+                } else if (hasFutureRelease) {
+                    return "Not Released Yet";
+                } else {
+                    return "Unknown Quality";
+                }
+            } else {
+                handleError('Failed to fetch release type.', new Error('API response not OK'));
+                return "Unknown Quality";
+            }
+        } catch (error) {
+            handleError('An error occurred while fetching release type.', error);
+            return "Unknown Quality";
+        }
+    }
+
+    function displayPopularMedia(results) {
+        popularMedia.innerHTML = '';
+
+        results.forEach(async (media) => {
+            const mediaCard = document.createElement('div');
+            mediaCard.classList.add('media-card');
+
+            const genreNames = media.genre_ids.map(id => genreMap[id] || 'Unknown').join(', ');
+            const formattedDate = media.release_date ? new Date(media.release_date).toLocaleDateString() : (media.first_air_date ? new Date(media.first_air_date).toLocaleDateString() : 'Unknown Date');
+            const ratingStars = Array.from({ length: 5 }, (_, i) => i < Math.round(media.vote_average / 2) ? '★' : '☆').join(' ');
+
+            const mediaType = media.media_type || (media.title ? 'movie' : 'tv');
+            const releaseType = mediaType === 'movie' ? await getReleaseType(media.id, mediaType) : '';
+
+            const isAnimation = media.genre_ids.includes(16);
+            const displayType = mediaType === 'movie' || isAnimation ? releaseType : '';
+
+            const titleSlug = media.title ? media.title.toLowerCase().replace(/[^a-z0-9]+/g, '-') : media.name.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+
+            mediaCard.innerHTML = `
+            <div class="relative w-full h-64 overflow-hidden rounded-lg mb-4">
+                <img src="https://image.tmdb.org/t/p/w300${media.poster_path}" alt="${media.title || media.name}" class="w-full h-full object-cover rounded-lg transition-transform duration-300 group-hover:scale-110">
+                <div class="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-50"></div>
+                ${displayType ? `<div class="absolute top-0 right-0 m-2 px-2 py-1 bg-black bg-opacity-75 text-white text-xs rounded">${displayType}</div>` : ''} 
+            </div>
+            <div class="flex-grow w-full">
+                <h3 class="text-lg font-semibold text-white truncate">${media.title || media.name}</h3>
+                <p class="text-gray-400 text-sm mt-2">${mediaType === 'movie' ? '🎬 Movie' : mediaType === 'tv' ? '📺 TV Show' : isAnimation ? '📽 Animation' : '📽 Animation'}</p>
+                <p class="text-gray-400 text-sm mt-1">Genres: ${genreNames}</p>
+                <div class="flex items-center mt-2">
+                    <span class="text-yellow-400 text-base">${ratingStars}</span>
+                    <span class="text-gray-300 text-sm ml-2">${media.vote_average.toFixed(1)}/10</span>
+                </div>
+                <p class="text-gray-300 text-sm mt-1">Release Date: ${formattedDate}</p>
+            </div>
+        `;
+
+            mediaCard.addEventListener('click', function () {
+                fetchSelectedMedia(media.id, mediaType);
+            });
+
+            popularMedia.appendChild(mediaCard);
+        });
+    }
 
 
     async function fetchMediaTrailer(mediaId, mediaType) {
@@ -311,48 +392,6 @@ document.addEventListener('DOMContentLoaded', async function () {
             videoPlayerContainer.classList.add('hidden');
         }
     }
-
-    function displayPopularMedia(results) {
-        popularMedia.innerHTML = '';
-
-        results.forEach(media => {
-            const mediaCard = document.createElement('div');
-            mediaCard.classList.add('media-card');
-
-            const genreNames = media.genre_ids.map(id => genreMap[id] || 'Unknown').join(', ');
-            const formattedDate = media.release_date ? new Date(media.release_date).toLocaleDateString() : (media.first_air_date ? new Date(media.first_air_date).toLocaleDateString() : 'Unknown Date');
-            const ratingStars = Array.from({ length: 5 }, (_, i) => i < Math.round(media.vote_average / 2) ? '★' : '☆').join(' ');
-
-            const mediaType = media.media_type || (media.title ? 'movie' : 'tv');
-
-            // Generate a URL-friendly title
-            const titleSlug = media.title ? media.title.toLowerCase().replace(/[^a-z0-9]+/g, '-') : media.name.toLowerCase().replace(/[^a-z0-9]+/g, '-');
-
-            mediaCard.innerHTML = `
-            <div class="relative w-full h-64 overflow-hidden rounded-lg mb-4">
-                <img src="https://image.tmdb.org/t/p/w300${media.poster_path}" alt="${media.title || media.name}" class="w-full h-full object-cover rounded-lg transition-transform duration-300 group-hover:scale-110">
-                <div class="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-50"></div>
-            </div>
-            <div class="flex-grow w-full">
-                <h3 class="text-lg font-semibold text-white truncate">${media.title || media.name}</h3>
-                <p class="text-gray-400 text-sm mt-2">${mediaType === 'movie' ? '🎬 Movie' : mediaType === 'tv' ? '📺 TV Show' : '📽 Animation'}</p>
-                <p class="text-gray-400 text-sm mt-1">Genres: ${genreNames}</p>
-                <div class="flex items-center mt-2">
-                    <span class="text-yellow-400 text-base">${ratingStars}</span>
-                    <span class="text-gray-300 text-sm ml-2">${media.vote_average.toFixed(1)}/10</span>
-                </div>
-                <p class="text-gray-300 text-sm mt-1">Release Date: ${formattedDate}</p>
-            </div>
-        `;
-
-            mediaCard.addEventListener('click', function () {
-                fetchSelectedMedia(media.id, mediaType);
-            });
-
-            popularMedia.appendChild(mediaCard);
-        });
-    }
-
 
 
     function displaySearchResults(results) {
