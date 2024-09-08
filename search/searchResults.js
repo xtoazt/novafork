@@ -64,7 +64,6 @@ function highlightText(text, query) {
 }
 
 
-
 async function displaySearchSuggestions(results, query, genreMap) {
     const searchSuggestions = document.getElementById('searchSuggestions');
 
@@ -121,6 +120,7 @@ async function displaySearchSuggestions(results, query, genreMap) {
     // Set up keyboard navigation
     setupKeyboardNavigation(searchSuggestions);
 }
+
 
 function displaySearchResults(results, genreMap) {
     const mediaContainer = document.getElementById('mediaContainer');
@@ -371,6 +371,11 @@ async function fetchSelectedMedia(apiKey, mediaId, mediaType) {
         if (response.ok) {
             const media = await response.json();
             displaySelectedMedia(media, mediaType);
+
+            const title = media.title || media.name;
+            const formattedTitle = title.toLowerCase().replace(/ /g, '-').replace(/[^\w-]/g, '');
+            const newUrl = `?title=${formattedTitle}`;
+            history.pushState({ title }, title, newUrl);
         } else {
             handleError('Failed to fetch media details.');
         }
@@ -378,6 +383,7 @@ async function fetchSelectedMedia(apiKey, mediaId, mediaType) {
         handleError('An error occurred while fetching media details:', error);
     }
 }
+
 
 // Handle media type changes
 document.querySelectorAll('input[name="mediaType"]').forEach(radio => {
@@ -394,6 +400,35 @@ document.querySelectorAll('input[name="mediaType"]').forEach(radio => {
         });
     });
 });
+window.addEventListener('popstate', async (event) => {
+    if (event.state && event.state.title) {
+        const title = event.state.title;
+        const apiKey = await getApiKey();
+        if (apiKey) {
+            const media = await searchMediaByTitle(apiKey, title);
+            if (media) {
+                displaySelectedMedia(media, media.media_type);
+            }
+        }
+    }
+});
+
+
+async function searchMediaByTitle(apiKey, title) {
+    try {
+        const response = await fetch(`https://api.themoviedb.org/3/search/multi?api_key=${apiKey}&query=${encodeURIComponent(title)}`);
+        if (response.ok) {
+            const data = await response.json();
+            return data.results[0];
+        } else {
+            handleError('Failed to search media by title.');
+            return null;
+        }
+    } catch (error) {
+        handleError('An error occurred while searching media by title:', error);
+        return null;
+    }
+}
 
 // Initial load
 document.addEventListener('DOMContentLoaded', function() {
