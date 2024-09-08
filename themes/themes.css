@@ -226,6 +226,10 @@ button:active {
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3); /* Subtle shadow effect */
 }
 
+.media-card .release-date {
+    color: #a0a0a0; /* Slightly lighter gray for release date */
+    margin-top: 8px;
+}
 /* Highlighted text */
 .highlight {
     background-color: #a74ac7; /* Vibrant purple highlight */
