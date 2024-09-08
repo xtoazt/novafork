@@ -1,0 +1,12 @@
+.dev-notice {
+    background-color: rgb(140, 130, 220);
+    color: rgba(0, 0, 0, 0.96);
+    padding: 10px;
+    text-align: center;
+    font-weight: bold;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    z-index: 1000;
+}
