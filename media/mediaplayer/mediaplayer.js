@@ -361,32 +361,38 @@ async function generateVidBingeTvIframeUrl(tmdbID, seasonNumber, episodeNumber) 
     }
 
     try {
-        // Use fetchMediaData to get TV Show details
         const data = await fetchMediaData(tmdbID, 'tv', apiKey);
 
-        // Find the specific season using season number
+        console.log(`Data for TV show ID ${tmdbID}:`, data);
+
         const season = data.seasons.find(s => s.season_number === Number(seasonNumber));
         if (!season) {
             console.error('Season not found');
             return null;
         }
 
-        // Fetch detailed information for the specific season to get episodes
+        console.log(`Details for Season ${seasonNumber}:`, season);
+
         const seasonDetailsUrl = `https://api.themoviedb.org/3/tv/${tmdbID}/season/${seasonNumber}?api_key=${apiKey}`;
         const seasonDetailsResponse = await fetch(seasonDetailsUrl);
         const seasonDetails = await seasonDetailsResponse.json();
 
-        // Locate the episode by episode number
-        const episode = seasonDetails.episodes.find(e => e.episode_number === episodeNumber);
+        console.log(`Details for Season ${seasonNumber} from API:`, seasonDetails);
+
+        const episode = seasonDetails.episodes.find(e => e.episode_number === Number(episodeNumber));
         if (!episode) {
             console.error('Episode not found');
             return null;
         }
 
-        // Construct the iframe URL using TV ID, season TMDb ID, and episode TMDb ID
+        console.log(`Details for Episode ${episodeNumber}:`, episode);
+
         const vidbingeIframeUrl = `https://www.vidbinge.com/media/tmdb-tv-${tmdbID}/${season.id}/${episode.id}`;
+        console.log("Generated iframe URL:", vidbingeIframeUrl);
+
         return vidbingeIframeUrl;
     } catch (error) {
+
         console.error('Failed to fetch data:', error);
         return null;
     }
