@@ -329,3 +329,40 @@ footer:hover {
 #autoplayButton:hover {
     background-color: #444;
 }
+
+.header-button img {
+    width: 24px;
+    height: 24px;
+}
+.telegram-button {
+    display: flex;
+    align-items: center;
+    background-color: #0088cc;
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 0.5rem;
+    text-decoration: none;
+    transition: background-color 0.3s, transform 0.3s;
+}
+.telegram-button img {
+    width: 24px;
+    height: 24px;
+    margin-right: 0.5rem;
+}
+.telegram-button:hover {
+    background-color: #007ab8;
+    transform: scale(1.05);
+}
+.header-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+.header-right {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+.category-select {
+    margin-left: 45rem;
+}
