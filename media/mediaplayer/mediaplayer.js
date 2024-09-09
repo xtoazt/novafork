@@ -214,7 +214,7 @@ async function displaySelectedMedia(media, mediaType) {
                 case 'vidsrc.rip':
                     return `https://vidsrc.rip/embed/tv/${mediaId}/${seasonId}/${episodeId}`;
                 case 'vidbinge':
-                    return `https://www.vidbinge.com/media/tmdb-tv-${mediaId}/${seasonId}/${episodeId}`;
+                    return await generateVidBingeTvIframeUrl(mediaId, seasonId, episodeId);
                 default:
                     throw new Error('Provider not recognized.');
             }
@@ -350,5 +350,44 @@ async function displaySelectedMedia(media, mediaType) {
         }
     } catch (error) {
         console.error('Failed to display selected media:', error);
+    }
+}
+
+async function generateVidBingeTvIframeUrl(tmdbID, seasonNumber, episodeNumber) {
+    const apiKey = await getApiKey();
+    if (!apiKey) {
+        console.error('API key not found');
+        return null;
+    }
+
+    try {
+        // Use fetchMediaData to get TV Show details
+        const data = await fetchMediaData(tmdbID, 'tv', apiKey);
+
+        // Find the specific season using season number
+        const season = data.seasons.find(s => s.season_number === seasonNumber);
+        if (!season) {
+            console.error('Season not found');
+            return null;
+        }
+
+        // Fetch detailed information for the specific season to get episodes
+        const seasonDetailsUrl = `https://api.themoviedb.org/3/tv/${tmdbID}/season/${seasonNumber}?api_key=${apiKey}`;
+        const seasonDetailsResponse = await fetch(seasonDetailsUrl);
+        const seasonDetails = await seasonDetailsResponse.json();
+
+        // Locate the episode by episode number
+        const episode = seasonDetails.episodes.find(e => e.episode_number === episodeNumber);
+        if (!episode) {
+            console.error('Episode not found');
+            return null;
+        }
+
+        // Construct the iframe URL using TV ID, season TMDb ID, and episode TMDb ID
+        const vidbingeIframeUrl = `https://www.vidbinge.com/media/tmdb-tv-${tmdbID}/${season.id}/${episode.id}`;
+        return vidbingeIframeUrl;
+    } catch (error) {
+        console.error('Failed to fetch data:', error);
+        return null;
     }
 }
