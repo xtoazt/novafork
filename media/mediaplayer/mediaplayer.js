@@ -365,7 +365,7 @@ async function generateVidBingeTvIframeUrl(tmdbID, seasonNumber, episodeNumber) 
         const data = await fetchMediaData(tmdbID, 'tv', apiKey);
 
         // Find the specific season using season number
-        const season = data.seasons.find(s => s.season_number === seasonNumber);
+        const season = data.seasons.find(s => s.season_number === Number(seasonNumber));
         if (!season) {
             console.error('Season not found');
             return null;
