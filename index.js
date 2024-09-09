@@ -290,12 +290,18 @@ document.addEventListener('DOMContentLoaded', async function () {
     }
     async function getReleaseType(mediaId, mediaType) {
         try {
-            const response = await fetch(`https://api.themoviedb.org/3/${mediaType}/${mediaId}/release_dates?api_key=${API_KEY}`);
-            if (response.ok) {
-                const data = await response.json();
-                const releases = data.results.flatMap(result => result.release_dates);
-                console.log('Releases:', releases);
+            const [releaseDatesResponse, watchProvidersResponse] = await Promise.all([
+                fetch(`https://api.themoviedb.org/3/${mediaType}/${mediaId}/release_dates?api_key=${API_KEY}`),
+                fetch(`https://api.themoviedb.org/3/${mediaType}/${mediaId}/watch/providers?api_key=${API_KEY}`)
+            ]);
+
+            if (releaseDatesResponse.ok && watchProvidersResponse.ok) {
+                const releaseDatesData = await releaseDatesResponse.json();
+                const watchProvidersData = await watchProvidersResponse.json();
+
+                const releases = releaseDatesData.results.flatMap(result => result.release_dates);
                 const currentDate = new Date();
+
                 const isDigitalRelease = releases.some(release =>
                     (release.type === 4 || release.type === 6) && new Date(release.release_date) <= currentDate
                 );
@@ -303,20 +309,38 @@ document.addEventListener('DOMContentLoaded', async function () {
                 const isInTheaters = mediaType === 'movie' && releases.some(release =>
                     release.type === 3 && new Date(release.release_date) <= currentDate
                 );
+
                 const hasFutureRelease = releases.some(release =>
                     new Date(release.release_date) > currentDate
                 );
-                if (isDigitalRelease) {
+
+                const streamingProviders = watchProvidersData.results?.US?.flatrate || [];
+                const isStreamingAvailable = streamingProviders.length > 0;
+
+                if (isStreamingAvailable) {
+                    return "Streaming (HD)";
+                } else if (isDigitalRelease) {
                     return "HD";
                 } else if (isInTheaters) {
-                    return "Cam Quality";
+                    const theatricalRelease = releases.find(release => release.type === 3);
+                    if (theatricalRelease && new Date(theatricalRelease.release_date) <= currentDate) {
+                        const releaseDate = new Date(theatricalRelease.release_date);
+                        const oneYearLater = new Date(releaseDate);
+                        oneYearLater.setFullYear(releaseDate.getFullYear() + 1);
+
+                        if (currentDate >= oneYearLater) {
+                            return "HD";
+                        } else {
+                            return "Cam Quality";
+                        }
+                    }
                 } else if (hasFutureRelease) {
                     return "Not Released Yet";
-                } else {
-                    return "Unknown Quality";
                 }
+
+                return "Unknown Quality";
             } else {
-                handleError('Failed to fetch release type.', new Error('API response not OK'));
+                handleError('Failed to fetch release type or watch providers.', new Error('API response not OK'));
                 return "Unknown Quality";
             }
         } catch (error) {
@@ -325,10 +349,16 @@ document.addEventListener('DOMContentLoaded', async function () {
         }
     }
 
-    function displayPopularMedia(results) {
+    async function displayPopularMedia(results) {
         popularMedia.innerHTML = '';
 
-        results.forEach(async (media) => {
+        const mediaWithReleaseType = await Promise.all(results.map(async (media) => {
+            const mediaType = media.media_type || (media.title ? 'movie' : 'tv');
+            const releaseType = mediaType === 'movie' || media.genre_ids.includes(16) ? await getReleaseType(media.id, mediaType) : '';
+            return { ...media, releaseType };
+        }));
+
+        mediaWithReleaseType.forEach(media => {
             const mediaCard = document.createElement('div');
             mediaCard.classList.add('media-card');
 
@@ -337,22 +367,17 @@ document.addEventListener('DOMContentLoaded', async function () {
             const ratingStars = Array.from({ length: 5 }, (_, i) => i < Math.round(media.vote_average / 2) ? '★' : '☆').join(' ');
 
             const mediaType = media.media_type || (media.title ? 'movie' : 'tv');
-            const releaseType = mediaType === 'movie' ? await getReleaseType(media.id, mediaType) : '';
-
-            const isAnimation = media.genre_ids.includes(16);
-            const displayType = mediaType === 'movie' || isAnimation ? releaseType : '';
-
-            const titleSlug = media.title ? media.title.toLowerCase().replace(/[^a-z0-9]+/g, '-') : media.name.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+            const displayType = mediaType === 'movie' || media.genre_ids.includes(16) ? media.releaseType : ''; // Display release type for movies and animations
 
             mediaCard.innerHTML = `
             <div class="relative w-full h-64 overflow-hidden rounded-lg mb-4">
                 <img src="https://image.tmdb.org/t/p/w300${media.poster_path}" alt="${media.title || media.name}" class="w-full h-full object-cover rounded-lg transition-transform duration-300 group-hover:scale-110">
                 <div class="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-50"></div>
-                ${displayType ? `<div class="absolute top-0 right-0 m-2 px-2 py-1 bg-black bg-opacity-75 text-white text-xs rounded">${displayType}</div>` : ''} 
+                ${displayType ? `<div class="absolute top-0 right-0 m-2 px-2 py-1 bg-black bg-opacity-75 text-white text-xs rounded">${displayType}</div>` : ''} <!-- Display release type for movies and animations -->
             </div>
             <div class="flex-grow w-full">
                 <h3 class="text-lg font-semibold text-white truncate">${media.title || media.name}</h3>
-                <p class="text-gray-400 text-sm mt-2">${mediaType === 'movie' ? '🎬 Movie' : mediaType === 'tv' ? '📺 TV Show' : isAnimation ? '📽 Animation' : '📽 Animation'}</p>
+                <p class="text-gray-400 text-sm mt-2">${mediaType === 'movie' ? '🎬 Movie' : mediaType === 'tv' ? '📺 TV Show' : '📽 Animation'}</p>
                 <p class="text-gray-400 text-sm mt-1">Genres: ${genreNames}</p>
                 <div class="flex items-center mt-2">
                     <span class="text-yellow-400 text-base">${ratingStars}</span>
@@ -369,6 +394,7 @@ document.addEventListener('DOMContentLoaded', async function () {
             popularMedia.appendChild(mediaCard);
         });
     }
+
 
 
     async function fetchMediaTrailer(mediaId, mediaType) {

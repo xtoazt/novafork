@@ -128,7 +128,6 @@ async function displaySelectedMedia(media, mediaType) {
             .replace(/{{runtime}}/g, `Runtime: ${runtime}`)
             .replace(/{{language}}/g, `Language: ${language}`)
             .replace(/{{cast_list}}/g, castListSection)
-            .replace(/{{quality}}/g, 'HD'); // Placeholder for streaming quality
 
         selectedMovie.innerHTML = populatedHTML;
 
