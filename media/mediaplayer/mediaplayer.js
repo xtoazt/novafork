@@ -168,57 +168,59 @@ async function displaySelectedMedia(media, mediaType) {
             movieInfo.classList.add('hidden');
         }
 
-        async function getTvEmbedUrl(mediaId, seasonNumber, episodeNumber, provider, apiKey) {
+        async function getTvEmbedUrl(mediaId, seasonId, episodeId, provider, apiKey) {
             const primaryColor = '8A2BE2';
             const secondaryColor = 'D8BFD8';
             const iconColor = '4B0082';
 
-
-
             switch (provider) {
                 case 'vidsrc':
-                    return `https://vidsrc.cc/v2/embed/tv/${mediaId}/${seasonNumber}/${episodeNumber}`;
+                    return `https://vidsrc.cc/v2/embed/tv/${mediaId}/${seasonId}/${episodeId}`;
                 case 'vidsrcpro':
-                    return `https://vidsrc.pro/embed/tv/${mediaId}/${seasonNumber}/${episodeNumber}`;
+                    return `https://vidsrc.pro/embed/tv/${mediaId}/${seasonId}/${episodeId}`;
                 case 'vidsrc2':
-                    return `https://vidsrc2.to/embed/tv/${mediaId}?season=${seasonNumber}&episode=${episodeNumber}`;
+                    return `https://vidsrc2.to/embed/tv/${mediaId}?season=${seasonId}&episode=${episodeId}`;
                 case 'vidsrcxyz':
-                    return `https://vidsrc.xyz/embed/tv/${mediaId}?season=${seasonNumber}&episode=${episodeNumber}`;
+                    return `https://vidsrc.xyz/embed/tv/${mediaId}?season=${seasonId}&episode=${episodeId}`;
                 case 'embedsoap':
-                    return `https://www.embedsoap.com/embed/tv/?id=${mediaId}&s=${seasonNumber}&e=${episodeNumber}`;
+                    return `https://www.embedsoap.com/embed/tv/?id=${mediaId}&s=${seasonId}&e=${episodeId}`;
                 case 'autoembed':
-                    return `https://player.autoembed.cc/embed/tv/${mediaId}/${seasonNumber}/${episodeNumber}`;
+                    return `https://player.autoembed.cc/embed/tv/${mediaId}/${seasonId}/${episodeId}`;
                 case 'smashystream':
-                    return `https://player.smashy.stream/tv/${mediaId}?s=${seasonNumber}&e=${episodeNumber}`;
+                    return `https://player.smashy.stream/tv/${mediaId}?s=${seasonId}&e=${episodeId}`;
                 case 'anime':
-                    return `https://anime.autoembed.cc/embed/${media.name.replace(/\s+/g, '-').toLowerCase()}-episode-${episodeNumber}`;
+                    return `https://anime.autoembed.cc/embed/${media.name.replace(/\s+/g, '-').toLowerCase()}-episode-${episodeId}`;
                 case 'nontonGo':
-                    return `https://www.NontonGo.win/embed/tv/${mediaId}/${seasonNumber}/${episodeNumber}`;
+                    return `https://www.NontonGo.win/embed/tv/${mediaId}/${seasonId}/${episodeId}`;
                 case 'nontonGoAlt':
-                    return `https://www.NontonGo.win/embed/tv/?id=${mediaId}&s=${seasonNumber}&e=${episodeNumber}`;
+                    return `https://www.NontonGo.win/embed/tv/?id=${mediaId}&s=${seasonId}&e=${episodeId}`;
                 case '2animesub':
-                    return `https://2anime.xyz/embed/${media.name.replace(/\s+/g, '-').toLowerCase()}-episode-${episodeNumber}`;
+                    return `https://2anime.xyz/embed/${media.name.replace(/\s+/g, '-').toLowerCase()}-episode-${episodeId}`;
                 case '2embed':
-                    return `https://www.2embed.skin/embedtv/${mediaId}&s=${seasonNumber}&e=${episodeNumber}`;
+                    return `https://www.2embed.skin/embedtv/${mediaId}&s=${seasonId}&e=${episodeId}`;
                 case 'AdminHiHi':
                     const tvSlug = media.name.replace(/\s+/g, '-');
-                    return `https://embed.anicdn.top/v/${tvSlug}-dub/${episodeNumber}.html`;
+                    return `https://embed.anicdn.top/v/${tvSlug}-dub/${episodeId}.html`;
                 case 'trailer':
                     return await fetchTrailer(mediaId, 'tv', apiKey);
                 case 'moviesapi':
-                    return `https://moviesapi.club/tv/${mediaId}/${seasonNumber}/${episodeNumber}`;
+                    return `https://moviesapi.club/tv/${mediaId}/${seasonId}/${episodeId}`;
                 case 'vidlink':
-                    return `https://vidlink.pro/tv/${mediaId}/${seasonNumber}/${episodeNumber}?primaryColor=${primaryColor}&secondaryColor=${secondaryColor}&iconColor=${iconColor}&nextbutton=true&autoplay=true`;
+                    return `https://vidlink.pro/tv/${mediaId}/${seasonId}/${episodeId}?primaryColor=${primaryColor}&secondaryColor=${secondaryColor}&iconColor=${iconColor}&nextbutton=true&autoplay=true`;
                 case 'vidlinkdub':
-                    return `https://vidlink.pro/tv/${mediaId}/${seasonNumber}/${episodeNumber}?player=jw&multiLang=true`;
+                    return `https://vidlink.pro/tv/${mediaId}/${seasonId}/${episodeId}?player=jw&multiLang=true`;
                 case 'vidsrcnl':
-                    return `https://player.vidsrc.nl/embed/tv/${mediaId}/${seasonNumber}/${episodeNumber}`; // New URL for VidsrcNL
+                    return `https://player.vidsrc.nl/embed/tv/${mediaId}/${seasonId}/${episodeId}`;
                 case 'vidsrc.rip':
-                    return `https://vidsrc.rip/embed/tv/${mediaId}/${seasonNumber}/${episodeNumber}`; // New URL for Vidsrc.rip
+                    return `https://vidsrc.rip/embed/tv/${mediaId}/${seasonId}/${episodeId}`;
+                case 'vidbinge':
+                    return `https://www.vidbinge.com/media/tmdb-tv-${mediaId}/${seasonId}/${episodeId}`;
                 default:
                     throw new Error('Provider not recognized.');
             }
         }
+
+
 
         async function getMovieEmbedUrl(mediaId, provider, apiKey) {
             const primaryColor = '8A2BE2';
@@ -259,6 +261,8 @@ async function displaySelectedMedia(media, mediaType) {
                     return `https://player.vidsrc.nl/embed/movie/${mediaId}`;
                 case 'vidsrc.rip':
                     return `https://vidsrc.rip/embed/movie/${mediaId}`;
+                case 'vidbinge':
+                    return `https://www.vidbinge.com/media/tmdb-movie-${mediaId}`;
                 case 'trailer':
                     return await fetchTrailer(mediaId, 'movie', apiKey);
                 case 'moviesapi':
