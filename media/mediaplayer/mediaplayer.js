@@ -1,3 +1,6 @@
+// Global variable to store the selected provider
+let selectedProvider = 'vidlink';
+
 async function getApiKey() {
     try {
         const response = await fetch('apis/config.json');
@@ -148,6 +151,12 @@ async function displaySelectedMedia(media, mediaType) {
         const providerSelect = document.getElementById('providerSelect');
         const seasonSelect = document.getElementById('seasonSelect');
         const episodeSelect = document.getElementById('episodeSelect');
+
+        // Set the provider select element to the stored value
+        if (providerSelect) {
+            providerSelect.value = selectedProvider;
+        }
+
         async function updateVideo() {
             if (!videoPlayer || !movieInfo) {
                 console.error("Error: videoPlayer or movieInfo elements not found.");
@@ -156,7 +165,7 @@ async function displaySelectedMedia(media, mediaType) {
 
             let endpoint;
             const selectedLanguage = languageSelect ? languageSelect.value : '';
-            const provider = providerSelect ? providerSelect.value : '';
+            const provider = providerSelect ? providerSelect.value : selectedProvider; // Use stored provider if dropdown is not present
 
             if (mediaType === 'tv') {
                 const seasonNumber = seasonSelect ? seasonSelect.value : '';
@@ -230,8 +239,6 @@ async function displaySelectedMedia(media, mediaType) {
             }
         }
 
-
-
         async function getMovieEmbedUrl(mediaId, provider, apiKey) {
             const primaryColor = '8A2BE2';
             const secondaryColor = 'D8BFD8';
@@ -303,8 +310,6 @@ async function displaySelectedMedia(media, mediaType) {
             }
         }
 
-
-
         function handleSearchInput(event) {
             const query = event.target.value;
             if (query.length < 3) { // Trigger search after 3 characters
@@ -343,7 +348,10 @@ async function displaySelectedMedia(media, mediaType) {
         }
 
         if (providerSelect) {
-            providerSelect.addEventListener('change', updateVideo);
+            providerSelect.addEventListener('change', () => {
+                selectedProvider = providerSelect.value; // Store the selected provider
+                updateVideo();
+            });
         }
 
         if (mediaType === 'tv') {
@@ -366,4 +374,3 @@ async function displaySelectedMedia(media, mediaType) {
         console.error('Failed to display selected media:', error);
     }
 }
-
