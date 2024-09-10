@@ -95,20 +95,20 @@ async function displaySelectedMedia(media, mediaType) {
             </div>
         `;
 
-        // Season and episode section for TV shows
         const seasonSection = mediaType === 'tv' ? `
-            <div class="mt-4">
-                <label for="seasonSelect" class="block text-xs font-medium text-gray-300">Select Season:</label>
-                <select id="seasonSelect" class="dropdown mt-1 block w-full bg-gray-800 text-white rounded border border-gray-700 text-sm">
-                    ${mediaData.seasons.map(season =>
+    <div class="mt-4">
+        <label for="seasonSelect" class="block text-xs font-medium text-gray-300">Select Season:</label>
+        <select id="seasonSelect" class="dropdown mt-1 block w-full bg-gray-800 text-white rounded border border-gray-700 text-sm">
+            ${mediaData.seasons.filter(season => season.season_number !== 0).map(season =>
             `<option value="${season.season_number}">Season ${season.season_number}: ${season.name}</option>`
         ).join('')}
-                </select>
+        </select>
 
-                <label for="episodeSelect" class="block text-xs font-medium text-gray-300 mt-2">Select Episode:</label>
-                <select id="episodeSelect" class="dropdown mt-1 block w-full bg-gray-800 text-white rounded border border-gray-700 text-sm"></select>
-            </div>
-        ` : '';
+        <label for="episodeSelect" class="block text-xs font-medium text-gray-300 mt-2">Select Episode:</label>
+        <select id="episodeSelect" class="dropdown mt-1 block w-full bg-gray-800 text-white rounded border border-gray-700 text-sm"></select>
+    </div>
+` : '';
+
 
         // Fetch template and replace placeholders
         const templateResponse = await fetch('media/mediaTemplate.html');
@@ -291,16 +291,19 @@ async function displaySelectedMedia(media, mediaType) {
             try {
                 const url = `https://api.themoviedb.org/3/tv/${media.id}/season/${seasonNumber}?api_key=${apiKey}`;
                 const season = await fetchJson(url);
-                episodeSelect.innerHTML = season.episodes.map(episode =>
-                    `<option value="${episode.episode_number}" data-image="https://image.tmdb.org/t/p/w500${episode.still_path}">
-                        Episode ${episode.episode_number}: ${episode.name}
-                    </option>`
-                ).join('');
+                episodeSelect.innerHTML = season.episodes
+                    .filter(episode => episode.season_number === Number(seasonNumber)) // Ensure it matches the selected season
+                    .map(episode =>
+                        `<option value="${episode.episode_number}" data-image="https://image.tmdb.org/t/p/w500${episode.still_path}">
+                    Episode ${episode.episode_number}: ${episode.name}
+                </option>`
+                    ).join('');
                 episodeSelect.dispatchEvent(new Event('change')); // Trigger change event to load images
             } catch (error) {
                 console.error('Failed to fetch season details:', error);
             }
         }
+
 
         function handleSearchInput(event) {
             const query = event.target.value;
