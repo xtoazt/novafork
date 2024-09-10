@@ -163,7 +163,8 @@ async function displaySelectedMedia(media, mediaType) {
                 endpoint = await getMovieEmbedUrl(media.id, provider, apiKey);
             }
 
-            videoPlayer.innerHTML = `<iframe src="${endpoint}" class="w-full" style="height: ${document.getElementById('poster').offsetHeight}px;" allowfullscreen></iframe>`;
+            videoPlayer.innerHTML = `<iframe src="${endpoint}" class="w-full" style="height: ${document.getElementById('poster').offsetHeight * 1.3}px;" allowfullscreen></iframe>`;
+
             videoPlayer.classList.remove('hidden');
             movieInfo.classList.add('hidden');
         }
