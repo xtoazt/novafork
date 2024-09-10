@@ -321,7 +321,7 @@ document.addEventListener('DOMContentLoaded', async function () {
                     return "Streaming (HD)";
                 } else if (isDigitalRelease) {
                     return "HD";
-                } else if (isInTheaters) {
+                } else if (isInTheaters && mediaType === 'movie') {
                     const theatricalRelease = releases.find(release => release.type === 3);
                     if (theatricalRelease && new Date(theatricalRelease.release_date) <= currentDate) {
                         const releaseDate = new Date(theatricalRelease.release_date);
@@ -354,7 +354,7 @@ document.addEventListener('DOMContentLoaded', async function () {
 
         const mediaWithReleaseType = await Promise.all(results.map(async (media) => {
             const mediaType = media.media_type || (media.title ? 'movie' : 'tv');
-            const releaseType = mediaType === 'movie' || media.genre_ids.includes(16) ? await getReleaseType(media.id, mediaType) : '';
+            const releaseType = mediaType === 'movie' || mediaType === 'animation' ? await getReleaseType(media.id, mediaType) : '';
             return { ...media, releaseType };
         }));
 
@@ -367,25 +367,25 @@ document.addEventListener('DOMContentLoaded', async function () {
             const ratingStars = Array.from({ length: 5 }, (_, i) => i < Math.round(media.vote_average / 2) ? '★' : '☆').join(' ');
 
             const mediaType = media.media_type || (media.title ? 'movie' : 'tv');
-            const displayType = mediaType === 'movie' || media.genre_ids.includes(16) ? media.releaseType : ''; // Display release type for movies and animations
+            const displayType = mediaType === 'movie' || mediaType === 'animation' ? media.releaseType : ''; // Updated to include animations
 
             mediaCard.innerHTML = `
-            <div class="relative w-full h-64 overflow-hidden rounded-lg mb-4">
-                <img src="https://image.tmdb.org/t/p/w300${media.poster_path}" alt="${media.title || media.name}" class="w-full h-full object-cover rounded-lg transition-transform duration-300 group-hover:scale-110">
-                <div class="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-50"></div>
-                ${displayType ? `<div class="absolute top-0 right-0 m-2 px-2 py-1 bg-black bg-opacity-75 text-white text-xs rounded">${displayType}</div>` : ''} <!-- Display release type for movies and animations -->
+        <div class="relative w-full h-64 overflow-hidden rounded-lg mb-4">
+            <img src="https://image.tmdb.org/t/p/w300${media.poster_path}" alt="${media.title || media.name}" class="w-full h-full object-cover rounded-lg transition-transform duration-300 group-hover:scale-110">
+            <div class="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-50"></div>
+            ${displayType ? `<div class="absolute top-0 right-0 m-2 px-2 py-1 bg-black bg-opacity-75 text-white text-xs rounded">${displayType}</div>` : ''}
+        </div>
+        <div class="flex-grow w-full">
+            <h3 class="text-lg font-semibold text-white truncate">${media.title || media.name}</h3>
+            <p class="text-gray-400 text-sm mt-2">${mediaType === 'movie' ? '🎬 Movie' : mediaType === 'tv' ? '📺 TV Show' : '📽 Animation'}</p>
+            <p class="text-gray-400 text-sm mt-1">Genres: ${genreNames}</p>
+            <div class="flex items-center mt-2">
+                <span class="text-yellow-400 text-base">${ratingStars}</span>
+                <span class="text-gray-300 text-sm ml-2">${media.vote_average.toFixed(1)}/10</span>
             </div>
-            <div class="flex-grow w-full">
-                <h3 class="text-lg font-semibold text-white truncate">${media.title || media.name}</h3>
-                <p class="text-gray-400 text-sm mt-2">${mediaType === 'movie' ? '🎬 Movie' : mediaType === 'tv' ? '📺 TV Show' : '📽 Animation'}</p>
-                <p class="text-gray-400 text-sm mt-1">Genres: ${genreNames}</p>
-                <div class="flex items-center mt-2">
-                    <span class="text-yellow-400 text-base">${ratingStars}</span>
-                    <span class="text-gray-300 text-sm ml-2">${media.vote_average.toFixed(1)}/10</span>
-                </div>
-                <p class="text-gray-300 text-sm mt-1">Release Date: ${formattedDate}</p>
-            </div>
-        `;
+            <p class="text-gray-300 text-sm mt-1">Release Date: ${formattedDate}</p>
+        </div>
+    `;
 
             mediaCard.addEventListener('click', function () {
                 fetchSelectedMedia(media.id, mediaType);
