@@ -130,6 +130,17 @@ async function displaySelectedMedia(media, mediaType) {
             .replace(/{{cast_list}}/g, castListSection)
 
         selectedMovie.innerHTML = populatedHTML;
+        const parentContainer = document.getElementById('videoPlayer'); // Replace with the actual parent container ID
+        if (parentContainer) {
+            selectedMovie.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+
+            const offset = 300;
+            parentContainer.scrollBy({
+                top: -offset,
+                behavior: 'smooth'
+            });
+        }
 
         const playButton = document.getElementById('playButton');
         const videoPlayer = selectedMovie.querySelector('#videoPlayer');
@@ -138,7 +149,6 @@ async function displaySelectedMedia(media, mediaType) {
         const providerSelect = document.getElementById('providerSelect');
         const seasonSelect = document.getElementById('seasonSelect');
         const episodeSelect = document.getElementById('episodeSelect');
-
         async function updateVideo() {
             if (!videoPlayer || !movieInfo) {
                 console.error("Error: videoPlayer or movieInfo elements not found.");

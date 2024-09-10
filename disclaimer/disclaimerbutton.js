@@ -1,21 +1,15 @@
+document.addEventListener('DOMContentLoaded', function() {
+    const disclaimerButton = document.getElementById('disclaimerButton');
+    const disclaimerModal = document.getElementById('disclaimerModal');
+    const closeDisclaimerButton = document.getElementById('closeDisclaimerButton');
 
-// Toggle Disclaimer Content
-document.getElementById('disclaimerButton').addEventListener('click', function() {
-    const disclaimerContent = document.getElementById('disclaimerContent');
-    disclaimerContent.classList.toggle('hidden');
-    if (!disclaimerContent.classList.contains('hidden')) {
-        disclaimerContent.classList.remove('translate-y-full');
-        disclaimerContent.classList.add('translate-y-0');
-    } else {
-        disclaimerContent.classList.add('translate-y-full');
-        disclaimerContent.classList.remove('translate-y-0');
+    if (disclaimerButton && disclaimerModal && closeDisclaimerButton) {
+        disclaimerButton.addEventListener('click', function() {
+            disclaimerModal.classList.remove('hidden');
+        });
+
+        closeDisclaimerButton.addEventListener('click', function() {
+            disclaimerModal.classList.add('hidden');
+        });
     }
-});
-
-// Close Disclaimer
-document.getElementById('closeDisclaimer').addEventListener('click', function() {
-    const disclaimerContent = document.getElementById('disclaimerContent');
-    disclaimerContent.classList.add('hidden');
-    disclaimerContent.classList.add('translate-y-full');
-    disclaimerContent.classList.remove('translate-y-0');
 });

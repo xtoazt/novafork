@@ -3,30 +3,32 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>Nova</title>
-    <link rel="icon" type="image/x-icon" href="https://raw.githubusercontent.com/ambr0sial/nova/main/logo.png">
+    <title>Nova - Your Gateway to Quality Content</title>
+    <link rel="icon" href="https://raw.githubusercontent.com/ambr0sial/nova/main/logo.png" sizes="32x32" type="image/png">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
-    <meta content="Novafork" property="og:title" />
-    <meta content="Click, watch, enjoy. Novafork breaks down the paywall, ensuring that quality content is accessible to everyone." property="og:description" />
-    <meta content="https://novafork.com" property="og:url"/>
-    <meta content="https://raw.githubusercontent.com/ambr0sial/nova/main/logo.png" property="og:image" />
-    <meta content="#A17FC0" data-react-helmet="true" name="theme-color" />
+    <meta name="description" content="NovaFork is your gateway to a world of quality content. Discover movies, TV shows, and more without paywalls. Enjoy seamless access and explore trending media with ease.">
+    <meta property="og:title" content="NovaFork">
+    <meta property="og:description" content="Click, watch, enjoy. Novafork breaks down the paywall, ensuring that quality content is accessible to everyone.">
+    <meta property="og:url" content="https://novafork.com">
+    <meta property="og:image" content="https://raw.githubusercontent.com/ambr0sial/nova/main/logo.png">
+    <meta name="theme-color" content="#A17FC0">
+
+    <!
     <script src="https://cdn.tailwindcss.com"></script>
+
     <link rel="stylesheet" href="themes/themes.css">
     <link rel="stylesheet" href="themes/mediacard.css">
     <link rel="stylesheet" href="themes/category.css">
     <link rel="stylesheet" href="themes/notice.css">
+
     <style>
     </style>
 </head>
 
-<body class="bg-gray-900 text-gray-200 font-poppins">
-<!-- Development Notice Banner -->
-<div class="dev-notice">
-    🚧 <span class="font-bold">Notice:</span> This site is still under development. Expect changes and updates as we continue to improve.🖤
-</div>
 
+
+<body class="bg-gray-900 text-gray-200 font-poppins">
 <!-- Header Section -->
 <header class="bg-gray-800 py-4 mt-12">
     <div class="container mx-auto flex justify-between items-center">
@@ -132,47 +134,51 @@
 
         <!-- Pagination Controls -->
         <div id="paginationControls" class="flex justify-center items-center mt-8 space-x-4">
-            <button id="prevPage" class="bg-gray-700 text-white font-semibold py-2 px-6 rounded-lg hover:bg-gray-600 transition duration-200 ease-in-out">Previous</button>
-            <span id="currentPage" class="text-white text-lg font-medium">1</span>
-            <button id="nextPage" class="bg-gray-700 text-white font-semibold py-2 px-6 rounded-lg hover:bg-gray-600 transition duration-200 ease-in-out">Next</button>
+            <button id="prevPage" class="bg-gray-700 text-white font-semibold py-2 px-6 rounded-lg hover:bg-gray-600 transition duration-200 ease-in-out">&lt; Prev</button>
+            <button id="nextPage" class="bg-gray-700 text-white font-semibold py-2 px-6 rounded-lg hover:bg-gray-600 transition duration-200 ease-in-out">Next &gt;</button>
         </div>
     </div>
 </main>
 
 <!-- Footer Section -->
-<footer class="bg-gray-800 py-6 text-gray-400 relative">
-    <div class="container mx-auto text-center">
-        <div class="mb-4">
-            Made with <span id="homeHeartIcon" class="cursor-pointer text-red-500 hover:text-red-600 transition duration-200 ease-in-out">♥</span> by Ambrosial and improved by fanlim. Latest version: 06/09/24
+<footer class="bg-gray-800 py-4">
+    <div class="container mx-auto text-center text-gray-400 flex justify-between items-center">
+        <div>
+            <p>&copy; 2024 Nova. All rights reserved.</p>
         </div>
-        <!-- Disclaimer Button -->
-        <button id="disclaimerButton" class="bg-purple-600 text-white py-2 px-4 rounded-lg shadow-lg hover:bg-purple-700 transition duration-300 ease-in-out flex items-center space-x-2 absolute bottom-4 right-4">
-            <span class="font-semibold">Disclaimer</span>
-            <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-            </svg>
-        </button>
+        <div>
+            <!-- Disclaimer Button -->
+            <button id="disclaimerButton" class="bg-gray-700 text-white font-semibold py-2 px-4 rounded-lg hover:bg-gray-600 transition duration-200 ease-in-out">Disclaimer</button>
+            <!-- Development Notice Button -->
+            <button id="noticeButton" class="bg-gray-700 text-white font-semibold py-2 px-4 rounded-lg hover:bg-gray-600 transition duration-200 ease-in-out">Notice</button>
+        </div>
     </div>
 </footer>
 
-<!-- Disclaimer Popup -->
-<div id="disclaimerContent" class="fixed bottom-0 right-0 w-full md:w-1/3 bg-gray-900 text-white p-6 rounded-t-lg shadow-2xl transform translate-y-full transition-transform duration-300 ease-in-out hidden">
-    <button id="closeDisclaimer" class="absolute top-3 right-3 text-gray-400 hover:text-red-500 focus:outline-none transition-colors duration-200">
-        <svg class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-        </svg>
-    </button>
-    <h2 class="text-2xl font-bold mb-4 border-b border-gray-700 pb-2 text-red-500">Disclaimer</h2>
-    <p class="text-sm text-gray-300 leading-relaxed">
-        NovaFork does not host or store any content on its servers. Our platform only provides access to external links. Legal responsibility lies solely with the content providers and hosts.
-    </p>
+<!-- Disclaimer Modal -->
+<div id="disclaimerModal" class="fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center hidden">
+    <div class="bg-gray-800 text-white p-6 rounded-lg shadow-lg w-3/4 md:w-1/2 lg:w-1/3">
+        <h2 class="text-2xl font-bold mb-4">Disclaimer</h2>
+        <p>NovaFork does not host or store any content on its servers. Our platform only provides access to external links. Legal responsibility lies solely with the content providers and hosts.</p>
+        <button id="closeDisclaimerButton" class="mt-4 bg-purple-600 text-white py-2 px-4 rounded-lg hover:bg-purple-700 transition duration-200 ease-in-out">Close</button>
+    </div>
 </div>
 
-<!-- Scripts -->
+<!-- Notice Modal -->
+<div id="noticeModal" class="fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center hidden">
+    <div class="bg-gray-800 text-white p-6 rounded-lg shadow-lg w-3/4 md:w-1/2 lg:w-1/3">
+        <h2 class="text-2xl font-bold mb-4">Development Notice</h2>
+        <p>🚧 This site is still under development. Expect changes and updates as we continue to improve.🖤</p>
+        <button id="closeNoticeButton" class="mt-4 bg-purple-600 text-white py-2 px-4 rounded-lg hover:bg-purple-700 transition duration-200 ease-in-out">Close</button>
+    </div>
+</div>
+
 <script src="media/mediaplayer/mediaplayer.js"></script>
 <script src="search/searchResults.js"></script>
 <script type="module" src="index.js"></script>
 <script src="media/mediahider/mediahider.js"></script>
 <script src="disclaimer/disclaimerbutton.js"></script>
+<script src="notice/noticebutton.js"></script> <!-- New Script for Notice Button -->
 </body>
 </html>
+
