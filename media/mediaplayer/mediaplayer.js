@@ -177,8 +177,22 @@ async function displaySelectedMedia(media, mediaType) {
                 }
 
                 endpoint = await getTvEmbedUrl(media.id, seasonNumber, episodeNumber, provider, apiKey);
+
+                // Update URL
+                const newUrl = new URL(window.location.href);
+                newUrl.searchParams.set('season', seasonNumber);
+                newUrl.searchParams.set('episode', episodeNumber);
+                newUrl.searchParams.set('provider', provider);
+                window.history.pushState({}, '', newUrl);
             } else {
                 endpoint = await getMovieEmbedUrl(media.id, provider, apiKey);
+
+                // Update URL
+                const newUrl = new URL(window.location.href);
+                newUrl.searchParams.delete('season');
+                newUrl.searchParams.delete('episode');
+                newUrl.searchParams.set('provider', provider);
+                window.history.pushState({}, '', newUrl);
             }
 
             videoPlayer.innerHTML = `<iframe src="${endpoint}" class="w-full" style="height: ${document.getElementById('poster').offsetHeight * 1.3}px;" allowfullscreen></iframe>`;
@@ -370,6 +384,26 @@ async function displaySelectedMedia(media, mediaType) {
                 });
             }
         }
+
+        // Initialize the page with URL parameters
+        function initializeFromUrl() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const seasonParam = urlParams.get('season');
+            const episodeParam = urlParams.get('episode');
+            const providerParam = urlParams.get('provider');
+
+            if (seasonParam && episodeParam && mediaType === 'tv') {
+                if (seasonSelect) seasonSelect.value = seasonParam;
+                if (episodeSelect) episodeSelect.value = episodeParam;
+                if (providerSelect) providerSelect.value = providerParam;
+                updateEpisodes().then(() => updateVideo());
+            } else {
+                if (providerSelect) providerSelect.value = providerParam || selectedProvider;
+                updateVideo();
+            }
+        }
+
+        initializeFromUrl();
     } catch (error) {
         console.error('Failed to display selected media:', error);
     }
