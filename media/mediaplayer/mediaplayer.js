@@ -99,9 +99,10 @@ async function displaySelectedMedia(media, mediaType) {
     <div class="mt-4">
         <label for="seasonSelect" class="block text-xs font-medium text-gray-300">Select Season:</label>
         <select id="seasonSelect" class="dropdown mt-1 block w-full bg-gray-800 text-white rounded border border-gray-700 text-sm">
-            ${mediaData.seasons.filter(season => season.season_number !== 0).map(season =>
-            `<option value="${season.season_number}">Season ${season.season_number}: ${season.name}</option>`
-        ).join('')}
+            ${mediaData.seasons.filter(season => season.season_number !== 0).map(season => {
+            const seasonName = season.name ? season.name : `Season ${season.season_number}`;
+            return `<option value="${season.season_number}">${seasonName}</option>`;
+        }).join('')}
         </select>
 
         <label for="episodeSelect" class="block text-xs font-medium text-gray-300 mt-2">Select Episode:</label>
@@ -109,8 +110,6 @@ async function displaySelectedMedia(media, mediaType) {
     </div>
 ` : '';
 
-
-        // Fetch template and replace placeholders
         const templateResponse = await fetch('media/mediaTemplate.html');
         if (!templateResponse.ok) throw new Error('Network response was not ok');
         const template = await templateResponse.text();
@@ -292,17 +291,19 @@ async function displaySelectedMedia(media, mediaType) {
                 const url = `https://api.themoviedb.org/3/tv/${media.id}/season/${seasonNumber}?api_key=${apiKey}`;
                 const season = await fetchJson(url);
                 episodeSelect.innerHTML = season.episodes
-                    .filter(episode => episode.season_number === Number(seasonNumber)) // Ensure it matches the selected season
-                    .map(episode =>
-                        `<option value="${episode.episode_number}" data-image="https://image.tmdb.org/t/p/w500${episode.still_path}">
-                    Episode ${episode.episode_number}: ${episode.name}
-                </option>`
-                    ).join('');
-                episodeSelect.dispatchEvent(new Event('change')); // Trigger change event to load images
+                    .filter(episode => episode.season_number === Number(seasonNumber))
+                    .map(episode => {
+                        const episodeTitle = episode.name ? `: ${episode.name}` : '';
+                        return `<option value="${episode.episode_number}" data-image="https://image.tmdb.org/t/p/w500${episode.still_path}">
+                    Episode ${episode.episode_number}${episodeTitle}
+                </option>`;
+                    }).join('');
+                episodeSelect.dispatchEvent(new Event('change'));
             } catch (error) {
                 console.error('Failed to fetch season details:', error);
             }
         }
+
 
 
         function handleSearchInput(event) {
