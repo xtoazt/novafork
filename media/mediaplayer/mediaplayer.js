@@ -224,7 +224,7 @@ async function displaySelectedMedia(media, mediaType) {
                 case 'vidsrc.rip':
                     return `https://vidsrc.rip/embed/tv/${mediaId}/${seasonId}/${episodeId}`;
                 case 'vidbinge':
-                    return await generateVidBingeTvIframeUrl(mediaId, seasonId, episodeId);
+                    return `https://embed.vidbinge.com/embed/tv/${mediaId}/${seasonId}/${episodeId}`;
                 default:
                     throw new Error('Provider not recognized.');
             }
@@ -272,7 +272,7 @@ async function displaySelectedMedia(media, mediaType) {
                 case 'vidsrc.rip':
                     return `https://vidsrc.rip/embed/movie/${mediaId}`;
                 case 'vidbinge':
-                    return `https://www.vidbinge.com/media/tmdb-movie-${mediaId}`;
+                    return `https://embed.vidbinge.com/embed/movie/${mediaId}`;
                 case 'trailer':
                     return await fetchTrailer(mediaId, 'movie', apiKey);
                 case 'moviesapi':
@@ -281,7 +281,6 @@ async function displaySelectedMedia(media, mediaType) {
                     throw new Error('Provider not recognized.');
             }
         }
-
 
         async function updateEpisodes() {
             const seasonNumber = seasonSelect ? seasonSelect.value : '';
@@ -368,47 +367,3 @@ async function displaySelectedMedia(media, mediaType) {
     }
 }
 
-async function generateVidBingeTvIframeUrl(tmdbID, seasonNumber, episodeNumber) {
-    const apiKey = await getApiKey();
-    if (!apiKey) {
-        console.error('API key not found');
-        return null;
-    }
-
-    try {
-        const data = await fetchMediaData(tmdbID, 'tv', apiKey);
-
-        console.log(`Data for TV show ID ${tmdbID}:`, data);
-
-        const season = data.seasons.find(s => s.season_number === Number(seasonNumber));
-        if (!season) {
-            console.error('Season not found');
-            return null;
-        }
-
-        console.log(`Details for Season ${seasonNumber}:`, season);
-
-        const seasonDetailsUrl = `https://api.themoviedb.org/3/tv/${tmdbID}/season/${seasonNumber}?api_key=${apiKey}`;
-        const seasonDetailsResponse = await fetch(seasonDetailsUrl);
-        const seasonDetails = await seasonDetailsResponse.json();
-
-        console.log(`Details for Season ${seasonNumber} from API:`, seasonDetails);
-
-        const episode = seasonDetails.episodes.find(e => e.episode_number === Number(episodeNumber));
-        if (!episode) {
-            console.error('Episode not found');
-            return null;
-        }
-
-        console.log(`Details for Episode ${episodeNumber}:`, episode);
-
-        const vidbingeIframeUrl = `https://www.vidbinge.com/media/tmdb-tv-${tmdbID}/${season.id}/${episode.id}`;
-        console.log("Generated iframe URL:", vidbingeIframeUrl);
-
-        return vidbingeIframeUrl;
-    } catch (error) {
-
-        console.error('Failed to fetch data:', error);
-        return null;
-    }
-}
