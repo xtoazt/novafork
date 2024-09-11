@@ -1,9 +1,10 @@
+// Error handling function
 function handleError(message, error) {
     console.error(message, error);
     alert(message);
 }
 
-// Function to fetch the API key from the configuration file
+// Fetch API key from the configuration file
 async function getApiKey() {
     try {
         const response = await fetch('apis/config.json');
@@ -16,6 +17,7 @@ async function getApiKey() {
     }
 }
 
+// Fetch all genres
 async function fetchAllGenres(apiKey) {
     try {
         const [movieGenresResponse, tvGenresResponse] = await Promise.all([
@@ -30,15 +32,14 @@ async function fetchAllGenres(apiKey) {
             tvGenresResponse.json()
         ]);
 
-        const genres = [...movieGenresData.genres, ...tvGenresData.genres];
-        return genres;
+        return [...movieGenresData.genres, ...tvGenresData.genres];
     } catch (error) {
         handleError('Failed to fetch genres.', error);
         return [];
     }
 }
 
-// Function to debounce input events
+// Debounce function to limit the rate of function execution
 function debounce(func, delay) {
     let timeoutId;
     return function(...args) {
@@ -47,7 +48,7 @@ function debounce(func, delay) {
     };
 }
 
-// Function to display a loading spinner
+// Display a loading spinner
 function showLoading() {
     const searchSuggestions = document.getElementById('searchSuggestions');
     if (searchSuggestions) {
@@ -56,17 +57,16 @@ function showLoading() {
     }
 }
 
-// Function to highlight matching text
+// Highlight text matches in search results
 function highlightText(text, query) {
     if (!query) return text;
     const regex = new RegExp(`(${query})`, 'gi');
     return text.replace(regex, '<span class="highlight">$1</span>');
 }
 
-
+// Display search suggestions
 async function displaySearchSuggestions(results, query, genreMap) {
     const searchSuggestions = document.getElementById('searchSuggestions');
-
     if (!searchSuggestions) return;
 
     if (results.length === 0) {
@@ -121,7 +121,7 @@ async function displaySearchSuggestions(results, query, genreMap) {
     setupKeyboardNavigation(searchSuggestions);
 }
 
-
+// Display search results
 function displaySearchResults(results, genreMap) {
     const mediaContainer = document.getElementById('mediaContainer');
     if (!mediaContainer) return;
@@ -161,7 +161,6 @@ function displaySearchResults(results, genreMap) {
             </div>
         `;
 
-        // Event listener to fetch and display selected media details
         mediaCard.addEventListener('click', function() {
             fetchSelectedMedia(apiKey, media.id, media.media_type);
         });
@@ -170,11 +169,10 @@ function displaySearchResults(results, genreMap) {
     });
 }
 
-
-
+// Handle search input
 async function handleSearchInput() {
     const searchInput = document.getElementById('searchInput');
-    const searchInputValue = searchInput.value.trim().toLowerCase(); // Convert to lower case
+    const searchInputValue = searchInput.value.trim().toLowerCase();
     const apiKey = await getApiKey();
 
     if (!searchInputValue) {
@@ -188,10 +186,10 @@ async function handleSearchInput() {
         return;
     }
 
-    showLoading(); // Show spinner while fetching data
+    showLoading();
 
     try {
-        const genres = await fetchAllGenres(apiKey); // Fetch all genres
+        const genres = await fetchAllGenres(apiKey);
         const genreMap = genres.reduce((map, genre) => {
             map[genre.id] = genre.name;
             return map;
@@ -209,11 +207,10 @@ async function handleSearchInput() {
     }
 }
 
-
 // Debounced event listener for search input
 document.getElementById('searchInput').addEventListener('input', debounce(handleSearchInput, 300));
 
-// Function to set up keyboard navigation for suggestions
+// Set up keyboard navigation for suggestions
 function setupKeyboardNavigation(container) {
     const items = container.querySelectorAll('.suggestion-item');
     let currentIndex = -1;
@@ -263,7 +260,7 @@ document.getElementById('randomButton').addEventListener('click', async function
     }
 });
 
-// Function to fetch popular media
+// Fetch popular media
 async function fetchPopularMedia(apiKey, page = 1) {
     try {
         const response = await fetch(`https://api.themoviedb.org/3/trending/all/week?api_key=${apiKey}&page=${page}`);
@@ -280,7 +277,7 @@ async function fetchPopularMedia(apiKey, page = 1) {
     }
 }
 
-// Function to fetch top-rated media
+// Fetch top-rated media
 async function fetchTopRatedMedia(apiKey, page = 1) {
     try {
         const response = await fetch(`https://api.themoviedb.org/3/movie/top_rated?api_key=${apiKey}&page=${page}`);
@@ -296,9 +293,7 @@ async function fetchTopRatedMedia(apiKey, page = 1) {
     }
 }
 
-
-
-// Function to fetch upcoming media
+// Fetch upcoming media
 async function fetchUpcomingMedia(apiKey) {
     try {
         const response = await fetch(`https://api.themoviedb.org/3/movie/upcoming?api_key=${apiKey}&language=en-US&page=1`);
@@ -314,7 +309,7 @@ async function fetchUpcomingMedia(apiKey) {
     }
 }
 
-// Function to display upcoming media
+// Display upcoming media
 function displayUpcomingMedia(mediaList) {
     const upcomingMedia = document.getElementById('upcomingMedia');
     if (!upcomingMedia) return;
@@ -329,7 +324,7 @@ function displayUpcomingMedia(mediaList) {
     });
 }
 
-// Update pagination controls based on the current category
+// Update pagination controls
 function updatePaginationControls(currentPage, totalPages) {
     const prevPageButton = document.getElementById('prevPage');
     const nextPageButton = document.getElementById('nextPage');
@@ -350,7 +345,7 @@ function updatePaginationControls(currentPage, totalPages) {
     }
 }
 
-// Function to change page based on category selection
+// Change page based on category selection
 function changePage(page) {
     getApiKey().then(apiKey => {
         if (apiKey) {
@@ -364,7 +359,7 @@ function changePage(page) {
     });
 }
 
-// Function to fetch selected media details
+// Fetch selected media details
 async function fetchSelectedMedia(apiKey, mediaId, mediaType) {
     try {
         const response = await fetch(`https://api.themoviedb.org/3/${mediaType}/${mediaId}?api_key=${apiKey}`);
@@ -384,7 +379,6 @@ async function fetchSelectedMedia(apiKey, mediaId, mediaType) {
     }
 }
 
-
 // Handle media type changes
 document.querySelectorAll('input[name="mediaType"]').forEach(radio => {
     radio.addEventListener('change', function() {
@@ -400,6 +394,8 @@ document.querySelectorAll('input[name="mediaType"]').forEach(radio => {
         });
     });
 });
+
+// Handle browser navigation
 window.addEventListener('popstate', async (event) => {
     if (event.state && event.state.title) {
         const title = event.state.title;
@@ -413,7 +409,7 @@ window.addEventListener('popstate', async (event) => {
     }
 });
 
-
+// Search media by title
 async function searchMediaByTitle(apiKey, title) {
     try {
         const response = await fetch(`https://api.themoviedb.org/3/search/multi?api_key=${apiKey}&query=${encodeURIComponent(title)}`);
