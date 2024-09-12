@@ -30,41 +30,34 @@
 
 <body class="font-poppins bg-gray-900 text-gray-100">
 
-<header class="bg-gray-800 py-4 mt-12">
-    <div class="container mx-auto flex justify-between items-center">
-        <div class="header-item">
-            <a href="#" class="text-4xl font-bold text-white">Nova</a>
-            <!-- Discord Button -->
-            <a href="https://discord.gg/XbDBBmh5FY" target="_blank" class="bg-gradient-to-r from-black to-gray-900 text-white py-2 px-4 rounded-lg hover:bg-gradient-to-r hover:from-gray-900 hover:to-gray-800 transition duration-300 ease-in-out flex items-center space-x-2 shadow-lg hover:shadow-xl transform hover:scale-105">
-                <img src="https://static.vecteezy.com/system/resources/previews/018/930/500/original/discord-logo-discord-icon-transparent-free-png.png" alt="Discord Icon" class="w-6 h-6">
-                <span>Join Us on Discord</span>
-            </a>
-            <!-- Telegram Button -->
-            <a href="https://t.me/novafork" target="_blank" class="telegram-button">
-                <img src="https://upload.wikimedia.org/wikipedia/commons/8/82/Telegram_logo.svg" alt="Telegram">
-                <span>Join Our Telegram</span>
-            </a>
-        </div>
-        <!-- Category Select -->
-        <select id="categorySelect" class="p-2 bg-zinc-800 border border-gray-700 rounded-lg text-white focus:ring-2 focus:ring-purple-500 focus:outline-none transition duration-200 ease-in-out category-select">
-            <option value="movie">Movies</option>
-            <option value="tv">TV Shows</option>
-            <option value="latest">Latest</option>
-            <option value="animation">Animation</option>
-            <option value="crime">Crime</option>
-            <option value="horror">Horror</option>
-            <option value="action">Action</option>
-            <option value="drama">Drama</option>
-            <option value="scifi">Science Fiction</option>
-        </select>
-    </div>
-</header>
-
 <!-- Main Content -->
 <main class="min-h-screen bg-gray-900 py-8">
     <div class="container mx-auto px-6">
-        <!-- Search and Random Button -->
-        <div class="flex gap-4 mb-8">
+        <!-- Title -->
+        <div class="text-center mb-8">
+            <h1 class="text-5xl font-extrabold text-white tracking-tight">
+                Novafork
+            </h1>
+        </div>
+
+        <!-- Social Media Buttons and Search Bar -->
+        <div class="flex flex-col gap-4 mb-8">
+            <!-- Social Media Buttons -->
+            <div class="flex gap-4 mb-4">
+                <!-- Discord Button -->
+                <a href="https://discord.gg/XbDBBmh5FY" target="_blank" class="bg-zinc-700 text-white py-1 px-3 rounded-full flex items-center space-x-2 hover:bg-zinc-600 transition duration-200 ease-in-out shadow-md hover:shadow-lg">
+                    <img src="https://static.vecteezy.com/system/resources/previews/018/930/500/original/discord-logo-discord-icon-transparent-free-png.png" alt="Discord Icon" class="w-5 h-5">
+                    <span class="text-sm">Join Us on Discord</span>
+                </a>
+
+                <!-- Telegram Button -->
+                <a href="https://t.me/novafork" target="_blank" class="bg-zinc-700 text-white py-1 px-3 rounded-full flex items-center space-x-2 hover:bg-zinc-600 transition duration-200 ease-in-out shadow-md hover:shadow-lg">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/8/82/Telegram_logo.svg" alt="Telegram" class="w-5 h-5">
+                    <span class="text-sm">Join Our Telegram</span>
+                </a>
+            </div>
+
+            <!-- Search Bar -->
             <div class="relative flex-1">
                 <input
                         type="text"
@@ -89,6 +82,21 @@
                 <button id="searchButton" class="absolute inset-y-0 right-0 text-white font-bold py-2 px-6 rounded-r-lg bg-purple-600 hover:bg-purple-700 focus:outline-none transition duration-200 ease-in-out">Search</button>
                 <div id="searchSuggestions" class="absolute w-full bg-zinc-800 text-white rounded-b-lg mt-1 hidden"></div>
             </div>
+        </div>
+
+        <!-- Category Select and Random Button aligned to the right -->
+        <div class="flex justify-end gap-4 mb-8">
+            <select id="categorySelect" class="p-2 bg-zinc-800 border border-gray-700 rounded-lg text-white focus:ring-2 focus:ring-purple-500 focus:outline-none transition duration-200 ease-in-out category-select">
+                <option value="movie">Movies</option>
+                <option value="tv">TV Shows</option>
+                <option value="latest">Latest</option>
+                <option value="animation">Animation</option>
+                <option value="crime">Crime</option>
+                <option value="horror">Horror</option>
+                <option value="action">Action</option>
+                <option value="drama">Drama</option>
+                <option value="scifi">Science Fiction</option>
+            </select>
             <button id="randomButton" class="bg-zinc-700 text-white font-bold py-2 px-6 rounded-lg hover:bg-zinc-600 transition duration-200 ease-in-out">Random Movie</button>
         </div>
 
