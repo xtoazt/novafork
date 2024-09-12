@@ -224,7 +224,7 @@ async function displaySelectedMedia(media, mediaType) {
                 case 'moviesapi':
                     return `https://moviesapi.club/tv/${mediaId}/${seasonId}/${episodeId}`;
                 case 'vidlink':
-                    return `https://vidlink.pro/tv/${mediaId}/${seasonId}/${episodeId}?primaryColor=${primaryColor}&secondaryColor=${secondaryColor}&iconColor=${iconColor}&nextbutton=true&autoplay=true`;
+                    return `https://vidlink.pro/tv/${mediaId}/${seasonId}/${episodeId}?primaryColor=${primaryColor}&secondaryColor=${secondaryColor}&iconColor=${iconColor}&nextbutton=true`;
                 case 'vidlinkdub':
                     return `https://vidlink.pro/tv/${mediaId}/${seasonId}/${episodeId}?player=jw&multiLang=true`;
                 case 'vidsrcnl':
@@ -232,7 +232,7 @@ async function displaySelectedMedia(media, mediaType) {
                 case 'vidsrc.rip':
                     return `https://vidsrc.rip/embed/tv/${mediaId}/${seasonId}/${episodeId}`;
                 case 'vidbinge':
-                    return `https://embed.vidbinge.com/embed/tv/${mediaId}/${seasonId}/${episodeId}`;
+                    return `https://vidbinge.dev/embed/tv/${mediaId}/${seasonId}/${episodeId}`;
                 default:
                     throw new Error('Provider not recognized.');
             }
@@ -278,7 +278,7 @@ async function displaySelectedMedia(media, mediaType) {
                 case 'vidsrc.rip':
                     return `https://vidsrc.rip/embed/movie/${mediaId}`;
                 case 'vidbinge':
-                    return `https://embed.vidbinge.com/embed/movie/${mediaId}`;
+                    return `https://vidbinge.dev/embed/movie/${mediaId}`;
                 case 'trailer':
                     return await fetchTrailer(mediaId, 'movie', apiKey);
                 case 'moviesapi':
