@@ -57,7 +57,7 @@
                 </a>
 
                 <!-- GitHub Button -->
-                <a href="https://github.com/fanlimgames/novafork" target="_blank" class="bg-zinc-700 text-white py-1 px-3 rounded-full flex items-center space-x-2 hover:bg-zinc-600 transition duration-200 ease-in-out shadow-md hover:shadow-lg">
+                <a href="https://github.com/novafork" target="_blank" class="bg-zinc-700 text-white py-1 px-3 rounded-full flex items-center space-x-2 hover:bg-zinc-600 transition duration-200 ease-in-out shadow-md hover:shadow-lg">
                     <span class="text-lg">⭐</span> <!-- Star Emoji -->
                     <span class="text-sm">Star on GitHub</span>
                 </a>
@@ -167,10 +167,21 @@
     </div>
 </main>
 
+<!-- Share Modal -->
+<div id="shareModal" class="fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center hidden">
+    <div class="bg-gray-800 text-white p-6 rounded-lg shadow-lg max-w-sm w-full">
+        <h2 class="text-2xl font-bold mb-4">Help Us Spread the Word!</h2>
+        <p class="mb-4 text-gray-300">We’re committed to offering free movies for everyone. Share Novafork with your friends and family so they can enjoy endless entertainment too!</p>
+        <button id="closeModal" class="bg-purple-600 text-white py-2 px-4 rounded-lg hover:bg-purple-700 transition duration-200 ease-in-out">Got It!</button>
+    </div>
+</div>
+
 <script src="media/mediaplayer/mediaplayer.js"></script>
 <script src="search/searchResults.js"></script>
 <script type="module" src="index.js"></script>
 <script src="media/mediahider/mediahider.js"></script>
+<script src="media/mediashare/shareModal.js"></script>
+
 </body>
 
 </html>
