@@ -65,34 +65,34 @@
                 <span class="text-lg">💵</span>
                 <span class="text-sm">Support Us on Ko-Fi</span>
             </a>
-
-
-            <!-- Search Bar -->
-            <div class="relative flex-1">
-                <input
-                        type="text"
-                        id="searchInput"
-                        placeholder="Search for something..."
-                        class="w-full p-3 pl-12 bg-zinc-800 text-white placeholder-gray-400 border border-transparent rounded-lg focus:border-purple-500 focus:ring-2 focus:ring-purple-500 focus:outline-none transition duration-200 ease-in-out"
-                >
-                <svg
-                        class="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5 pointer-events-none"
-                        xmlns="http://www.w3.org/2000/svg"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                >
-                    <path
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
-                            stroke-width="2"
-                            d="M21 21l-4.35-4.35M8.5 14.5a6 6 0 100-12 6 6 0 000 12z"
-                    />
-                </svg>
-                <button id="searchButton" class="absolute inset-y-0 right-0 text-white font-bold py-2 px-6 rounded-r-lg bg-purple-600 hover:bg-purple-700 focus:outline-none transition duration-200 ease-in-out">Search</button>
-                <div id="searchSuggestions" class="absolute w-full bg-zinc-800 text-white rounded-b-lg mt-1 hidden"></div>
-            </div>
         </div>
+
+        <!-- Search Bar (moved after the buttons) -->
+        <div class="relative flex-1 mb-4">
+            <input
+                    type="text"
+                    id="searchInput"
+                    placeholder="Search for something..."
+                    class="w-full p-3 pl-12 bg-zinc-800 text-white placeholder-gray-400 border border-transparent rounded-lg focus:border-purple-500 focus:ring-2 focus:ring-purple-500 focus:outline-none transition duration-200 ease-in-out"
+            >
+            <svg
+                    class="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5 pointer-events-none"
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+            >
+                <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M21 21l-4.35-4.35M8.5 14.5a6 6 0 100-12 6 6 0 000 12z"
+                />
+            </svg>
+            <button id="searchButton" class="absolute inset-y-0 right-0 text-white font-bold py-2 px-6 rounded-r-lg bg-purple-600 hover:bg-purple-700 focus:outline-none transition duration-200 ease-in-out">Search</button>
+            <div id="searchSuggestions" class="absolute w-full bg-zinc-800 text-white rounded-b-lg mt-1 hidden"></div>
+        </div>
+
 
         <!-- Category Select and Random Button aligned to the right -->
         <div class="flex justify-end gap-2 mb-8">
