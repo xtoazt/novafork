@@ -93,7 +93,6 @@
             <div id="searchSuggestions" class="absolute w-full bg-zinc-800 text-white rounded-b-lg mt-1 hidden"></div>
         </div>
 
-
         <!-- Category Select and Random Button aligned to the right -->
         <div class="flex justify-end gap-2 mb-8">
             <select id="categorySelect" class="p-1.5 bg-zinc-800 border border-gray-700 rounded-lg text-white text-sm focus:ring-2 focus:ring-purple-500 focus:outline-none transition duration-200 ease-in-out category-select">
@@ -128,11 +127,11 @@
             </div>
             <div id="popularMedia" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-6 p-4 bg-gray-800 bg-opacity-50 rounded-lg shadow-lg">
                 <div class="relative group rounded-lg overflow-hidden shadow-lg hover:shadow-xl transition duration-200 ease-in-out">
-                    <img src="https://via.placeholder.com/300x400" alt="Trending Media" class="w-full h-full object-cover">
-                    <div class="absolute inset-0 bg-gray-900 bg-opacity-50 flex items-end p-4 opacity-0 group-hover:opacity-100 transition duration-200 ease-in-out">
-                        <div>
-                            <h3 class="text-lg font-semibold text-white">Media Title</h3>
-                            <p class="text-sm text-gray-300">Genre, Year</p>
+                    <img src="https://via.placeholder.com/300x400" alt="Media Title" class="w-full h-60 object-cover">
+                    <div class="absolute bottom-0 bg-gradient-to-t from-gray-900 to-transparent text-white p-4 w-full">
+                        <div class="flex flex-col">
+                            <h3 class="text-lg font-semibold">Media Title</h3>
+                            <p class="text-sm">Genre, Year</p>
                         </div>
                     </div>
                     <div class="absolute top-2 right-2 bg-purple-600 text-white px-2 py-1 rounded-lg text-xs font-semibold">NEW</div>
@@ -180,12 +179,23 @@
     </div>
 </div>
 
+<div id="donationPopup" class="fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center z-50 hidden">
+    <div class="bg-gray-800 text-white p-6 rounded-lg shadow-lg max-w-sm w-full">
+        <h2 class="text-2xl font-bold mb-4">Support NovaFork</h2>
+        <p class="mb-4 text-gray-300">Help keep NovaFork ad-free! Consider donating to support us.</p>
+        <a href="https://ko-fi.com/novafork" target="_blank" class="bg-purple-600 text-white py-2 px-4 rounded-lg hover:bg-purple-700 transition duration-200 ease-in-out mb-4 inline-block">
+            💵 Donate on Ko-Fi
+        </a>
+        <button id="closeDonationPopup" class="bg-gray-700 text-white py-2 px-4 rounded-lg hover:bg-gray-600 transition duration-200 ease-in-out">Close</button>
+    </div>
+</div>
+
 <script src="media/mediaplayer/mediaplayer.js"></script>
 <script src="search/searchResults.js"></script>
 <script type="module" src="index.js"></script>
 <script src="media/mediahider/mediahider.js"></script>
 <script src="media/mediashare/shareModal.js"></script>
-
+<script src="media/donatepopup/donatepopup.js"></script>
 </body>
 
 </html>
