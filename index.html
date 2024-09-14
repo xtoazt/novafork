@@ -20,6 +20,12 @@
     <link rel="stylesheet" href="themes/mediacard.css">
     <link rel="stylesheet" href="themes/category.css">
     <link rel="stylesheet" href="themes/notice.css">
+
+    <!-- Vercel Analytics Integration -->
+    <script>
+        window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };
+    </script>
+    <script defer src="/_vercel/insights/script.js"></script>
 </head>
 
 <body class="font-poppins bg-gray-900 text-gray-100">
@@ -87,7 +93,6 @@
             <div id="searchSuggestions" class="absolute w-full bg-zinc-800 text-white rounded-b-lg mt-1 hidden"></div>
         </div>
 
-
         <!-- Filter Settings Section -->
         <div class="mb-12"> <!-- Increased margin-bottom -->
             <div class="flex items-center gap-4 mb-2">
@@ -114,8 +119,6 @@
             </div>
         </section>
 
-
-
         <!-- Trending Media -->
         <section class="mb-12">
             <div class="flex justify-between items-center mb-4">
@@ -136,29 +139,29 @@
             </div>
         </section>
 
-        <!-- Pagination Controls -->
-        <div id="paginationControls" class="flex flex-col items-center mt-8 space-y-4">
+        <!-- Pagination and Footer -->
+        <div class="flex flex-col items-center mt-8 space-y-4">
             <!-- Pagination Buttons -->
             <div class="flex space-x-4">
                 <!-- Previous Page Button -->
                 <button id="prevPage" class="bg-gray-800 text-white font-medium py-2 px-4 rounded-lg shadow-md hover:bg-gray-700 transition duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-opacity-50" aria-label="Previous Page">
-            <span class="flex items-center">
-                <!-- Arrow Icon -->
-                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
-                </svg>
-                Prev
-            </span>
+                    <span class="flex items-center">
+                        <!-- Arrow Icon -->
+                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                        </svg>
+                        Prev
+                    </span>
                 </button>
                 <!-- Next Page Button -->
                 <button id="nextPage" class="bg-gray-800 text-white font-medium py-2 px-4 rounded-lg shadow-md hover:bg-gray-700 transition duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-opacity-50" aria-label="Next Page">
-            <span class="flex items-center">
-                Next
-                <!-- Arrow Icon -->
-                <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
-                </svg>
-            </span>
+                    <span class="flex items-center">
+                        Next
+                        <!-- Arrow Icon -->
+                        <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                        </svg>
+                    </span>
                 </button>
             </div>
             <!-- Copyright and Contact Information -->
@@ -170,8 +173,8 @@
                 </p>
             </div>
         </div>
+    </div>
 </main>
-
 
 <!-- Share Modal -->
 <div id="shareModal" class="fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center hidden">
