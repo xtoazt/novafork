@@ -20,6 +20,7 @@
     <link rel="stylesheet" href="themes/mediacard.css">
     <link rel="stylesheet" href="themes/category.css">
     <link rel="stylesheet" href="themes/notice.css">
+</head>
 
 <body class="font-poppins bg-gray-900 text-gray-100">
 
@@ -60,8 +61,7 @@
             </a>
         </div>
 
-
-        <!-- Search Bar (moved after the buttons) -->
+        <!-- Search Bar -->
         <div class="relative flex-1 mb-4">
             <input
                     type="text"
@@ -87,20 +87,21 @@
             <div id="searchSuggestions" class="absolute w-full bg-zinc-800 text-white rounded-b-lg mt-1 hidden"></div>
         </div>
 
-        <!-- Category Select and Random Button aligned to the right -->
-        <div class="flex justify-end gap-2 mb-8">
-            <select id="categorySelect" class="p-1.5 bg-zinc-800 border border-gray-700 rounded-lg text-white text-sm focus:ring-2 focus:ring-purple-500 focus:outline-none transition duration-200 ease-in-out category-select">
-                <option value="movie">Movies</option>
-                <option value="tv">TV Shows</option>
-                <option value="latest">Latest</option>
-                <option value="animation">Animation</option>
-                <option value="crime">Crime</option>
-                <option value="horror">Horror</option>
-                <option value="action">Action</option>
-                <option value="drama">Drama</option>
-                <option value="scifi">Science Fiction</option>
-            </select>
-            <button id="randomButton" class="bg-zinc-700 text-white font-bold py-1 px-4 text-sm rounded-lg hover:bg-zinc-600 transition duration-200 ease-in-out">Random Movie</button>
+
+        <!-- Filter Settings Section -->
+        <div class="mb-12"> <!-- Increased margin-bottom -->
+            <div class="flex items-center gap-4 mb-2">
+                <h2 class="text-lg font-semibold text-white">Filter Settings</h2>
+                <div class="flex gap-2">
+                    <select id="categorySelect" class="p-1.5 bg-zinc-800 border border-gray-700 rounded-lg text-white text-sm focus:ring-2 focus:ring-purple-500 focus:outline-none transition duration-200 ease-in-out">
+                        <!-- Options will be dynamically populated -->
+                    </select>
+                    <select id="typeSelect" class="p-1.5 bg-zinc-800 border border-gray-700 rounded-lg text-white text-sm focus:ring-2 focus:ring-purple-500 focus:outline-none transition duration-200 ease-in-out">
+                        <option value="movie">Movies</option>
+                        <option value="tv">TV Shows</option>
+                    </select>
+                </div>
+            </div>
         </div>
 
         <!-- Selected Media -->
@@ -112,6 +113,8 @@
                 </div>
             </div>
         </section>
+
+
 
         <!-- Trending Media -->
         <section class="mb-12">
@@ -138,25 +141,9 @@
             <!-- Pagination Buttons -->
             <div class="flex space-x-4">
                 <!-- Previous Page Button -->
-                <button id="prevPage" class="bg-gray-800 text-white font-medium py-2 px-4 rounded-lg shadow-md hover:bg-gray-700 transition duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-opacity-50" aria-label="Previous Page">
-                    <span class="flex items-center">
-                        <!-- Arrow Icon -->
-                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
-                        </svg>
-                        Prev
-                    </span>
-                </button>
+                <button id="prevPage" class="bg-zinc-700 text-white py-2 px-4 rounded-lg hover:bg-zinc-600 transition duration-200 ease-in-out">Previous</button>
                 <!-- Next Page Button -->
-                <button id="nextPage" class="bg-gray-800 text-white font-medium py-2 px-4 rounded-lg shadow-md hover:bg-gray-700 transition duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-opacity-50" aria-label="Next Page">
-                    <span class="flex items-center">
-                        Next
-                        <!-- Arrow Icon -->
-                        <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
-                        </svg>
-                    </span>
-                </button>
+                <button id="nextPage" class="bg-zinc-700 text-white py-2 px-4 rounded-lg hover:bg-zinc-600 transition duration-200 ease-in-out">Next</button>
             </div>
             <!-- Copyright Notice -->
             <p class="text-gray-400 text-left w-full">© 2024 Novafork. All rights reserved.</p>

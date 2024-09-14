@@ -18,10 +18,10 @@ async function getApiKey() {
         return null;
     }
 }
-
-async function fetchGenres(apiKey) {
+async function fetchGenres(apiKey, mediaType) {
     try {
-        const response = await fetch(`https://api.themoviedb.org/3/genre/movie/list?api_key=${apiKey}&language=en-US`);
+        const endpoint = mediaType === 'tv' ? 'genre/tv/list' : 'genre/movie/list';
+        const response = await fetch(`https://api.themoviedb.org/3/${endpoint}?api_key=${apiKey}&language=en-US`);
         if (!response.ok) {
             throw new Error('Failed to fetch genres.');
         }
@@ -38,10 +38,16 @@ document.addEventListener('DOMContentLoaded', async function () {
     const welcomeBanner = document.getElementById('welcomeBanner');
     const closeBanner = document.getElementById('closeBanner');
     const categorySelect = document.getElementById('categorySelect');
+    const typeSelect = document.getElementById('typeSelect');
     const popularMedia = document.getElementById('popularMedia');
     const videoPlayerContainer = document.getElementById('videoPlayerContainer');
     const videoPlayer = document.getElementById('videoPlayer');
     const posterImage = document.getElementById('posterImage');
+    const searchInput = document.getElementById('searchInput');
+    const actorSearchInput = document.getElementById('actorSearchInput'); // New actor search input
+    const searchSuggestions = document.getElementById('searchSuggestions');
+    const randomButton = document.getElementById('randomButton');
+    const actorSearchButton = document.getElementById('actorSearchButton'); // New actor search button
 
     if (closeBanner) {
         closeBanner.addEventListener('click', () => {
@@ -53,8 +59,61 @@ document.addEventListener('DOMContentLoaded', async function () {
         homePage.classList.remove('hidden');
     }
 
-    const searchInput = document.getElementById('searchInput');
-    const searchSuggestions = document.getElementById('searchSuggestions');
+    const API_KEY = await getApiKey();
+    if (!API_KEY) return;
+
+    // Initialize genres for the default type
+    let genreMap = {};
+    async function updateGenres(mediaType) {
+        const genres = await fetchGenres(API_KEY, mediaType);
+        genreMap = genres.reduce((map, genre) => {
+            map[genre.id] = genre.name;
+            return map;
+        }, {});
+
+        // Populate category select with genres
+        if (categorySelect) {
+            categorySelect.innerHTML = '<option value="">Select Genre</option>';
+            Object.entries(genreMap).forEach(([id, name]) => {
+                const option = document.createElement('option');
+                option.value = id;
+                option.textContent = name;
+                categorySelect.appendChild(option);
+            });
+        }
+    }
+
+    // Initialize with movie genres
+    await updateGenres('movie');
+
+    // Populate type select
+    if (typeSelect) {
+        typeSelect.innerHTML = `
+            <option value="movie">Movies</option>
+            <option value="tv">TV Shows</option>
+        `;
+
+        typeSelect.addEventListener('change', async (event) => {
+            const selectedType = event.target.value;
+            await updateGenres(selectedType);
+            fetchPopularMedia(); // Fetch popular media after updating genres
+        });
+    }
+
+    if (actorSearchButton) {
+        actorSearchButton.addEventListener('click', async () => {
+            const actorName = actorSearchInput.value;
+            if (actorName.length > 2) {
+                const response = await fetch(`https://api.themoviedb.org/3/search/person?api_key=${API_KEY}&query=${actorName}`);
+                if (response.ok) {
+                    const data = await response.json();
+                    displayActorSearchResults(data.results);
+                } else {
+                    handleError('Failed to fetch actor search results.');
+                }
+            }
+        });
+    }
 
     if (searchInput) {
         document.getElementById('searchButton').addEventListener('click', search);
@@ -69,7 +128,8 @@ document.addEventListener('DOMContentLoaded', async function () {
             const query = searchInput.value;
             if (query.length > 2) {
                 const selectedCategory = categorySelect.value;
-                const response = await fetch(`https://api.themoviedb.org/3/search/${selectedCategory}?api_key=${API_KEY}&query=${query}`);
+                const selectedType = typeSelect.value;
+                const response = await fetch(`https://api.themoviedb.org/3/search/${selectedType}?api_key=${API_KEY}&query=${query}&with_genres=${selectedCategory}`);
                 if (response.ok) {
                     const data = await response.json();
                     displaySearchSuggestions(data.results);
@@ -82,35 +142,36 @@ document.addEventListener('DOMContentLoaded', async function () {
         });
     }
 
-    const API_KEY = await getApiKey();
-    if (!API_KEY) return;
+    if (randomButton) {
+        randomButton.addEventListener('click', async () => {
+            const randomGenreId = Object.keys(genreMap)[Math.floor(Math.random() * Object.keys(genreMap).length)];
+            categorySelect.value = randomGenreId;
+            typeSelect.value = 'movie'; // Default to movie type
+            await fetchPopularMedia();
+        });
+    }
 
-    const genres = await fetchGenres(API_KEY);
-    const genreMap = genres.reduce((map, genre) => {
-        map[genre.id] = genre.name;
-        return map;
-    }, {});
+    if (categorySelect) {
+        categorySelect.addEventListener('change', fetchPopularMedia);
+    }
 
-    genreMap[80] = 'Crime';
+    if (typeSelect) {
+        typeSelect.addEventListener('change', fetchPopularMedia);
+    }
 
     async function search() {
         const searchInputValue = searchInput.value;
         const selectedCategory = categorySelect.value;
-        const response = await fetch(`https://api.themoviedb.org/3/search/${selectedCategory}?api_key=${API_KEY}&query=${searchInputValue}`);
+        const selectedType = typeSelect.value;
+        const response = await fetch(`https://api.themoviedb.org/3/search/${selectedType}?api_key=${API_KEY}&query=${searchInputValue}&with_genres=${selectedCategory}`);
 
         if (response.ok) {
             const data = await response.json();
-
-            // Display search results in the search results container
             displaySearchResults(data.results);
-
-            // Also display search results in the popular media area
             displayPopularMedia(data.results);
-
             searchSuggestions.classList.add('hidden');
-
-            const newUrl = `${window.location.origin}${window.location.pathname}?query=${encodeURIComponent(searchInputValue)}&category=${selectedCategory}`;
-            window.history.pushState({ searchInputValue, selectedCategory }, '', newUrl);
+            const newUrl = `${window.location.origin}${window.location.pathname}?query=${encodeURIComponent(searchInputValue)}&category=${selectedCategory}&type=${selectedType}`;
+            window.history.pushState({ searchInputValue, selectedCategory, selectedType }, '', newUrl);
         } else {
             handleError('Failed to fetch search results.');
         }
@@ -118,121 +179,41 @@ document.addEventListener('DOMContentLoaded', async function () {
 
     async function fetchPopularMedia(page = 1) {
         const selectedCategory = categorySelect.value;
+        const selectedType = typeSelect.value;
         let url = '';
-        let moviePage = page;
-        let tvPage = page;
+        let queryParams = `?api_key=${API_KEY}&page=${page}&language=en-US`;
 
         try {
-            if (selectedCategory === 'latest') {
-                url = `https://api.themoviedb.org/3/trending/all/week?api_key=${API_KEY}&page=${page}`;
-            } else if (selectedCategory === 'animation') {
-                const genreId = 16; // Animation genre ID
-                const movieUrl = `https://api.themoviedb.org/3/discover/movie?api_key=${API_KEY}&with_genres=${genreId}&page=${moviePage}&language=en-US`;
-                const tvUrl = `https://api.themoviedb.org/3/discover/tv?api_key=${API_KEY}&with_genres=${genreId}&page=${tvPage}&language=en-US`;
-                const [movieResponse, tvResponse] = await Promise.all([fetch(movieUrl), fetch(tvUrl)]);
-                if (movieResponse.ok && tvResponse.ok) {
-                    const [movieData, tvData] = await Promise.all([movieResponse.json(), tvResponse.json()]);
-                    const combinedResults = [...movieData.results, ...tvData.results].slice(0, 12);
-                    const totalPages = Math.max(movieData.total_pages, tvData.total_pages);
-                    displayPopularMedia(combinedResults);
-                    updatePaginationControls(page, totalPages);
-                } else {
-                    handleError(`Failed to fetch ${selectedCategory} media.`);
-                }
-            } else if (selectedCategory === 'crime') {
-                const genreId = 80;
-                const movieUrl = `https://api.themoviedb.org/3/discover/movie?api_key=${API_KEY}&with_genres=${genreId}&page=${moviePage}&language=en-US`;
-                const tvUrl = `https://api.themoviedb.org/3/discover/tv?api_key=${API_KEY}&with_genres=${genreId}&page=${tvPage}&language=en-US`;
-                const [movieResponse, tvResponse] = await Promise.all([fetch(movieUrl), fetch(tvUrl)]);
-                if (movieResponse.ok && tvResponse.ok) {
-                    const [movieData, tvData] = await Promise.all([movieResponse.json(), tvResponse.json()]);
-                    const combinedResults = [...movieData.results, ...tvData.results].slice(0, 12);
-                    const totalPages = Math.max(movieData.total_pages, tvData.total_pages);
-                    displayPopularMedia(combinedResults);
-                    updatePaginationControls(page, totalPages);
-                } else {
-                    handleError(`Failed to fetch ${selectedCategory} media.`);
-                }
-            } else if (selectedCategory === 'horror') {
-                const genreId = 27;
-                const movieUrl = `https://api.themoviedb.org/3/discover/movie?api_key=${API_KEY}&with_genres=${genreId}&page=${moviePage}&language=en-US`;
-                const tvUrl = `https://api.themoviedb.org/3/discover/tv?api_key=${API_KEY}&with_genres=${genreId}&page=${tvPage}&language=en-US`;
-                const [movieResponse, tvResponse] = await Promise.all([fetch(movieUrl), fetch(tvUrl)]);
-                if (movieResponse.ok && tvResponse.ok) {
-                    const [movieData, tvData] = await Promise.all([movieResponse.json(), tvResponse.json()]);
-                    const combinedResults = [...movieData.results, ...tvData.results].slice(0, 12);
-                    const totalPages = Math.max(movieData.total_pages, tvData.total_pages);
-                    displayPopularMedia(combinedResults);
-                    updatePaginationControls(page, totalPages);
-                } else {
-                    handleError(`Failed to fetch ${selectedCategory} media.`);
-                }
-            } else if (selectedCategory === 'action') {
-                const genreId = 28;
-                const movieUrl = `https://api.themoviedb.org/3/discover/movie?api_key=${API_KEY}&with_genres=${genreId}&page=${moviePage}&language=en-US`;
-                const tvUrl = `https://api.themoviedb.org/3/discover/tv?api_key=${API_KEY}&with_genres=${genreId}&page=${tvPage}&language=en-US`;
-                const [movieResponse, tvResponse] = await Promise.all([fetch(movieUrl), fetch(tvUrl)]);
-                if (movieResponse.ok && tvResponse.ok) {
-                    const [movieData, tvData] = await Promise.all([movieResponse.json(), tvResponse.json()]);
-                    const combinedResults = [...movieData.results, ...tvData.results].slice(0, 12);
-                    const totalPages = Math.max(movieData.total_pages, tvData.total_pages);
-                    displayPopularMedia(combinedResults);
-                    updatePaginationControls(page, totalPages);
-                } else {
-                    handleError(`Failed to fetch ${selectedCategory} media.`);
-                }
-            } else if (selectedCategory === 'drama') {
-                const genreId = 18;
-                const movieUrl = `https://api.themoviedb.org/3/discover/movie?api_key=${API_KEY}&with_genres=${genreId}&page=${moviePage}&language=en-US`;
-                const tvUrl = `https://api.themoviedb.org/3/discover/tv?api_key=${API_KEY}&with_genres=${genreId}&page=${tvPage}&language=en-US`;
-                const [movieResponse, tvResponse] = await Promise.all([fetch(movieUrl), fetch(tvUrl)]);
-                if (movieResponse.ok && tvResponse.ok) {
-                    const [movieData, tvData] = await Promise.all([movieResponse.json(), tvResponse.json()]);
-                    const combinedResults = [...movieData.results, ...tvData.results].slice(0, 12);
-                    const totalPages = Math.max(movieData.total_pages, tvData.total_pages);
-                    displayPopularMedia(combinedResults);
-                    updatePaginationControls(page, totalPages);
-                } else {
-                    handleError(`Failed to fetch ${selectedCategory} media.`);
-                }
-            } else if (selectedCategory === 'scifi') {
-                const genreId = 878;
-                const movieUrl = `https://api.themoviedb.org/3/discover/movie?api_key=${API_KEY}&with_genres=${genreId}&page=${moviePage}&language=en-US`;
-                const tvUrl = `https://api.themoviedb.org/3/discover/tv?api_key=${API_KEY}&with_genres=${genreId}&page=${tvPage}&language=en-US`;
-                const [movieResponse, tvResponse] = await Promise.all([fetch(movieUrl), fetch(tvUrl)]);
-                if (movieResponse.ok && tvResponse.ok) {
-                    const [movieData, tvData] = await Promise.all([movieResponse.json(), tvResponse.json()]);
-                    const combinedResults = [...movieData.results, ...tvData.results].slice(0, 12);
-                    const totalPages = Math.max(movieData.total_pages, tvData.total_pages);
-                    displayPopularMedia(combinedResults);
-                    updatePaginationControls(page, totalPages);
-                } else {
-                    handleError(`Failed to fetch ${selectedCategory} media.`);
-                }
-            } else if (selectedCategory === 'tv') {
-                url = `https://api.themoviedb.org/3/trending/tv/week?api_key=${API_KEY}&page=${page}`;
+            if (selectedCategory) {
+                url = `https://api.themoviedb.org/3/discover/${selectedType}${queryParams}&with_genres=${selectedCategory}`;
+            } else if (selectedType === 'latest') {
+                url = `https://api.themoviedb.org/3/trending/all/week${queryParams}`;
+            } else if (selectedType === 'tv') {
+                url = `https://api.themoviedb.org/3/trending/tv/week${queryParams}`;
             } else {
-                url = `https://api.themoviedb.org/3/trending/movie/week?api_key=${API_KEY}&page=${page}`;
+                url = `https://api.themoviedb.org/3/trending/movie/week${queryParams}`;
             }
 
-            if (url) {
-                const response = await fetch(url);
-                if (response.ok) {
-                    const data = await response.json();
-                    const results = data.results.slice(0, 12);
-                    displayPopularMedia(results);
-                    updatePaginationControls(data.page, data.total_pages);
-                } else {
-                    handleError(`Failed to fetch ${selectedCategory} media.`);
-                }
+            const response = await fetch(url);
+            if (response.ok) {
+                const data = await response.json();
+                const results = data.results.slice(0, 12);
+                displayPopularMedia(results);
+                updatePaginationControls(data.page, data.total_pages);
+            } else {
+                handleError(`Failed to fetch ${selectedType} media.`);
             }
         } catch (error) {
-            handleError(`An error occurred while fetching ${selectedCategory} media.`, error);
+            handleError(`An error occurred while fetching ${selectedType} media.`, error);
         }
     }
 
+    function displayActorSearchResults(results) {
+    }
 
-
+    function handleError(message, error) {
+        console.error(message, error);
+    }
 
     function updatePaginationControls(currentPage, totalPages) {
         const prevPageButton = document.getElementById('prevPage');
@@ -253,6 +234,7 @@ document.addEventListener('DOMContentLoaded', async function () {
             nextPageButton.onclick = () => changePage(currentPage + 1);
         }
     }
+
 
     function changePage(page) {
         fetchPopularMedia(page);
