@@ -1,4 +1,3 @@
-
 <p align="center">
   <a href="https://github.com/ambr0sial/nova"><img src="logo.png" alt="Nova" width="128" /></a>
 </p>
@@ -36,25 +35,11 @@ Nova is designed with the user in mind. Its intuitive interface makes it easy to
 
 Explore Nova online with ease—no setup required. Just dive in and start watching!
 
-### Offline Usage 💾
-
-To use Nova locally, follow these steps:
-
-1. Clone the repository:
-
-   ```bash
-   git clone https://github.com/fanlimgames/novafork
-   ```
-
-2. Enter the project directory:
-
-   ```bash
-   cd novafork
-   ```
+---
 
 ## Hosting 🌐
 
-You’re welcome to host Nova on your own server! Just be sure to give proper credit, either by linking to this repository or mentioning the original creators.
+You’re welcome to host Nova on your own server! However, **please ensure you give proper credit** by linking to this repository or mentioning the original creators. This acknowledgment is required to use and share the site.
 
 ## Community & Support 💬
 
@@ -66,4 +51,3 @@ Join our Discord community to stay updated, give feedback, or ask for help:
 Contributions are greatly appreciated! If you’d like to help improve Nova, feel free to submit a pull request.
 
 #### Created with ❤ by ambr0sial and fanlim.
-
