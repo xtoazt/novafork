@@ -141,15 +141,37 @@
             <!-- Pagination Buttons -->
             <div class="flex space-x-4">
                 <!-- Previous Page Button -->
-                <button id="prevPage" class="bg-zinc-700 text-white py-2 px-4 rounded-lg hover:bg-zinc-600 transition duration-200 ease-in-out">Previous</button>
+                <button id="prevPage" class="bg-gray-800 text-white font-medium py-2 px-4 rounded-lg shadow-md hover:bg-gray-700 transition duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-opacity-50" aria-label="Previous Page">
+            <span class="flex items-center">
+                <!-- Arrow Icon -->
+                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                </svg>
+                Prev
+            </span>
+                </button>
                 <!-- Next Page Button -->
-                <button id="nextPage" class="bg-zinc-700 text-white py-2 px-4 rounded-lg hover:bg-zinc-600 transition duration-200 ease-in-out">Next</button>
+                <button id="nextPage" class="bg-gray-800 text-white font-medium py-2 px-4 rounded-lg shadow-md hover:bg-gray-700 transition duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-opacity-50" aria-label="Next Page">
+            <span class="flex items-center">
+                Next
+                <!-- Arrow Icon -->
+                <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                </svg>
+            </span>
+                </button>
             </div>
-            <!-- Copyright Notice -->
-            <p class="text-gray-400 text-left w-full">© 2024 Novafork. All rights reserved.</p>
+            <!-- Copyright and Contact Information -->
+            <div class="flex justify-between w-full text-gray-400">
+                <p class="text-left">© 2024 Novafork. All rights reserved.</p>
+                <p class="text-right">
+                    Contact us at:
+                    <a href="mailto:novafork@proton.me" class="text-blue-400 hover:underline">novafork@proton.me</a>
+                </p>
+            </div>
         </div>
-    </div>
 </main>
+
 
 <!-- Share Modal -->
 <div id="shareModal" class="fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center hidden">
