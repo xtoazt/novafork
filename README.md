@@ -1,6 +1,7 @@
 <p align="center">
   <a href="https://github.com/ambr0sial/nova"><img src="logo.png" alt="Nova" width="128" /></a>
 </p>
+
 <p align="center">
   <strong>Nova</strong> – Your Gateway to Free Streaming
 </p>
@@ -13,6 +14,7 @@
 ## Overview
 
 Nova is a versatile streaming platform designed to bring you a diverse collection of movies right to your fingertips. Whether you're into the latest blockbusters or timeless classics, Nova has something for everyone.
+
 
 ## Actively Maintained Fork
 
@@ -51,3 +53,12 @@ Join our Discord community to stay updated, give feedback, or ask for help:
 Contributions are greatly appreciated! If you’d like to help improve Nova, feel free to submit a pull request.
 
 #### Created with ❤ by ambr0sial and fanlim.
+
+
+## Star History 📊
+
+
+[![Star History Chart](https://api.star-history.com/svg?repos=fanlimgames/novafork&type=Date)](https://star-history.com/#fanlimgames/novafork&Date)
+
+
+---
