@@ -1,5 +1,5 @@
 <p align="center">
-  <a href="https://github.com/ambr0sial/nova"><img src="logo.png" alt="Nova" width="128" /></a>
+  <a href="https://github.com/ambr0sial/nova"><img src="novafork.png" alt="Nova" width="128" /></a>
 </p>
 
 <p align="center">
