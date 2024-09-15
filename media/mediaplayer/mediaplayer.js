@@ -233,6 +233,12 @@ async function displaySelectedMedia(media, mediaType) {
                     return `https://vidsrc.rip/embed/tv/${mediaId}/${seasonId}/${episodeId}`;
                 case 'vidbinge':
                     return `https://vidbinge.dev/embed/tv/${mediaId}/${seasonId}/${episodeId}`;
+                case 'moviee':
+                    return `https://moviee.tv/embed/tv/${mediaId}?seasion=${seasonId}&episode=${episodeId}`;
+                case 'multiembed':
+                    return `https://multiembed.mov/?video_id=${mediaId}&tmdb=1&s=${seasonId}&e=${episodeId}`;
+                case 'multiembedvip':
+                    return `https://multiembed.mov/directstream.php?video_id=${mediaId}&tmdb=1&s=${seasonId}&e=${episodeId}`;
                 default:
                     throw new Error('Provider not recognized.');
             }
@@ -283,11 +289,16 @@ async function displaySelectedMedia(media, mediaType) {
                     return await fetchTrailer(mediaId, 'movie', apiKey);
                 case 'moviesapi':
                     return `https://moviesapi.club/movie/${mediaId}`;
+                case 'moviee':
+                    return `https://moviee.tv/embed/movie/${mediaId}`;
+                case 'multiembed':
+                    return `https://multiembed.mov/?video_id=${mediaId}&tmdb=1`;
+                case 'multiembedvip':
+                    return `https://multiembed.mov/directstream.php?video_id=${mediaId}&tmdb=1`;
                 default:
                     throw new Error('Provider not recognized.');
             }
         }
-
         async function updateEpisodes() {
             const seasonNumber = seasonSelect ? seasonSelect.value : '';
             if (!seasonNumber) return;
