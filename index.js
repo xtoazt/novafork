@@ -32,7 +32,6 @@ async function fetchGenres(apiKey, mediaType) {
         return [];
     }
 }
-
 document.addEventListener('DOMContentLoaded', async function () {
     const homePage = document.getElementById('homePage');
     const welcomeBanner = document.getElementById('welcomeBanner');
@@ -44,10 +43,10 @@ document.addEventListener('DOMContentLoaded', async function () {
     const videoPlayer = document.getElementById('videoPlayer');
     const posterImage = document.getElementById('posterImage');
     const searchInput = document.getElementById('searchInput');
-    const actorSearchInput = document.getElementById('actorSearchInput'); // New actor search input
+    const actorSearchInput = document.getElementById('actorSearchInput');
     const searchSuggestions = document.getElementById('searchSuggestions');
     const randomButton = document.getElementById('randomButton');
-    const actorSearchButton = document.getElementById('actorSearchButton'); // New actor search button
+    const actorSearchButton = document.getElementById('actorSearchButton');
 
     if (closeBanner) {
         closeBanner.addEventListener('click', () => {
@@ -62,7 +61,6 @@ document.addEventListener('DOMContentLoaded', async function () {
     const API_KEY = await getApiKey();
     if (!API_KEY) return;
 
-    // Initialize genres for the default type
     let genreMap = {};
     async function updateGenres(mediaType) {
         const genres = await fetchGenres(API_KEY, mediaType);
@@ -71,7 +69,6 @@ document.addEventListener('DOMContentLoaded', async function () {
             return map;
         }, {});
 
-        // Populate category select with genres
         if (categorySelect) {
             categorySelect.innerHTML = '<option value="">Select Genre</option>';
             Object.entries(genreMap).forEach(([id, name]) => {
@@ -83,10 +80,8 @@ document.addEventListener('DOMContentLoaded', async function () {
         }
     }
 
-    // Initialize with movie genres
     await updateGenres('movie');
 
-    // Populate type select
     if (typeSelect) {
         typeSelect.innerHTML = `
             <option value="movie">Movies</option>
@@ -96,7 +91,7 @@ document.addEventListener('DOMContentLoaded', async function () {
         typeSelect.addEventListener('change', async (event) => {
             const selectedType = event.target.value;
             await updateGenres(selectedType);
-            fetchPopularMedia(); // Fetch popular media after updating genres
+            fetchPopularMedia(); // Fetch popular media based on the updated filters
         });
     }
 
@@ -107,7 +102,12 @@ document.addEventListener('DOMContentLoaded', async function () {
                 const response = await fetch(`https://api.themoviedb.org/3/search/person?api_key=${API_KEY}&query=${actorName}`);
                 if (response.ok) {
                     const data = await response.json();
-                    displayActorSearchResults(data.results);
+                    if (data.results.length > 0) {
+                        const actorId = data.results[0].id; // Use the first actor result
+                        fetchMoviesAndShowsByActor(actorId);
+                    } else {
+                        handleError('No actor found with that name.');
+                    }
                 } else {
                     handleError('Failed to fetch actor search results.');
                 }
@@ -207,6 +207,39 @@ document.addEventListener('DOMContentLoaded', async function () {
             handleError(`An error occurred while fetching ${selectedType} media.`, error);
         }
     }
+
+    async function fetchMoviesAndShowsByActor(actorId) {
+        const selectedType = typeSelect.value;
+        let allResults = [];
+        let page = 1;
+        let totalPages = 1;
+
+        while (page <= totalPages) {
+            const url = `https://api.themoviedb.org/3/person/${actorId}/combined_credits?api_key=${API_KEY}&language=en-US&page=${page}`;
+
+            try {
+                const response = await fetch(url);
+                if (response.ok) {
+                    const data = await response.json();
+                    allResults = allResults.concat(data.cast);
+                    totalPages = data.total_pages;
+                    page++;
+                } else {
+                    handleError('Failed to fetch media for the actor.');
+                    break;
+                }
+            } catch (error) {
+                handleError('An error occurred while fetching media for the actor.', error);
+                break;
+            }
+        }
+
+        const uniqueResults = Array.from(new Set(allResults.map(item => item.id)))
+            .map(id => allResults.find(item => item.id === id));
+
+        displayPopularMedia(uniqueResults);
+    }
+
 
     function displayActorSearchResults(results) {
     }
@@ -330,7 +363,6 @@ document.addEventListener('DOMContentLoaded', async function () {
             return "Unknown Quality";
         }
     }
-
     async function displayPopularMedia(results) {
         popularMedia.innerHTML = '';
 
@@ -344,30 +376,30 @@ document.addEventListener('DOMContentLoaded', async function () {
             const mediaCard = document.createElement('div');
             mediaCard.classList.add('media-card');
 
-            const genreNames = media.genre_ids.map(id => genreMap[id] || 'Unknown').join(', ');
+            const genreNames = media.genre_ids ? media.genre_ids.map(id => genreMap[id] || 'Unknown').join(', ') : 'N/A';
             const formattedDate = media.release_date ? new Date(media.release_date).toLocaleDateString() : (media.first_air_date ? new Date(media.first_air_date).toLocaleDateString() : 'Unknown Date');
             const ratingStars = Array.from({ length: 5 }, (_, i) => i < Math.round(media.vote_average / 2) ? '★' : '☆').join(' ');
 
             const mediaType = media.media_type || (media.title ? 'movie' : 'tv');
-            const displayType = mediaType === 'movie' || mediaType === 'animation' ? media.releaseType : ''; // Updated to include animations
+            const displayType = mediaType === 'movie' || mediaType === 'animation' ? media.releaseType : ''; // Include animations if applicable
 
             mediaCard.innerHTML = `
-        <div class="relative w-full h-64 overflow-hidden rounded-lg mb-4">
-            <img src="https://image.tmdb.org/t/p/w300${media.poster_path}" alt="${media.title || media.name}" class="w-full h-full object-cover rounded-lg transition-transform duration-300 group-hover:scale-110">
-            <div class="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-50"></div>
-            ${displayType ? `<div class="absolute top-0 right-0 m-2 px-2 py-1 bg-black bg-opacity-75 text-white text-xs rounded">${displayType}</div>` : ''}
-        </div>
-        <div class="flex-grow w-full">
-            <h3 class="text-lg font-semibold text-white truncate">${media.title || media.name}</h3>
-            <p class="text-gray-400 text-sm mt-2">${mediaType === 'movie' ? '🎬 Movie' : mediaType === 'tv' ? '📺 TV Show' : '📽 Animation'}</p>
-            <p class="text-gray-400 text-sm mt-1">Genres: ${genreNames}</p>
-            <div class="flex items-center mt-2">
-                <span class="text-yellow-400 text-base">${ratingStars}</span>
-                <span class="text-gray-300 text-sm ml-2">${media.vote_average.toFixed(1)}/10</span>
+            <div class="relative w-full h-64 overflow-hidden rounded-lg mb-4">
+                <img src="https://image.tmdb.org/t/p/w300${media.poster_path}" alt="${media.title || media.name}" class="w-full h-full object-cover rounded-lg transition-transform duration-300 group-hover:scale-110">
+                <div class="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-50"></div>
+                ${displayType ? `<div class="absolute top-0 right-0 m-2 px-2 py-1 bg-black bg-opacity-75 text-white text-xs rounded">${displayType}</div>` : ''}
             </div>
-            <p class="text-gray-300 text-sm mt-1">Release Date: ${formattedDate}</p>
-        </div>
-    `;
+            <div class="flex-grow w-full">
+                <h3 class="text-lg font-semibold text-white truncate">${media.title || media.name}</h3>
+                <p class="text-gray-400 text-sm mt-2">${mediaType === 'movie' ? '🎬 Movie' : mediaType === 'tv' ? '📺 TV Show' : '📽 Animation'}</p>
+                <p class="text-gray-400 text-sm mt-1">Genres: ${genreNames}</p>
+                <div class="flex items-center mt-2">
+                    <span class="text-yellow-400 text-base">${ratingStars}</span>
+                    <span class="text-gray-300 text-sm ml-2">${media.vote_average.toFixed(1)}/10</span>
+                </div>
+                <p class="text-gray-300 text-sm mt-1">Release Date: ${formattedDate}</p>
+            </div>
+        `;
 
             mediaCard.addEventListener('click', function () {
                 fetchSelectedMedia(media.id, mediaType);
@@ -376,6 +408,7 @@ document.addEventListener('DOMContentLoaded', async function () {
             popularMedia.appendChild(mediaCard);
         });
     }
+
 
 
 
