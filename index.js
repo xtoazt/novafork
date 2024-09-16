@@ -223,47 +223,6 @@ document.addEventListener('DOMContentLoaded', async function () {
         });
     }
 
-    async function search(page = 1) {
-        currentMediaType = 'search';
-        currentPage = page;
-        const searchInputValue = searchInput.value.trim();
-        const selectedCategory = categorySelect.value;
-        const selectedType = typeSelect.value;
-        const response = await fetch(
-            `https://api.themoviedb.org/3/search/${selectedType}?api_key=${API_KEY}&query=${encodeURIComponent(
-                searchInputValue
-            )}&with_genres=${selectedCategory}&page=${page}`
-        );
-
-        if (response.ok) {
-            const data = await response.json();
-
-            if (data.total_results === 0) {
-                clearMediaDisplay();
-                handleError('No media found.');
-                totalPages = 1;
-                updatePaginationControls(currentPage, totalPages);
-                return;
-            }
-
-            const results = data.results.slice(0, 12); // Limit to 12 items
-            displaySearchResults(results);
-            displayPopularMedia(results);
-            searchSuggestions.classList.add('hidden');
-            totalPages = data.total_pages; // Use data.total_pages directly
-            updatePaginationControls(currentPage, totalPages);
-            const newUrl = `${window.location.origin}${window.location.pathname}?query=${encodeURIComponent(
-                searchInputValue
-            )}&category=${selectedCategory}&type=${selectedType}`;
-            window.history.pushState(
-                { searchInputValue, selectedCategory, selectedType },
-                '',
-                newUrl
-            );
-        } else {
-            handleError('Failed to fetch search results.');
-        }
-    }
 
     async function fetchPopularMedia(page = 1) {
         currentMediaType = 'popular';
@@ -527,36 +486,6 @@ document.addEventListener('DOMContentLoaded', async function () {
         }
     }
 
-
-    function displaySearchResults(results) {
-        const searchResultsContainer = document.getElementById('searchResultsContainer');
-        searchResultsContainer.innerHTML = '';
-        results.forEach(result => {
-            const resultCard = document.createElement('div');
-            resultCard.classList.add('result-card');
-            resultCard.innerHTML = `
-                <img src="https://image.tmdb.org/t/p/w500${result.poster_path}" alt="${result.title || result.name}">
-                <h3>${result.title || result.name}</h3>
-                <p>Release Date: ${result.release_date || result.first_air_date}</p>
-            `;
-            searchResultsContainer.appendChild(resultCard);
-        });
-    }
-
-    function displaySearchSuggestions(results) {
-        searchSuggestions.innerHTML = '';
-        results.forEach(result => {
-            const suggestionItem = document.createElement('li');
-            suggestionItem.textContent = result.title || result.name;
-            suggestionItem.addEventListener('click', () => {
-                searchInput.value = suggestionItem.textContent;
-                search();
-                searchSuggestions.classList.add('hidden');
-            });
-            searchSuggestions.appendChild(suggestionItem);
-        });
-        searchSuggestions.classList.remove('hidden');
-    }
 
     async function loadMediaFromUrlParams() {
         const urlParams = new URLSearchParams(window.location.search);
