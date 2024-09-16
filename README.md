@@ -1,6 +1,4 @@
-<p align="center">
-  <a href="https://github.com/ambr0sial/nova"><img src="logo.png" alt="Nova" width="128" /></a>
-</p>
+
 
 <p align="center">
   <strong>Nova</strong> – Your Gateway to Free Streaming
