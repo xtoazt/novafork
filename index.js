@@ -32,6 +32,7 @@ async function fetchGenres(apiKey, mediaType) {
         return [];
     }
 }
+
 document.addEventListener('DOMContentLoaded', async function () {
     const homePage = document.getElementById('homePage');
     const welcomeBanner = document.getElementById('welcomeBanner');
@@ -46,13 +47,12 @@ document.addEventListener('DOMContentLoaded', async function () {
     const actorSearchInput = document.getElementById('actorSearchInput');
     const searchSuggestions = document.getElementById('searchSuggestions');
     const randomButton = document.getElementById('randomButton');
-    // Removed actorSearchButton
 
-    // Global variables to track pagination and state
-    let currentMediaType = 'popular'; // 'popular', 'actor', 'search'
+
+    let currentMediaType = 'popular';
     let currentPage = 1;
     let totalPages = 1;
-    let currentActorId = null; // To store the actor ID during actor search
+    let currentActorId = null;
 
     if (closeBanner) {
         closeBanner.addEventListener('click', () => {
@@ -90,46 +90,55 @@ document.addEventListener('DOMContentLoaded', async function () {
 
     if (typeSelect) {
         typeSelect.innerHTML = `
-            <option value="movie">Movies</option>
-            <option value="tv">TV Shows</option>
-        `;
+      <option value="movie">Movies</option>
+      <option value="tv">TV Shows</option>
+    `;
 
         typeSelect.addEventListener('change', async (event) => {
             const selectedType = event.target.value;
             await updateGenres(selectedType);
             currentPage = 1; // Reset to first page
-            await fetchPopularMedia(currentPage); // Fetch popular media based on the updated filters
+            await fetchPopularMedia(currentPage);
         });
     }
 
-    // Added event listener for actorSearchInput
+    // Event listener for actorSearchInput
     if (actorSearchInput) {
-        actorSearchInput.addEventListener('input', debounce(async function () {
-            const actorName = actorSearchInput.value.trim();
-            if (actorName.length > 2) {
-                const response = await fetch(`https://api.themoviedb.org/3/search/person?api_key=${API_KEY}&query=${encodeURIComponent(actorName)}`);
-                if (response.ok) {
-                    const data = await response.json();
-                    if (data.results.length > 0) {
-                        const actorId = data.results[0].id; // Use the first actor result
-                        currentActorId = actorId;
-                        currentMediaType = 'actor';
-                        currentPage = 1;
-                        await fetchMoviesAndShowsByActor(actorId, currentPage);
+        actorSearchInput.addEventListener(
+            'input',
+            debounce(async function () {
+                const actorName = actorSearchInput.value.trim();
+                if (actorName.length > 2) {
+                    const response = await fetch(
+                        `https://api.themoviedb.org/3/search/person?api_key=${API_KEY}&query=${encodeURIComponent(
+                            actorName
+                        )}`
+                    );
+                    if (response.ok) {
+                        const data = await response.json();
+                        if (data.results.length > 0) {
+                            const actorId = data.results[0].id; // First actor result
+                            currentActorId = actorId;
+                            currentMediaType = 'actor';
+                            currentPage = 1;
+                            await fetchMoviesAndShowsByActor(actorId, currentPage);
+                        } else {
+                            handleError('No actor found with that name.');
+                            clearMediaDisplay();
+                            totalPages = 1;
+                            updatePaginationControls(currentPage, totalPages);
+                        }
                     } else {
-                        handleError('No actor found with that name.');
-                        clearMediaDisplay();
+                        handleError('Failed to fetch actor search results.');
                     }
                 } else {
-                    handleError('Failed to fetch actor search results.');
+                    // Input is too short; reset to popular media
+                    currentMediaType = 'popular';
+                    currentPage = 1;
+                    await fetchPopularMedia(currentPage);
                 }
-            } else {
-                // Input is too short; reset to popular media
-                currentMediaType = 'popular';
-                currentPage = 1;
-                await fetchPopularMedia(currentPage);
-            }
-        }, 500)); // Debounce delay of 500ms
+            }, 500) // Debounce delay of 500ms
+        );
     }
 
     // Pagination Controls
@@ -153,7 +162,9 @@ document.addEventListener('DOMContentLoaded', async function () {
     }
 
     if (searchInput) {
-        document.getElementById('searchButton').addEventListener('click', () => search());
+        document
+            .getElementById('searchButton')
+            .addEventListener('click', () => search());
         searchInput.addEventListener('keydown', async function (event) {
             if (event.key === 'Enter') {
                 event.preventDefault();
@@ -161,27 +172,36 @@ document.addEventListener('DOMContentLoaded', async function () {
             }
         });
 
-        searchInput.addEventListener('input', debounce(async function () {
-            const query = searchInput.value.trim();
-            if (query.length > 2) {
-                const selectedCategory = categorySelect.value;
-                const selectedType = typeSelect.value;
-                const response = await fetch(`https://api.themoviedb.org/3/search/${selectedType}?api_key=${API_KEY}&query=${encodeURIComponent(query)}&with_genres=${selectedCategory}`);
-                if (response.ok) {
-                    const data = await response.json();
-                    displaySearchSuggestions(data.results);
+        searchInput.addEventListener(
+            'input',
+            debounce(async function () {
+                const query = searchInput.value.trim();
+                if (query.length > 2) {
+                    const selectedCategory = categorySelect.value;
+                    const selectedType = typeSelect.value;
+                    const response = await fetch(
+                        `https://api.themoviedb.org/3/search/${selectedType}?api_key=${API_KEY}&query=${encodeURIComponent(
+                            query
+                        )}&with_genres=${selectedCategory}`
+                    );
+                    if (response.ok) {
+                        const data = await response.json();
+                        displaySearchSuggestions(data.results);
+                    } else {
+                        searchSuggestions.classList.add('hidden');
+                    }
                 } else {
                     searchSuggestions.classList.add('hidden');
                 }
-            } else {
-                searchSuggestions.classList.add('hidden');
-            }
-        }, 500)); // Debounce delay of 500ms
+            }, 500) // Debounce delay of 500ms
+        );
     }
 
     if (randomButton) {
         randomButton.addEventListener('click', async () => {
-            const randomGenreId = Object.keys(genreMap)[Math.floor(Math.random() * Object.keys(genreMap).length)];
+            const randomGenreId = Object.keys(genreMap)[
+                Math.floor(Math.random() * Object.keys(genreMap).length)
+                ];
             categorySelect.value = randomGenreId;
             typeSelect.value = 'movie'; // Default to movie type
             currentPage = 1;
@@ -209,18 +229,37 @@ document.addEventListener('DOMContentLoaded', async function () {
         const searchInputValue = searchInput.value.trim();
         const selectedCategory = categorySelect.value;
         const selectedType = typeSelect.value;
-        const response = await fetch(`https://api.themoviedb.org/3/search/${selectedType}?api_key=${API_KEY}&query=${encodeURIComponent(searchInputValue)}&with_genres=${selectedCategory}&page=${page}`);
+        const response = await fetch(
+            `https://api.themoviedb.org/3/search/${selectedType}?api_key=${API_KEY}&query=${encodeURIComponent(
+                searchInputValue
+            )}&with_genres=${selectedCategory}&page=${page}`
+        );
 
         if (response.ok) {
             const data = await response.json();
+
+            if (data.total_results === 0) {
+                clearMediaDisplay();
+                handleError('No media found.');
+                totalPages = 1;
+                updatePaginationControls(currentPage, totalPages);
+                return;
+            }
+
             const results = data.results.slice(0, 12); // Limit to 12 items
             displaySearchResults(results);
             displayPopularMedia(results);
             searchSuggestions.classList.add('hidden');
-            totalPages = Math.ceil(data.total_results / 12); // Calculate total pages
+            totalPages = data.total_pages; // Use data.total_pages directly
             updatePaginationControls(currentPage, totalPages);
-            const newUrl = `${window.location.origin}${window.location.pathname}?query=${encodeURIComponent(searchInputValue)}&category=${selectedCategory}&type=${selectedType}`;
-            window.history.pushState({ searchInputValue, selectedCategory, selectedType }, '', newUrl);
+            const newUrl = `${window.location.origin}${window.location.pathname}?query=${encodeURIComponent(
+                searchInputValue
+            )}&category=${selectedCategory}&type=${selectedType}`;
+            window.history.pushState(
+                { searchInputValue, selectedCategory, selectedType },
+                '',
+                newUrl
+            );
         } else {
             handleError('Failed to fetch search results.');
         }
@@ -246,15 +285,27 @@ document.addEventListener('DOMContentLoaded', async function () {
             const response = await fetch(url);
             if (response.ok) {
                 const data = await response.json();
+
+                if (data.total_results === 0) {
+                    clearMediaDisplay();
+                    handleError('No media found.');
+                    totalPages = 1;
+                    updatePaginationControls(currentPage, totalPages);
+                    return;
+                }
+
                 const results = data.results.slice(0, 12); // Limit to 12 items
-                totalPages = Math.ceil(data.total_results / 12); // Calculate total pages
+                totalPages = data.total_pages; // Use data.total_pages directly
                 displayPopularMedia(results);
                 updatePaginationControls(currentPage, totalPages);
             } else {
                 handleError(`Failed to fetch ${selectedType} media.`);
             }
         } catch (error) {
-            handleError(`An error occurred while fetching ${selectedType} media.`, error);
+            handleError(
+                `An error occurred while fetching ${selectedType} media.`,
+                error
+            );
         }
     }
 
@@ -268,8 +319,17 @@ document.addEventListener('DOMContentLoaded', async function () {
             const response = await fetch(url);
             if (response.ok) {
                 const data = await response.json();
+
+                if (data.total_results === 0) {
+                    clearMediaDisplay();
+                    handleError('No media found for this actor.');
+                    totalPages = 1;
+                    updatePaginationControls(currentPage, totalPages);
+                    return;
+                }
+
                 const results = data.results.slice(0, 12); // Limit to 12 items
-                totalPages = Math.ceil(data.total_results / 12); // Calculate total pages
+                totalPages = data.total_pages; // Use data.total_pages directly
                 displayPopularMedia(results);
                 updatePaginationControls(currentPage, totalPages);
             } else {
@@ -298,6 +358,7 @@ document.addEventListener('DOMContentLoaded', async function () {
 
     await fetchPopularMedia(currentPage);
 
+
     function debounce(func, delay) {
         let timeout;
         return function (...args) {
@@ -305,7 +366,6 @@ document.addEventListener('DOMContentLoaded', async function () {
             timeout = setTimeout(() => func.apply(this, args), delay);
         };
     }
-
     async function fetchSelectedMedia(mediaId, mediaType) {
         try {
             const response = await fetch(`https://api.themoviedb.org/3/${mediaType}/${mediaId}?api_key=${API_KEY}`);
