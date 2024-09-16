@@ -46,7 +46,13 @@ document.addEventListener('DOMContentLoaded', async function () {
     const actorSearchInput = document.getElementById('actorSearchInput');
     const searchSuggestions = document.getElementById('searchSuggestions');
     const randomButton = document.getElementById('randomButton');
-    const actorSearchButton = document.getElementById('actorSearchButton');
+    // Removed actorSearchButton
+
+    // Global variables to track pagination and state
+    let currentMediaType = 'popular'; // 'popular', 'actor', 'search'
+    let currentPage = 1;
+    let totalPages = 1;
+    let currentActorId = null; // To store the actor ID during actor search
 
     if (closeBanner) {
         closeBanner.addEventListener('click', () => {
@@ -91,45 +97,76 @@ document.addEventListener('DOMContentLoaded', async function () {
         typeSelect.addEventListener('change', async (event) => {
             const selectedType = event.target.value;
             await updateGenres(selectedType);
-            fetchPopularMedia(); // Fetch popular media based on the updated filters
+            currentPage = 1; // Reset to first page
+            await fetchPopularMedia(currentPage); // Fetch popular media based on the updated filters
         });
     }
 
-    if (actorSearchButton) {
-        actorSearchButton.addEventListener('click', async () => {
-            const actorName = actorSearchInput.value;
+    // Added event listener for actorSearchInput
+    if (actorSearchInput) {
+        actorSearchInput.addEventListener('input', debounce(async function () {
+            const actorName = actorSearchInput.value.trim();
             if (actorName.length > 2) {
-                const response = await fetch(`https://api.themoviedb.org/3/search/person?api_key=${API_KEY}&query=${actorName}`);
+                const response = await fetch(`https://api.themoviedb.org/3/search/person?api_key=${API_KEY}&query=${encodeURIComponent(actorName)}`);
                 if (response.ok) {
                     const data = await response.json();
                     if (data.results.length > 0) {
                         const actorId = data.results[0].id; // Use the first actor result
-                        fetchMoviesAndShowsByActor(actorId);
+                        currentActorId = actorId;
+                        currentMediaType = 'actor';
+                        currentPage = 1;
+                        await fetchMoviesAndShowsByActor(actorId, currentPage);
                     } else {
                         handleError('No actor found with that name.');
+                        clearMediaDisplay();
                     }
                 } else {
                     handleError('Failed to fetch actor search results.');
                 }
+            } else {
+                // Input is too short; reset to popular media
+                currentMediaType = 'popular';
+                currentPage = 1;
+                await fetchPopularMedia(currentPage);
+            }
+        }, 500)); // Debounce delay of 500ms
+    }
+
+    // Pagination Controls
+    const prevPageButton = document.getElementById('prevPage');
+    const nextPageButton = document.getElementById('nextPage');
+
+    if (prevPageButton && nextPageButton) {
+        prevPageButton.addEventListener('click', async function () {
+            if (currentPage > 1) {
+                currentPage--;
+                await updateMediaDisplay();
+            }
+        });
+
+        nextPageButton.addEventListener('click', async function () {
+            if (currentPage < totalPages) {
+                currentPage++;
+                await updateMediaDisplay();
             }
         });
     }
 
     if (searchInput) {
-        document.getElementById('searchButton').addEventListener('click', search);
+        document.getElementById('searchButton').addEventListener('click', () => search());
         searchInput.addEventListener('keydown', async function (event) {
             if (event.key === 'Enter') {
                 event.preventDefault();
-                search();
+                await search();
             }
         });
 
-        searchInput.addEventListener('input', async function () {
-            const query = searchInput.value;
+        searchInput.addEventListener('input', debounce(async function () {
+            const query = searchInput.value.trim();
             if (query.length > 2) {
                 const selectedCategory = categorySelect.value;
                 const selectedType = typeSelect.value;
-                const response = await fetch(`https://api.themoviedb.org/3/search/${selectedType}?api_key=${API_KEY}&query=${query}&with_genres=${selectedCategory}`);
+                const response = await fetch(`https://api.themoviedb.org/3/search/${selectedType}?api_key=${API_KEY}&query=${encodeURIComponent(query)}&with_genres=${selectedCategory}`);
                 if (response.ok) {
                     const data = await response.json();
                     displaySearchSuggestions(data.results);
@@ -139,7 +176,7 @@ document.addEventListener('DOMContentLoaded', async function () {
             } else {
                 searchSuggestions.classList.add('hidden');
             }
-        });
+        }, 500)); // Debounce delay of 500ms
     }
 
     if (randomButton) {
@@ -147,29 +184,41 @@ document.addEventListener('DOMContentLoaded', async function () {
             const randomGenreId = Object.keys(genreMap)[Math.floor(Math.random() * Object.keys(genreMap).length)];
             categorySelect.value = randomGenreId;
             typeSelect.value = 'movie'; // Default to movie type
-            await fetchPopularMedia();
+            currentPage = 1;
+            await fetchPopularMedia(currentPage);
         });
     }
 
     if (categorySelect) {
-        categorySelect.addEventListener('change', fetchPopularMedia);
+        categorySelect.addEventListener('change', async () => {
+            currentPage = 1;
+            await fetchPopularMedia(currentPage);
+        });
     }
 
     if (typeSelect) {
-        typeSelect.addEventListener('change', fetchPopularMedia);
+        typeSelect.addEventListener('change', async () => {
+            currentPage = 1;
+            await fetchPopularMedia(currentPage);
+        });
     }
 
-    async function search() {
-        const searchInputValue = searchInput.value;
+    async function search(page = 1) {
+        currentMediaType = 'search';
+        currentPage = page;
+        const searchInputValue = searchInput.value.trim();
         const selectedCategory = categorySelect.value;
         const selectedType = typeSelect.value;
-        const response = await fetch(`https://api.themoviedb.org/3/search/${selectedType}?api_key=${API_KEY}&query=${searchInputValue}&with_genres=${selectedCategory}`);
+        const response = await fetch(`https://api.themoviedb.org/3/search/${selectedType}?api_key=${API_KEY}&query=${encodeURIComponent(searchInputValue)}&with_genres=${selectedCategory}&page=${page}`);
 
         if (response.ok) {
             const data = await response.json();
-            displaySearchResults(data.results);
-            displayPopularMedia(data.results);
+            const results = data.results.slice(0, 12); // Limit to 12 items
+            displaySearchResults(results);
+            displayPopularMedia(results);
             searchSuggestions.classList.add('hidden');
+            totalPages = Math.ceil(data.total_results / 12); // Calculate total pages
+            updatePaginationControls(currentPage, totalPages);
             const newUrl = `${window.location.origin}${window.location.pathname}?query=${encodeURIComponent(searchInputValue)}&category=${selectedCategory}&type=${selectedType}`;
             window.history.pushState({ searchInputValue, selectedCategory, selectedType }, '', newUrl);
         } else {
@@ -178,6 +227,8 @@ document.addEventListener('DOMContentLoaded', async function () {
     }
 
     async function fetchPopularMedia(page = 1) {
+        currentMediaType = 'popular';
+        currentPage = page;
         const selectedCategory = categorySelect.value;
         const selectedType = typeSelect.value;
         let url = '';
@@ -186,8 +237,6 @@ document.addEventListener('DOMContentLoaded', async function () {
         try {
             if (selectedCategory) {
                 url = `https://api.themoviedb.org/3/discover/${selectedType}${queryParams}&with_genres=${selectedCategory}`;
-            } else if (selectedType === 'latest') {
-                url = `https://api.themoviedb.org/3/trending/all/week${queryParams}`;
             } else if (selectedType === 'tv') {
                 url = `https://api.themoviedb.org/3/trending/tv/week${queryParams}`;
             } else {
@@ -197,9 +246,10 @@ document.addEventListener('DOMContentLoaded', async function () {
             const response = await fetch(url);
             if (response.ok) {
                 const data = await response.json();
-                const results = data.results.slice(0, 12);
+                const results = data.results.slice(0, 12); // Limit to 12 items
+                totalPages = Math.ceil(data.total_results / 12); // Calculate total pages
                 displayPopularMedia(results);
-                updatePaginationControls(data.page, data.total_pages);
+                updatePaginationControls(currentPage, totalPages);
             } else {
                 handleError(`Failed to fetch ${selectedType} media.`);
             }
@@ -208,69 +258,52 @@ document.addEventListener('DOMContentLoaded', async function () {
         }
     }
 
-    async function fetchMoviesAndShowsByActor(actorId) {
+    async function fetchMoviesAndShowsByActor(actorId, page = 1) {
+        currentMediaType = 'actor';
+        currentPage = page;
         const selectedType = typeSelect.value;
-        let allResults = [];
-        let page = 1;
-        let totalPages = 1;
+        const url = `https://api.themoviedb.org/3/discover/${selectedType}?api_key=${API_KEY}&with_cast=${actorId}&language=en-US&page=${page}`;
 
-        while (page <= totalPages) {
-            const url = `https://api.themoviedb.org/3/person/${actorId}/combined_credits?api_key=${API_KEY}&language=en-US&page=${page}`;
-
-            try {
-                const response = await fetch(url);
-                if (response.ok) {
-                    const data = await response.json();
-                    allResults = allResults.concat(data.cast);
-                    totalPages = data.total_pages;
-                    page++;
-                } else {
-                    handleError('Failed to fetch media for the actor.');
-                    break;
-                }
-            } catch (error) {
-                handleError('An error occurred while fetching media for the actor.', error);
-                break;
+        try {
+            const response = await fetch(url);
+            if (response.ok) {
+                const data = await response.json();
+                const results = data.results.slice(0, 12); // Limit to 12 items
+                totalPages = Math.ceil(data.total_results / 12); // Calculate total pages
+                displayPopularMedia(results);
+                updatePaginationControls(currentPage, totalPages);
+            } else {
+                handleError('Failed to fetch media for the actor.');
             }
-        }
-
-        const uniqueResults = Array.from(new Set(allResults.map(item => item.id)))
-            .map(id => allResults.find(item => item.id === id));
-
-        displayPopularMedia(uniqueResults);
-    }
-
-
-    function displayActorSearchResults(results) {
-    }
-
-    function handleError(message, error) {
-        console.error(message, error);
-    }
-
-    function updatePaginationControls(currentPage, totalPages) {
-        const prevPageButton = document.getElementById('prevPage');
-        const nextPageButton = document.getElementById('nextPage');
-        const currentPageSpan = document.getElementById('currentPage');
-
-        if (currentPageSpan) {
-            currentPageSpan.textContent = currentPage;
-        }
-
-        if (prevPageButton) {
-            prevPageButton.disabled = currentPage === 1;
-            prevPageButton.onclick = () => changePage(currentPage - 1);
-        }
-
-        if (nextPageButton) {
-            nextPageButton.disabled = currentPage === totalPages;
-            nextPageButton.onclick = () => changePage(currentPage + 1);
+        } catch (error) {
+            handleError('An error occurred while fetching media for the actor.', error);
         }
     }
 
+    async function updateMediaDisplay() {
+        if (currentMediaType === 'actor' && currentActorId) {
+            await fetchMoviesAndShowsByActor(currentActorId, currentPage);
+        } else if (currentMediaType === 'search') {
+            await search(currentPage);
+        } else {
+            await fetchPopularMedia(currentPage);
+        }
+    }
 
-    function changePage(page) {
-        fetchPopularMedia(page);
+    function clearMediaDisplay() {
+        if (popularMedia) {
+            popularMedia.innerHTML = '';
+        }
+    }
+
+    await fetchPopularMedia(currentPage);
+
+    function debounce(func, delay) {
+        let timeout;
+        return function (...args) {
+            clearTimeout(timeout);
+            timeout = setTimeout(() => func.apply(this, args), delay);
+        };
     }
 
     async function fetchSelectedMedia(mediaId, mediaType) {

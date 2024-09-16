@@ -91,20 +91,24 @@
         </div>
 
         <div class="mb-6">
-            <div class="flex items-center gap-2 mb-1">
-                <h2 class="text-sm font-semibold text-white">Filter Settings</h2>
-                <div class="flex gap-1">
-                    <select id="categorySelect" class="p-1 bg-zinc-800 border border-gray-700 rounded-lg text-white text-xs focus:ring-2 focus:ring-purple-500 focus:outline-none transition duration-200 ease-in-out">
-                    </select>
-                    <select id="typeSelect" class="p-1 bg-zinc-800 border border-gray-700 rounded-lg text-white text-xs focus:ring-2 focus:ring-purple-500 focus:outline-none transition duration-200 ease-in-out">
-                        <option value="movie">Movies</option>
-                        <option value="tv">TV Shows</option>
-                    </select>
-                    <input id="actorSearchInput" type="text" placeholder="Search Actor" class="p-0.5 bg-zinc-800 border border-gray-700 rounded-lg text-white text-xs w-24 focus:ring-2 focus:ring-purple-500 focus:outline-none transition duration-200 ease-in-out">
-                    <button id="actorSearchButton" class="p-0.5 bg-purple-600 border border-gray-700 rounded-lg text-white text-xs w-20 focus:ring-2 focus:ring-purple-500 focus:outline-none transition duration-200 ease-in-out">Search</button>
-                </div>
+            <h2 class="text-sm font-semibold text-white mb-2">Filter Settings</h2>
+            <div class="flex items-center gap-2">
+                <select id="categorySelect" class="p-1 bg-zinc-800 border border-gray-700 rounded-lg text-white text-xs focus:ring-2 focus:ring-purple-500 focus:outline-none transition duration-200 ease-in-out">
+                </select>
+                <select id="typeSelect" class="p-1 bg-zinc-800 border border-gray-700 rounded-lg text-white text-xs focus:ring-2 focus:ring-purple-500 focus:outline-none transition duration-200 ease-in-out">
+                    <option value="movie">Movies</option>
+                    <option value="tv">TV Shows</option>
+                </select>
+                <input
+                        id="actorSearchInput"
+                        type="text"
+                        placeholder="Search by Actor"
+                        class="p-0.5 bg-zinc-800 border border-gray-700 rounded-lg text-white text-xxs w-64 focus:ring-2 focus:ring-purple-500 focus:outline-none transition duration-200 ease-in-out"
+                />
+                </button>
             </div>
         </div>
+
         <!-- Selected Media -->
         <section class="mb-12">
             <h2 class="text-2xl font-bold mb-4 text-white">Selected Media</h2>
@@ -137,12 +141,9 @@
 
         <!-- Pagination and Footer -->
         <div class="flex flex-col items-center mt-8 space-y-6">
-            <!-- Pagination Buttons -->
-            <div class="flex space-x-4">
-                <!-- Previous Page Button -->
+            <div class="flex space-x-4">-->
                 <button id="prevPage" class="bg-purple-600 text-white font-medium py-2 px-4 rounded-full shadow-lg hover:bg-purple-700 transition duration-200 ease-in-out focus:outline-none focus:ring-4 focus:ring-purple-500 focus:ring-opacity-50 disabled:opacity-50 disabled:cursor-not-allowed" aria-label="Previous Page">
             <span class="flex items-center">
-                <!-- Arrow Icon -->
                 <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
                 </svg>
