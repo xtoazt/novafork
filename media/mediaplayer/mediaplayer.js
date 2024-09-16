@@ -57,16 +57,41 @@ async function displaySelectedMedia(media, mediaType) {
         const [mediaData, castData] = await Promise.all([mediaDataPromise, castDataPromise]);
 
         const genres = mediaData.genres ? mediaData.genres.map(genre => genre.name).join(', ') : 'Unknown Genre';
-        const runtime = mediaType === 'tv'
-            ? `${mediaData.episode_run_time ? mediaData.episode_run_time[0] : 'N/A'} min per episode`
-            : `${mediaData.runtime || 'N/A'} min`;
-        const language = mediaData.original_language ? mediaData.original_language.toUpperCase() : 'Unknown';
 
+        let runtime;
+        if (mediaType === 'tv') {
+            if (mediaData.episode_run_time && mediaData.episode_run_time.length > 0) {
+                const avgRuntime = mediaData.episode_run_time.reduce((a, b) => a + b) / mediaData.episode_run_time.length;
+                runtime = `${Math.round(avgRuntime)} min per episode`;
+            } else {
+                runtime = 'Runtime not available';
+            }
+        } else {
+            runtime = `${mediaData.runtime || 'N/A'} min`;  // Movie runtime
+        }
+
+        const language = mediaData.original_language ? mediaData.original_language.toUpperCase() : 'Unknown';
         const voteAverage = mediaData.vote_average || 0;
         const popularityScore = mediaData.popularity || 0;
         const stars = Math.round(voteAverage / 2);
 
-        // Ratings and popularity
+
+        let budget = 'N/A';
+        let revenue = 'N/A';
+
+        if (mediaType === 'movie') {
+            budget = mediaData.budget ? `$${mediaData.budget.toLocaleString()}` : 'Unknown'; // Handle movie budget
+            revenue = mediaData.revenue ? `$${mediaData.revenue.toLocaleString()}` : 'Unknown'; // Handle movie revenue
+        } else if (mediaType === 'tv') {
+            budget = mediaData.budget ? `$${mediaData.budget.toLocaleString()}` : 'Not applicable for TV shows'; // TV shows usually don't have a budget field
+        }
+
+        const productionCompanies = mediaData.production_companies && mediaData.production_companies.length > 0
+            ? mediaData.production_companies.map(company => company.name).join(', ')
+            : 'Unknown Production Companies';
+        const releaseDate = media.release_date || media.first_air_date || 'Unknown Release Date';
+
+
         const ratings = `
             <div class="flex items-center space-x-1 mb-2">
                 <span class="text-yellow-400">${'★'.repeat(stars)}</span>
@@ -120,16 +145,19 @@ async function displaySelectedMedia(media, mediaType) {
         const populatedHTML = template
             .replace(/{{poster_path}}/g, `https://image.tmdb.org/t/p/w500${media.poster_path}`)
             .replace(/{{title_or_name}}/g, media.title || media.name)
-            .replace(/{{release_date_or_first_air_date}}/g, media.release_date || media.first_air_date)
+            .replace(/{{release_date_or_first_air_date}}/g, releaseDate)
             .replace(/{{overview}}/g, media.overview || 'No overview available.')
             .replace(/{{type}}/g, mediaType === 'movie' ? 'Movie' : 'TV Show')
             .replace(/{{ratings}}/g, ratings)
             .replace(/{{popularity}}/g, popularity)
             .replace(/{{season_section}}/g, seasonSection)
             .replace(/{{genres}}/g, `Genres: ${genres}`)
-            .replace(/{{runtime}}/g, `Runtime: ${runtime}`)
+            .replace(/{{runtime}}/g, `Runtime: ${runtime}`)  // Corrected Runtime handling
             .replace(/{{language}}/g, `Language: ${language}`)
             .replace(/{{cast_list}}/g, castListSection)
+            .replace(/{{budget}}/g, `Budget: ${budget}`)
+            .replace(/{{revenue}}/g, `Revenue: ${revenue}`) // Added Revenue
+            .replace(/{{production_companies}}/g, `Production Companies: ${productionCompanies}`);
 
         selectedMovie.innerHTML = populatedHTML;
         const parentContainer = document.getElementById('videoPlayer'); // Replace with the actual parent container ID
@@ -142,6 +170,9 @@ async function displaySelectedMedia(media, mediaType) {
                 behavior: 'smooth'
             });
         }
+
+
+
 
         const playButton = document.getElementById('playButton');
         const videoPlayer = selectedMovie.querySelector('#videoPlayer');
