@@ -218,9 +218,9 @@ async function displaySelectedMedia(media, mediaType) {
         }
 
         async function getTvEmbedUrl(mediaId, seasonId, episodeId, provider, apiKey) {
-            const primaryColor = '8A2BE2';
-            const secondaryColor = 'D8BFD8';
-            const iconColor = '4B0082';
+            const primaryColor = '#FFFFFF';
+            const secondaryColor = '#FFFFFF';
+            const iconColor = '#ffffff';
 
             switch (provider) {
                 case 'vidsrc':
@@ -276,10 +276,9 @@ async function displaySelectedMedia(media, mediaType) {
         }
 
         async function getMovieEmbedUrl(mediaId, provider, apiKey) {
-            const primaryColor = '8A2BE2';
-            const secondaryColor = 'D8BFD8';
-            const iconColor = '4B0082';
-
+            const primaryColor = '#FFFFFF';
+            const secondaryColor = '#FFFFFF';
+            const iconColor = '#FFFFFF';
             switch (provider) {
                 case 'vidsrc':
                     return `https://vidsrc.cc/v3/embed/movie/${mediaId}?autoPlay=true`;
