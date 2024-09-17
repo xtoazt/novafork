@@ -197,17 +197,6 @@ document.addEventListener('DOMContentLoaded', async function () {
         );
     }
 
-    if (randomButton) {
-        randomButton.addEventListener('click', async () => {
-            const randomGenreId = Object.keys(genreMap)[
-                Math.floor(Math.random() * Object.keys(genreMap).length)
-                ];
-            categorySelect.value = randomGenreId;
-            typeSelect.value = 'movie'; // Default to movie type
-            currentPage = 1;
-            await fetchPopularMedia(currentPage);
-        });
-    }
 
     if (categorySelect) {
         categorySelect.addEventListener('change', async () => {
