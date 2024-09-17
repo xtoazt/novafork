@@ -224,7 +224,7 @@ async function displaySelectedMedia(media, mediaType) {
 
             switch (provider) {
                 case 'vidsrc':
-                    return `https://vidsrc.cc/v2/embed/tv/${mediaId}/${seasonId}/${episodeId}`;
+                    return `https://vidsrc.cc/v3/embed/tv/${mediaId}/${seasonId}/${episodeId}?autoPlay=true&autoNext=true`;
                 case 'vidsrcpro':
                     return `https://vidsrc.pro/embed/tv/${mediaId}/${seasonId}/${episodeId}`;
                 case 'vidsrc2':
@@ -282,7 +282,7 @@ async function displaySelectedMedia(media, mediaType) {
 
             switch (provider) {
                 case 'vidsrc':
-                    return `https://vidsrc.cc/v2/embed/movie/${mediaId}`;
+                    return `https://vidsrc.cc/v3/embed/movie/${mediaId}?autoPlay=true`;
                 case 'vidsrc2':
                     return `https://vidsrc2.to/embed/movie/${mediaId}`;
                 case 'vidsrcxyz':
