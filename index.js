@@ -344,6 +344,7 @@ document.addEventListener('DOMContentLoaded', async function () {
             videoPlayerContainer.classList.add('hidden');
         }
     }
+
     async function getReleaseType(mediaId, mediaType) {
         try {
             const [releaseDatesResponse, watchProvidersResponse] = await Promise.all([
@@ -358,13 +359,16 @@ document.addEventListener('DOMContentLoaded', async function () {
                 const releases = releaseDatesData.results.flatMap(result => result.release_dates);
                 const currentDate = new Date();
 
+
                 const isDigitalRelease = releases.some(release =>
                     (release.type === 4 || release.type === 6) && new Date(release.release_date) <= currentDate
                 );
 
+
                 const isInTheaters = mediaType === 'movie' && releases.some(release =>
                     release.type === 3 && new Date(release.release_date) <= currentDate
                 );
+
 
                 const hasFutureRelease = releases.some(release =>
                     new Date(release.release_date) > currentDate
@@ -373,27 +377,13 @@ document.addEventListener('DOMContentLoaded', async function () {
                 const streamingProviders = watchProvidersData.results?.US?.flatrate || [];
                 const isStreamingAvailable = streamingProviders.length > 0;
 
-                if (isStreamingAvailable) {
-                    return "Streaming (HD)";
-                } else if (isDigitalRelease) {
+                if (isStreamingAvailable || isDigitalRelease) {
                     return "HD";
-                } else if (isInTheaters && mediaType === 'movie') {
-                    const theatricalRelease = releases.find(release => release.type === 3);
-                    if (theatricalRelease && new Date(theatricalRelease.release_date) <= currentDate) {
-                        const releaseDate = new Date(theatricalRelease.release_date);
-                        const oneYearLater = new Date(releaseDate);
-                        oneYearLater.setFullYear(releaseDate.getFullYear() + 1);
-
-                        if (currentDate >= oneYearLater) {
-                            return "HD";
-                        } else {
-                            return "Cam Quality";
-                        }
-                    }
+                } else if (isInTheaters) {
+                    return "Cam";
                 } else if (hasFutureRelease) {
                     return "Not Released Yet";
                 }
-
                 return "Unknown Quality";
             } else {
                 handleError('Failed to fetch release type or watch providers.', new Error('API response not OK'));
@@ -404,6 +394,7 @@ document.addEventListener('DOMContentLoaded', async function () {
             return "Unknown Quality";
         }
     }
+
     async function displayPopularMedia(results) {
         popularMedia.innerHTML = '';
 
