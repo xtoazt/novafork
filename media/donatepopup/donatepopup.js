@@ -16,21 +16,15 @@ function getCookie(name) {
     return null;
 }
 
-
 function showDonationPopup() {
-    const lastPopupTime = getCookie('lastPopupTime');
-    const currentTime = new Date().getTime();
-    const oneWeek = 7 * 24 * 60 * 60 * 1000;
-
-    if (!lastPopupTime || currentTime - lastPopupTime >= oneWeek) {
-        document.getElementById('donationPopup').classList.remove('hidden');
-        setCookie('lastPopupTime', currentTime, 7);
-    }
+    // Always show the popup on page load, regardless of cookies
+    document.getElementById('donationPopup').classList.remove('hidden');
 }
 
 window.addEventListener('load', () => {
-    setTimeout(showDonationPopup, 3000);
+    setTimeout(showDonationPopup, 3000); // Show popup after 3 seconds on page load
 });
+
 document.getElementById('closeDonationPopup').addEventListener('click', () => {
     document.getElementById('donationPopup').classList.add('hidden');
 });
