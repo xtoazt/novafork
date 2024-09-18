@@ -352,45 +352,67 @@ document.addEventListener('DOMContentLoaded', async function () {
                 fetch(`https://api.themoviedb.org/3/${mediaType}/${mediaId}/watch/providers?api_key=${API_KEY}`)
             ]);
 
-            if (releaseDatesResponse.ok && watchProvidersResponse.ok) {
-                const releaseDatesData = await releaseDatesResponse.json();
-                const watchProvidersData = await watchProvidersResponse.json();
-
-                const releases = releaseDatesData.results.flatMap(result => result.release_dates);
-                const currentDate = new Date();
-
-
-                const isDigitalRelease = releases.some(release =>
-                    (release.type === 4 || release.type === 6) && new Date(release.release_date) <= currentDate
-                );
-
-
-                const isInTheaters = mediaType === 'movie' && releases.some(release =>
-                    release.type === 3 && new Date(release.release_date) <= currentDate
-                );
-
-
-                const hasFutureRelease = releases.some(release =>
-                    new Date(release.release_date) > currentDate
-                );
-
-                const streamingProviders = watchProvidersData.results?.US?.flatrate || [];
-                const isStreamingAvailable = streamingProviders.length > 0;
-
-                if (isStreamingAvailable || isDigitalRelease) {
-                    return "HD";
-                } else if (isInTheaters) {
-                    return "Cam";
-                } else if (hasFutureRelease) {
-                    return "Not Released Yet";
-                }
-                return "Unknown Quality";
-            } else {
-                handleError('Failed to fetch release type or watch providers.', new Error('API response not OK'));
-                return "Unknown Quality";
+            // Check if both responses are OK
+            if (!releaseDatesResponse.ok || !watchProvidersResponse.ok) {
+                throw new Error('Failed to fetch release type or watch providers.');
             }
+
+            // Parse the responses
+            const releaseDatesData = await releaseDatesResponse.json();
+            const watchProvidersData = await watchProvidersResponse.json();
+
+            const releases = releaseDatesData.results.flatMap(result => result.release_dates);
+            const currentDate = new Date();
+
+            const currentUtcDate = new Date(currentDate.toISOString().slice(0, 10)); // Strip time info to only compare dates
+
+
+            const isDigitalRelease = releases.some(release =>
+                (release.type === 4 || release.type === 6) && new Date(release.release_date).getTime() <= currentUtcDate.getTime()
+            );
+
+            const theaterRelease = releases.find(release => release.type === 3);
+            const isInTheaters = theaterRelease && new Date(theaterRelease.release_date).getTime() <= currentUtcDate.getTime();
+
+            const hasFutureRelease = releases.some(release =>
+                new Date(release.release_date).getTime() > currentUtcDate.getTime()
+            );
+
+            const streamingRegions = ['US', 'UK', 'CA', 'AU'];
+            let isStreamingAvailable = false;
+            for (const region of streamingRegions) {
+                const providers = watchProvidersData.results?.[region]?.flatrate || [];
+                if (providers.length > 0) {
+                    isStreamingAvailable = true;
+                    break;
+                }
+            }
+
+            let isRentalOrPurchaseAvailable = false;
+            for (const region of streamingRegions) {
+                const rentalProviders = watchProvidersData.results?.[region]?.rent || [];
+                const buyProviders = watchProvidersData.results?.[region]?.buy || [];
+                if (rentalProviders.length > 0 || buyProviders.length > 0) {
+                    isRentalOrPurchaseAvailable = true;
+                    break;
+                }
+            }
+
+
+            if (isStreamingAvailable || isDigitalRelease) {
+                return "HD";
+            } else if (isInTheaters && !isStreamingAvailable && !isDigitalRelease) {
+                return "Cam";
+            } else if (hasFutureRelease && !isInTheaters) {
+                return "Not Released Yet";
+            } else if (isRentalOrPurchaseAvailable) {
+                return "Rental/Buy Available";
+            }
+
+
+            return "Unknown Quality";
         } catch (error) {
-            handleError('An error occurred while fetching release type.', error);
+            console.error('Error occurred while fetching release type:', error);
             return "Unknown Quality";
         }
     }
@@ -419,7 +441,7 @@ document.addEventListener('DOMContentLoaded', async function () {
             <div class="relative w-full h-64 overflow-hidden rounded-lg mb-4">
                 <img src="https://image.tmdb.org/t/p/w300${media.poster_path}" alt="${media.title || media.name}" class="w-full h-full object-cover rounded-lg transition-transform duration-300 group-hover:scale-110">
                 <div class="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-50"></div>
-                ${displayType ? `<div class="absolute top-0 right-0 m-2 px-2 py-1 bg-black bg-opacity-75 text-white text-xs rounded">${displayType}</div>` : ''}
+                ${displayType ? `<div class="absolute top-0 right-0 m-2 px-2 py-1 bg-black bg-opacity-50 text-white text-xs rounded-lg">${displayType}</div>` : ''}
             </div>
             <div class="flex-grow w-full">
                 <h3 class="text-lg font-semibold text-white truncate">${media.title || media.name}</h3>
@@ -432,14 +454,13 @@ document.addEventListener('DOMContentLoaded', async function () {
                 <p class="text-gray-300 text-sm mt-1">Release Date: ${formattedDate}</p>
             </div>
         `;
-
             mediaCard.addEventListener('click', function () {
                 fetchSelectedMedia(media.id, mediaType);
             });
-
             popularMedia.appendChild(mediaCard);
         });
     }
+
 
 
 
