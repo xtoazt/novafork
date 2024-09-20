@@ -267,16 +267,15 @@ async function displaySelectedMedia(media, mediaType) {
                 ? await getTvEmbedUrl(media.id, $seasonSelect.val(), $episodeSelect.val(), provider, apiKey)
                 : await getMovieEmbedUrl(media.id, provider, apiKey);
 
+
+
             $videoPlayer.html(`
-        <div class="w-full h-full">
-            <iframe src="${endpoint}" 
+                   <iframe src="${endpoint}" 
                     class="video-iframe"
                     allowfullscreen>
             </iframe>
         </div>
     `).removeClass('hidden');
-
-
             $movieInfo.children().not($videoPlayer).addClass('hidden');
             $closePlayerButton.removeClass('hidden');
         }
@@ -285,14 +284,62 @@ async function displaySelectedMedia(media, mediaType) {
             // Reset the video player content and hide it
             $videoPlayer.html('').addClass('hidden');
 
+            // Show all children in movieInfo (restoring the movie info section)
             $movieInfo.children().removeClass('hidden');
 
+            // Hide the close player button
             $closePlayerButton.addClass('hidden');
         }
+
+        function adjustIframeSize() {
+            const $iframe = $('#dynamicIframe');
+
+            // Get the current viewport width and height
+            const viewportWidth = $(window).width();
+            const viewportHeight = $(window).height();
+
+            // Adjust iframe size based on the viewport size
+            $iframe.css({
+                width: `${viewportWidth}px`,
+                height: `${viewportHeight}px`
+            });
+        }
+
+// Listen for window resize or zoom changes
+        $(window).on('resize', adjustIframeSize);
+
+// Function to update episodes dropdown based on selected season
+        async function updateEpisodes() {
+            const seasonNumber = $seasonSelect.val();
+            if (!seasonNumber) return;
+
+            try {
+                const season = await fetchJson(`https://api.themoviedb.org/3/tv/${media.id}/season/${seasonNumber}?api_key=${apiKey}`);
+
+                // Calculate the runtime based on episode data for TV shows
+                const episodeRuntime = season.episodes.reduce((total, episode) => total + (episode.runtime || 0), 0) / season.episodes.length || 0;
+
+                // Update the runtime field for TV shows
+                $('#runtime').html(`Runtime: ${Math.round(episodeRuntime)} min per episode`);
+
+                $episodeSelect.html(season.episodes
+                    .map(episode => `
+                <option value="${episode.episode_number}" data-image="https://image.tmdb.org/t/p/w500${episode.still_path}">
+                    Episode ${episode.episode_number}${episode.name ? `: ${episode.name}` : ''}
+                </option>
+            `).join(''))
+                    .trigger('change');
+            } catch (error) {
+                console.error('Failed to fetch season details:', error);
+                $episodeSelect.html('<option>Failed to load episodes</option>');
+            }
+        }
+
 
         if (mediaType === 'tv') {
             await updateEpisodes();
         }
+
 
         $playButton.on('click', updateVideo);
         $closePlayerButton.on('click', closeVideoPlayer);
@@ -306,9 +353,9 @@ async function displaySelectedMedia(media, mediaType) {
         });
         $seasonSelect.on('change', async function() {
             await updateEpisodes();
-            updateVideo();
+            updateVideo();  // Update video with the first episode when the season changes
         });
-        $episodeSelect.on('change', updateVideo);
+        $episodeSelect.on('change', updateVideo);  // Update video on episode change
 
     } catch (error) {
         console.error('Failed to display selected media:', error);
