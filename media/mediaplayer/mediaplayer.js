@@ -160,31 +160,29 @@ async function displaySelectedMedia(media, mediaType) {
             fetchCastData(media.id, mediaType, apiKey)
         ]);
 
+        // Genres and common data
         const genres = mediaData.genres?.map(genre => genre.name).join(', ') || 'Unknown Genre';
-        const runtime = mediaType === 'tv'
-            ? `${Math.round(mediaData.episode_run_time.reduce((a, b) => a + b, 0) / mediaData.episode_run_time.length)} min per episode`
-            : `${mediaData.runtime || 'N/A'} min`;
         const language = mediaData.original_language?.toUpperCase() || 'Unknown';
-        const stars = Math.round((mediaData.vote_average || 0) / 2);
+        const releaseDate = media.release_date || media.first_air_date || 'Unknown Release Date';
+        const productionCompanies = mediaData.production_companies?.map(company => company.name).join(', ') || 'Unknown Production Companies';
         const budget = mediaType === 'movie' ? (mediaData.budget ? `$${mediaData.budget.toLocaleString()}` : 'Unknown') : 'N/A';
         const revenue = mediaType === 'movie' ? (mediaData.revenue ? `$${mediaData.revenue.toLocaleString()}` : 'Unknown') : 'N/A';
-        const productionCompanies = mediaData.production_companies?.map(company => company.name).join(', ') || 'Unknown Production Companies';
-        const releaseDate = media.release_date || media.first_air_date || 'Unknown Release Date';
 
+        // Ratings and popularity
         const ratings = `
         <div class="flex items-center space-x-2">
             <i class="fas fa-star text-yellow-400"></i>
             <span class="text-lg font-semibold text-white">${(mediaData.vote_average || 0).toFixed(1)}</span>
             <span class="text-sm text-gray-400">/10</span>
-        </div>
-    `;
-            const popularity = `
+        </div>`;
+        const popularity = `
             <div class="flex items-center space-x-2">
                 <i class="fas fa-fire text-orange-500"></i>
                 <span class="text-lg font-semibold text-white">${(mediaData.popularity || 0).toFixed(1)}</span>
                 <span class="text-sm text-gray-400">Popularity</span>
-            </div>
-        `;
+            </div>`;
+
+        // Cast
         const castList = castData.cast.slice(0, 5).map(actor => `
             <div class="flex-shrink-0 w-28 mx-2 text-center">
                 <div class="w-28 h-28 mx-auto mb-2 rounded-full overflow-hidden border-2 border-purple-500 shadow-lg">
@@ -196,29 +194,41 @@ async function displaySelectedMedia(media, mediaType) {
             </div>
         `).join('');
 
-        const seasonSection = mediaType === 'tv' ? `
-            <div class="space-y-3">
-                <div>
-                    <label for="seasonSelect" class="block text-sm font-medium text-gray-300 mb-1">
-                        <i class="fas fa-tv mr-2"></i>Select Season:
-                    </label>
-                    <select id="seasonSelect" class="custom-select w-full bg-gray-800 text-white rounded-lg border border-gray-600 p-2 focus:border-purple-400 focus:ring-purple-400 transition duration-200 ease-in-out">
-                        ${mediaData.seasons.filter(season => season.season_number !== 0).map(season => 
-                            `<option value="${season.season_number}">${season.name || `Season ${season.season_number}`}</option>`
-                        ).join('')}
-                    </select>
-                </div>
-                <div>
-                    <label for="episodeSelect" class="block text-sm font-medium text-gray-300 mb-1">
-                        <i class="fas fa-film mr-2"></i>Select Episode:
-                    </label>
-                    <select id="episodeSelect" class="custom-select w-full bg-gray-800 text-white rounded-lg border border-gray-600 p-2 focus:border-purple-400 focus:ring-purple-400 transition duration-200 ease-in-out">
-                    </select>
-                </div>
-            </div>
-        ` : '';
+        // Runtime logic
+        let runtime;
+        let seasonSection = '';
 
+        if (mediaType === 'movie') {
+            // Movie-specific runtime
+            runtime = `${mediaData.runtime || 'N/A'} min`;
+        } else if (mediaType === 'tv') {
+            // TV-specific logic: Display seasons and calculate episode runtime
+            runtime = `${Math.round(mediaData.episode_run_time.reduce((a, b) => a + b, 0) / mediaData.episode_run_time.length)} min per episode`;
 
+            seasonSection = `
+                <div class="space-y-3">
+                    <div>
+                        <label for="seasonSelect" class="block text-sm font-medium text-gray-300 mb-1">
+                            <i class="fas fa-tv mr-2"></i>Select Season:
+                        </label>
+                        <select id="seasonSelect" class="custom-select w-full bg-gray-800 text-white rounded-lg border border-gray-600 p-2 focus:border-purple-400 focus:ring-purple-400 transition duration-200 ease-in-out">
+                            ${mediaData.seasons.filter(season => season.season_number !== 0).map(season =>
+                `<option value="${season.season_number}">${season.name || `Season ${season.season_number}`}</option>`
+            ).join('')}
+                        </select>
+                    </div>
+                    <div>
+                        <label for="episodeSelect" class="block text-sm font-medium text-gray-300 mb-1">
+                            <i class="fas fa-film mr-2"></i>Select Episode:
+                        </label>
+                        <select id="episodeSelect" class="custom-select w-full bg-gray-800 text-white rounded-lg border border-gray-600 p-2 focus:border-purple-400 focus:ring-purple-400 transition duration-200 ease-in-out">
+                        </select>
+                    </div>
+                </div>
+            `;
+        }
+
+        // HTML template with updated data
         const template = await fetch('media/mediaTemplate.html').then(response => response.text());
 
         $selectedMovie.html(template
@@ -248,14 +258,15 @@ async function displaySelectedMedia(media, mediaType) {
         const $seasonSelect = $('#seasonSelect');
         const $episodeSelect = $('#episodeSelect');
 
-        if ($providerSelect.length) $providerSelect.val(selectedProvider);
+        let selectedProvider = 'vidlink'; // Set default provider
 
+        // Function to update video player based on selected options
         async function updateVideo() {
             const provider = $providerSelect.length ? $providerSelect.val() : selectedProvider;
             const endpoint = mediaType === 'tv'
                 ? await getTvEmbedUrl(media.id, $seasonSelect.val(), $episodeSelect.val(), provider, apiKey)
                 : await getMovieEmbedUrl(media.id, provider, apiKey);
-        
+
             $videoPlayer.html(`
                 <div class="relative w-full" style="padding-top: 56.25%;">
                     <iframe src="${endpoint}" 
@@ -269,43 +280,46 @@ async function displaySelectedMedia(media, mediaType) {
         }
 
         async function closeVideoPlayer() {
-            const $videoPlayer = $('#videoPlayer');
-            const $movieInfo = $('#movieInfo');
-            const $closePlayerButton = $('#closePlayerButton');
-            
-            // Reset the video player content and hide it
             $videoPlayer.html('').addClass('hidden');
-            
-            // Show all children in movieInfo (restoring the movie info section)
             $movieInfo.children().removeClass('hidden');
-            
-            // Hide the close player button
             $closePlayerButton.addClass('hidden');
         }
-        
 
+        // Function to update episodes dropdown based on selected season
         async function updateEpisodes() {
             const seasonNumber = $seasonSelect.val();
             if (!seasonNumber) return;
 
             try {
                 const season = await fetchJson(`https://api.themoviedb.org/3/tv/${media.id}/season/${seasonNumber}?api_key=${apiKey}`);
+
+                // Calculate the runtime based on episode data for TV shows
+                const episodeRuntime = season.episodes.reduce((total, episode) => total + (episode.runtime || 0), 0) / season.episodes.length || 0;
+
+                // Update the runtime field for TV shows
+                $('#runtime').html(`Runtime: ${Math.round(episodeRuntime)} min per episode`);
+
                 $episodeSelect.html(season.episodes
-                    .filter(episode => episode.season_number === Number(seasonNumber))
                     .map(episode => `
                         <option value="${episode.episode_number}" data-image="https://image.tmdb.org/t/p/w500${episode.still_path}">
                             Episode ${episode.episode_number}${episode.name ? `: ${episode.name}` : ''}
                         </option>
-                    `).join('')
-                ).trigger('change');
+                    `).join(''))
+                    .trigger('change');
             } catch (error) {
                 console.error('Failed to fetch season details:', error);
                 $episodeSelect.html('<option>Failed to load episodes</option>');
             }
         }
 
+        // Call updateEpisodes immediately to load episodes for the first season (for TV shows)
+        if (mediaType === 'tv') {
+            await updateEpisodes();
+        }
+
+        // Event listeners
         $playButton.on('click', updateVideo);
-        $closePlayerButton.on('click', closeVideoPlayer); // Add event listener for closing the player
+        $closePlayerButton.on('click', closeVideoPlayer);
         $languageSelect.on('change', function() {
             $providerSelect.toggleClass('hidden', $languageSelect.val() === 'fr');
             updateVideo();
@@ -316,9 +330,9 @@ async function displaySelectedMedia(media, mediaType) {
         });
         $seasonSelect.on('change', async function() {
             await updateEpisodes();
-            updateVideo();
+            updateVideo();  // Update video with the first episode when the season changes
         });
-        $episodeSelect.on('change', updateVideo);
+        $episodeSelect.on('change', updateVideo);  // Update video on episode change
     } catch (error) {
         console.error('Failed to display selected media:', error);
     }
