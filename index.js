@@ -308,13 +308,22 @@ $(document).ready(async function () {
     async function getReleaseType(mediaId, mediaType) {
         try {
             const [releaseDatesResponse, watchProvidersResponse] = await Promise.all([
-                $.getJSON(`https://api.themoviedb.org/3/${mediaType}/${mediaId}/release_dates?api_key=${API_KEY}`),
-                $.getJSON(`https://api.themoviedb.org/3/${mediaType}/${mediaId}/watch/providers?api_key=${API_KEY}`)
+                fetch(`https://api.themoviedb.org/3/${mediaType}/${mediaId}/release_dates?api_key=${API_KEY}`),
+                fetch(`https://api.themoviedb.org/3/${mediaType}/${mediaId}/watch/providers?api_key=${API_KEY}`)
             ]);
 
-            const releases = releaseDatesResponse.results.flatMap(result => result.release_dates);
+            if (!releaseDatesResponse.ok || !watchProvidersResponse.ok) {
+                throw new Error('Failed to fetch release type or watch providers.');
+            }
+
+            const releaseDatesData = await releaseDatesResponse.json();
+            const watchProvidersData = await watchProvidersResponse.json();
+
+            const releases = releaseDatesData.results.flatMap(result => result.release_dates);
             const currentDate = new Date();
+
             const currentUtcDate = new Date(currentDate.toISOString().slice(0, 10)); // Strip time info to only compare dates
+
 
             const isDigitalRelease = releases.some(release =>
                 (release.type === 4 || release.type === 6) && new Date(release.release_date).getTime() <= currentUtcDate.getTime()
@@ -330,7 +339,7 @@ $(document).ready(async function () {
             const streamingRegions = ['US', 'UK', 'CA', 'AU'];
             let isStreamingAvailable = false;
             for (const region of streamingRegions) {
-                const providers = watchProvidersResponse.results?.[region]?.flatrate || [];
+                const providers = watchProvidersData.results?.[region]?.flatrate || [];
                 if (providers.length > 0) {
                     isStreamingAvailable = true;
                     break;
@@ -339,8 +348,8 @@ $(document).ready(async function () {
 
             let isRentalOrPurchaseAvailable = false;
             for (const region of streamingRegions) {
-                const rentalProviders = watchProvidersResponse.results?.[region]?.rent || [];
-                const buyProviders = watchProvidersResponse.results?.[region]?.buy || [];
+                const rentalProviders = watchProvidersData.results?.[region]?.rent || [];
+                const buyProviders = watchProvidersData.results?.[region]?.buy || [];
                 if (rentalProviders.length > 0 || buyProviders.length > 0) {
                     isRentalOrPurchaseAvailable = true;
                     break;
