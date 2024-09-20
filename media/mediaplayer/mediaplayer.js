@@ -151,7 +151,19 @@ async function fetchTrailer(mediaId, mediaType, apiKey) {
 
 async function displaySelectedMedia(media, mediaType) {
     const $selectedMovie = $('#selectedMovie');
+    const $mediaSection = $('#selectedMediaSection'); // The section to hide/show
     const apiKey = await getApiKey();
+
+    // Check if the media is valid
+    if (!media || !media.id) {
+        // Hide the entire media section if no media is selected
+        $mediaSection.addClass('hidden');
+        return;
+    } else {
+        // Show the media section if media is selected
+        $mediaSection.removeClass('hidden');
+    }
+
     if (!apiKey) return console.error('API key is not available.');
 
     try {
@@ -260,7 +272,6 @@ async function displaySelectedMedia(media, mediaType) {
 
         let selectedProvider = 'vidlink'; // Set default provider
 
-// Function to update video player based on selected options
         async function updateVideo() {
             const provider = $providerSelect.length ? $providerSelect.val() : selectedProvider;
             const endpoint = mediaType === 'tv'
