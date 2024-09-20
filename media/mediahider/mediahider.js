@@ -1,23 +1,22 @@
-document.addEventListener('DOMContentLoaded', function () {
-    const popularMediaSection = document.getElementById('popularMedia');
-    const toggleButton = document.getElementById('togglePopularMedia');
+$(document).ready(function() {
+    const $popularMediaSection = $('#popularMedia');
+    const $toggleButton = $('#togglePopularMedia');
 
     // Load the saved preference from localStorage
     const isHidden = localStorage.getItem('popularMediaHidden') === 'true';
 
+    // Toggle visibility and button text based on stored preference
+    $popularMediaSection.toggle(!isHidden);
+    $toggleButton.text(isHidden ? 'Show Trending Media' : 'Hide Trending Media');
 
-    popularMediaSection.style.display = isHidden ? 'none' : 'grid';
-    toggleButton.textContent = isHidden ? 'Show Trending Media' : 'Hide Trending Media';
+    $toggleButton.on('click', function() {
+        const isCurrentlyHidden = $popularMediaSection.is(':hidden');
 
+        // Toggle visibility and update button text
+        $popularMediaSection.toggle(isCurrentlyHidden);
+        $toggleButton.text(isCurrentlyHidden ? 'Hide Trending Media' : 'Show Trending Media');
 
-    toggleButton.addEventListener('click', function () {
-        const isCurrentlyHidden = popularMediaSection.style.display === 'none';
-
-
-        popularMediaSection.style.display = isCurrentlyHidden ? 'grid' : 'none';
-        toggleButton.textContent = isCurrentlyHidden ? 'Hide Trending Media' : 'Show Trending Media';
-
-
-        localStorage.setItem('popularMediaHidden', !isCurrentlyHidden);
+        // Save the new state in localStorage
+        localStorage.setItem('popularMediaHidden', isCurrentlyHidden);
     });
 });
