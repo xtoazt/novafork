@@ -260,7 +260,7 @@ async function displaySelectedMedia(media, mediaType) {
 
         let selectedProvider = 'vidlink'; // Set default provider
 
-        // Function to update video player based on selected options
+// Function to update video player based on selected options
         async function updateVideo() {
             const provider = $providerSelect.length ? $providerSelect.val() : selectedProvider;
             const endpoint = mediaType === 'tv'
@@ -268,56 +268,32 @@ async function displaySelectedMedia(media, mediaType) {
                 : await getMovieEmbedUrl(media.id, provider, apiKey);
 
             $videoPlayer.html(`
-                <div class="relative w-full" style="padding-top: 56.25%;">
-                    <iframe src="${endpoint}" 
-                            class="absolute top-0 left-0 w-full h-full rounded-xl shadow-lg" 
-                            allowfullscreen>
-                    </iframe>
-                </div>
-            `).removeClass('hidden');
-            $movieInfo.children().not($videoPlayer).addClass('hidden'); // Hide all other children in movieInfo
-            $closePlayerButton.removeClass('hidden'); // Show the close player button
+        <div class="w-full h-full">
+            <iframe src="${endpoint}" 
+                    class="video-iframe"
+                    allowfullscreen>
+            </iframe>
+        </div>
+    `).removeClass('hidden');
+
+
+            $movieInfo.children().not($videoPlayer).addClass('hidden');
+            $closePlayerButton.removeClass('hidden');
         }
 
         async function closeVideoPlayer() {
+            // Reset the video player content and hide it
             $videoPlayer.html('').addClass('hidden');
+
             $movieInfo.children().removeClass('hidden');
+
             $closePlayerButton.addClass('hidden');
         }
 
-        // Function to update episodes dropdown based on selected season
-        async function updateEpisodes() {
-            const seasonNumber = $seasonSelect.val();
-            if (!seasonNumber) return;
-
-            try {
-                const season = await fetchJson(`https://api.themoviedb.org/3/tv/${media.id}/season/${seasonNumber}?api_key=${apiKey}`);
-
-                // Calculate the runtime based on episode data for TV shows
-                const episodeRuntime = season.episodes.reduce((total, episode) => total + (episode.runtime || 0), 0) / season.episodes.length || 0;
-
-                // Update the runtime field for TV shows
-                $('#runtime').html(`Runtime: ${Math.round(episodeRuntime)} min per episode`);
-
-                $episodeSelect.html(season.episodes
-                    .map(episode => `
-                        <option value="${episode.episode_number}" data-image="https://image.tmdb.org/t/p/w500${episode.still_path}">
-                            Episode ${episode.episode_number}${episode.name ? `: ${episode.name}` : ''}
-                        </option>
-                    `).join(''))
-                    .trigger('change');
-            } catch (error) {
-                console.error('Failed to fetch season details:', error);
-                $episodeSelect.html('<option>Failed to load episodes</option>');
-            }
-        }
-
-        // Call updateEpisodes immediately to load episodes for the first season (for TV shows)
         if (mediaType === 'tv') {
             await updateEpisodes();
         }
 
-        // Event listeners
         $playButton.on('click', updateVideo);
         $closePlayerButton.on('click', closeVideoPlayer);
         $languageSelect.on('change', function() {
@@ -330,9 +306,10 @@ async function displaySelectedMedia(media, mediaType) {
         });
         $seasonSelect.on('change', async function() {
             await updateEpisodes();
-            updateVideo();  // Update video with the first episode when the season changes
+            updateVideo();
         });
-        $episodeSelect.on('change', updateVideo);  // Update video on episode change
+        $episodeSelect.on('change', updateVideo);
+
     } catch (error) {
         console.error('Failed to display selected media:', error);
     }

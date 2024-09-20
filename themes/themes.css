@@ -132,6 +132,27 @@ button:active {
     backdrop-filter: blur(10px);
 }
 
+
+.video-iframe {
+    width: 100%;
+    height: 80vh;
+    border: none;
+    margin: 0 auto;
+}
+
+/* Hide the background of the video player */
+#videoPlayer {
+    background-color: transparent;
+    padding: 0;
+}
+
+#videoPlayer div {
+    padding: 0;
+    margin: 0;
+}
+
+
+
 .media-card {
     position: relative;
     height: 300px;
