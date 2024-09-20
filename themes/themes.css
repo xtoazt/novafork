@@ -125,17 +125,8 @@ button:active {
     transform: scale(0.98);
 }
 /* Containers and Cards */
-#selectedMovie, #welcomeBanner, #welcomeBannerAbout, .media-card, .glassmorphism {
-    background: rgba(20, 20, 30, 0.85);
-    border-radius: 0.75rem;
-    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.7), 0 4px 8px rgba(15, 15, 25, 0.4);
-    backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    transition: all 0.3s ease;
-}
-
 #selectedMovie:hover, #welcomeBanner:hover, #welcomeBannerAbout:hover {
-    background-color: #292940;
+    background-color: #000000;
     box-shadow: 0 6px 12px rgba(0, 0, 0, 0.4);
     transform: scale(1.02);
 }
