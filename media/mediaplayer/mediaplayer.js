@@ -278,8 +278,6 @@ async function displaySelectedMedia(media, mediaType) {
                 ? await getTvEmbedUrl(media.id, $seasonSelect.val(), $episodeSelect.val(), provider, apiKey)
                 : await getMovieEmbedUrl(media.id, provider, apiKey);
 
-
-
             $videoPlayer.html(`
                    <iframe src="${endpoint}" 
                     class="video-iframe"
@@ -316,10 +314,11 @@ async function displaySelectedMedia(media, mediaType) {
             });
         }
 
-// Listen for window resize or zoom changes
+        // Attach event listener to resize iframe on window resize
         $(window).on('resize', adjustIframeSize);
+        adjustIframeSize();
 
-// Function to update episodes dropdown based on selected season
+        // Function to update episodes dropdown based on selected season
         async function updateEpisodes() {
             const seasonNumber = $seasonSelect.val();
             if (!seasonNumber) return;
@@ -346,11 +345,9 @@ async function displaySelectedMedia(media, mediaType) {
             }
         }
 
-
         if (mediaType === 'tv') {
             await updateEpisodes();
         }
-
 
         $playButton.on('click', updateVideo);
         $closePlayerButton.on('click', closeVideoPlayer);
@@ -372,5 +369,4 @@ async function displaySelectedMedia(media, mediaType) {
         console.error('Failed to display selected media:', error);
     }
 }
-
 

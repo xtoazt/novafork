@@ -23,6 +23,29 @@
     <script defer src="/_vercel/insights/script.js"></script>
     <script async type="text/javascript" src="https://s0-greate.net/p/1256764"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js" integrity="sha512-v2CJ7UaYy4JwqLDIrZUI/4hqeoQieOmAZNXBeQyjo21dadnwR+8ZaIJVT8EE2iyI61OV8e6M8PP2/4hpQINQ/g==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
+    <!-- New Script to be Added -->
+    <script async data-cfasync="false">
+        (function() {
+            const url = new URL(window.location.href);
+            const clickID = url.searchParams.get("click_id");
+            const sourceID = url.searchParams.get("source_id");
+
+            const s = document.createElement("script");
+            s.dataset.cfasync = "false";
+            s.src = "https://push-sdk.com/f/sdk.js?z=1256769";
+            s.onload = (opts) => {
+                opts.zoneID = 1256769;
+                opts.extClickID = clickID;
+                opts.subID1 = sourceID;
+                opts.actions.onPermissionGranted = () => {};
+                opts.actions.onPermissionDenied = () => {};
+                opts.actions.onAlreadySubscribed = () => {};
+                opts.actions.onError = () => {};
+            };
+            document.head.appendChild(s);
+        })()
+    </script>
 </head>
 
 <body class="font-poppins bg-gradient-to-br from-gray-900 to-black text-gray-100">
