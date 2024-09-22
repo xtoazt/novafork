@@ -601,7 +601,6 @@ button:active {
   #videoPlayer.fade-out {
     animation: fadeOut 1s forwards;
   }
-  
 
 
 #searchSuggestions {
@@ -609,13 +608,13 @@ button:active {
     top: 100%;
     left: 0;
     right: 0;
-    background: rgba(15, 23, 42, 0.95);
-    backdrop-filter: blur(10px);
-    border-radius: 0 0 15px 15px;
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+    background: rgba(10, 15, 30, 0.98);
+    backdrop-filter: blur(12px) saturate(120%);
+    border-radius: 0 0 20px 20px;
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.5);
     max-height: 70vh;
     overflow-y: auto;
-    scrollbar-width: none;
+    scrollbar-width: thin;
     z-index: 1000;
     box-sizing: border-box;
 }
@@ -625,21 +624,23 @@ button:active {
 }
 
 #searchSuggestions::-webkit-scrollbar-track {
-    background: #2d3748;
+    background: rgba(34, 40, 49, 0.9);
 }
 
 #searchSuggestions::-webkit-scrollbar-thumb {
-    background-color: #4a5568;
-    border-radius: 20px;
-    border: 2px solid #2d3748;
+    background-color: rgba(55, 65, 81, 0.9);
+    border-radius: 12px;
+    border: 2px solid rgba(34, 40, 49, 1);
 }
 
 .suggestion-item {
     display: flex;
     align-items: center;
     padding: 15px;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-    transition: all 0.3s ease;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    transition: transform 0.2s ease, box-shadow 0.2s ease, border-left 0.2s ease;
+    background-color: rgba(20, 23, 35, 0.9);
+    cursor: pointer;
 }
 
 .suggestion-item:last-child {
@@ -647,18 +648,19 @@ button:active {
 }
 
 .suggestion-item:hover {
-    background: rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.05);
     transform: translateY(-2px);
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 4px 15px rgba(128, 90, 213, 0.4); /* Softer purple glow */
+    border-left: 3px solid rgba(128, 90, 213, 0.7); /* Subtle purple border */
 }
 
 .suggestion-poster {
     width: 60px;
     height: 90px;
     object-fit: cover;
-    border-radius: 8px;
-    margin-right: 15px;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+    border-radius: 10px;
+    margin-right: 20px;
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
 }
 
 .suggestion-content {
@@ -666,24 +668,31 @@ button:active {
 }
 
 .suggestion-title {
-    font-size: 1rem;
-    font-weight: 600;
-    color: #fff;
-    margin-bottom: 5px;
-    line-height: 1.2;
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #ffffff;
+    margin-bottom: 6px;
+    line-height: 1.3;
+    transition: color 0.3s ease, text-shadow 0.3s ease;
 }
+
+.suggestion-item:hover .suggestion-title {
+    color: #8c82dc;
+    text-shadow: 0 0 8px rgb(119, 51, 205), 0 0 12px rgb(184, 63, 196);
+}
+
 
 .suggestion-details {
     display: flex;
     align-items: center;
-    margin-bottom: 5px;
+    margin-bottom: 6px;
 }
 
 .suggestion-type,
 .suggestion-year {
-    font-size: 0.75rem;
-    color: #a0aec0;
-    margin-right: 10px;
+    font-size: 0.8rem;
+    color: #718096;
+    margin-right: 12px;
 }
 
 .suggestion-meta {
@@ -693,35 +702,36 @@ button:active {
 
 .suggestion-rating,
 .suggestion-genres {
-    font-size: 0.75rem;
-    color: #a0aec0;
-    margin-right: 10px;
+    font-size: 0.8rem;
+    color: #718096;
+    margin-right: 12px;
 }
 
 .suggestion-rating {
-    color: #f6e05e;
+    color: #d69e2e;
 }
 
 .no-suggestions {
     padding: 20px;
     text-align: center;
-    color: #a0aec0;
+    color: #718096;
     font-style: italic;
+    opacity: 0.8;
 }
 
 @media (max-width: 640px) {
     .suggestion-item {
-        padding: 10px;
+        padding: 12px;
     }
 
     .suggestion-poster {
-        width: 45px;
-        height: 68px;
-        margin-right: 10px;
+        width: 50px;
+        height: 75px;
+        margin-right: 12px;
     }
 
     .suggestion-title {
-        font-size: 0.9rem;
+        font-size: 0.95rem;
     }
 
     .suggestion-details,
@@ -734,8 +744,8 @@ button:active {
     .suggestion-year,
     .suggestion-rating,
     .suggestion-genres {
-        font-size: 0.7rem;
-        margin-bottom: 2px;
+        font-size: 0.75rem;
+        margin-bottom: 3px;
     }
 }
 
