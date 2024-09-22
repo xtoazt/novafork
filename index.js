@@ -321,24 +321,31 @@ $(document).ready(async function () {
 
             const releases = releaseDatesData.results.flatMap(result => result.release_dates);
             const currentDate = new Date();
-
             const currentUtcDate = new Date(currentDate.toISOString().slice(0, 10)); // Strip time info to only compare dates
-
 
             const isDigitalRelease = releases.some(release =>
                 (release.type === 4 || release.type === 6) && new Date(release.release_date).getTime() <= currentUtcDate.getTime()
             );
 
-            const theaterRelease = releases.find(release => release.type === 3);
-            const isInTheaters = theaterRelease && new Date(theaterRelease.release_date).getTime() <= currentUtcDate.getTime();
+            const theaterReleases = releases.filter(release => release.type === 3);
+            let isInTheaters = false;
+
+            for (const theaterRelease of theaterReleases) {
+                const theaterReleaseDate = new Date(theaterRelease.release_date);
+                if (theaterReleaseDate.getTime() <= currentUtcDate.getTime()) {
+                    isInTheaters = true;
+                    break;
+                }
+            }
 
             const hasFutureRelease = releases.some(release =>
                 new Date(release.release_date).getTime() > currentUtcDate.getTime()
             );
 
-            const streamingRegions = ['US', 'UK', 'CA', 'AU'];
             let isStreamingAvailable = false;
-            for (const region of streamingRegions) {
+            const availableRegions = Object.keys(watchProvidersData.results || {});
+
+            for (const region of availableRegions) {
                 const providers = watchProvidersData.results?.[region]?.flatrate || [];
                 if (providers.length > 0) {
                     isStreamingAvailable = true;
@@ -347,7 +354,7 @@ $(document).ready(async function () {
             }
 
             let isRentalOrPurchaseAvailable = false;
-            for (const region of streamingRegions) {
+            for (const region of availableRegions) {
                 const rentalProviders = watchProvidersData.results?.[region]?.rent || [];
                 const buyProviders = watchProvidersData.results?.[region]?.buy || [];
                 if (rentalProviders.length > 0 || buyProviders.length > 0) {
@@ -356,10 +363,11 @@ $(document).ready(async function () {
                 }
             }
 
+            if (isInTheaters && !isStreamingAvailable && !isDigitalRelease) {
+                return "Cam";
+            }
             if (isStreamingAvailable || isDigitalRelease) {
                 return "HD";
-            } else if (isInTheaters && !isStreamingAvailable && !isDigitalRelease) {
-                return "Cam";
             } else if (hasFutureRelease && !isInTheaters) {
                 return "Not Released Yet";
             } else if (isRentalOrPurchaseAvailable) {
@@ -372,6 +380,7 @@ $(document).ready(async function () {
             return "Unknown Quality";
         }
     }
+
 
     async function displayPopularMedia(results) {
         $popularMedia.empty();
