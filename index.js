@@ -320,19 +320,29 @@ $(document).ready(async function () {
             const watchProvidersData = await watchProvidersResponse.json();
 
             const releases = releaseDatesData.results.flatMap(result => result.release_dates);
+
             const currentDate = new Date();
-            const currentUtcDate = new Date(currentDate.toISOString().slice(0, 10)); // Strip time info to only compare dates
+            const currentUtcDate = new Date(Date.UTC(
+                currentDate.getUTCFullYear(),
+                currentDate.getUTCMonth(),
+                currentDate.getUTCDate()
+            ));
 
             const isDigitalRelease = releases.some(release =>
                 (release.type === 4 || release.type === 6) && new Date(release.release_date).getTime() <= currentUtcDate.getTime()
             );
 
-            const theaterReleases = releases.filter(release => release.type === 3);
             let isInTheaters = false;
 
-            for (const theaterRelease of theaterReleases) {
+            for (const theaterRelease of releases.filter(release => release.type === 3)) {
                 const theaterReleaseDate = new Date(theaterRelease.release_date);
-                if (theaterReleaseDate.getTime() <= currentUtcDate.getTime()) {
+                const theaterReleaseUtcDate = new Date(Date.UTC(
+                    theaterReleaseDate.getUTCFullYear(),
+                    theaterReleaseDate.getUTCMonth(),
+                    theaterReleaseDate.getUTCDate()
+                ));
+
+                if (theaterReleaseUtcDate.getTime() <= currentUtcDate.getTime()) {
                     isInTheaters = true;
                     break;
                 }
@@ -366,6 +376,8 @@ $(document).ready(async function () {
             if (isInTheaters && !isStreamingAvailable && !isDigitalRelease) {
                 return "Cam";
             }
+
+
             if (isStreamingAvailable || isDigitalRelease) {
                 return "HD";
             } else if (hasFutureRelease && !isInTheaters) {
@@ -380,6 +392,7 @@ $(document).ready(async function () {
             return "Unknown Quality";
         }
     }
+
 
 
     async function displayPopularMedia(results) {
