@@ -218,26 +218,32 @@ async function displaySelectedMedia(media, mediaType) {
             runtime = `${Math.round(mediaData.episode_run_time.reduce((a, b) => a + b, 0) / mediaData.episode_run_time.length)} min per episode`;
 
             seasonSection = `
-                <div class="space-y-3">
-                    <div>
-                        <label for="seasonSelect" class="block text-sm font-medium text-gray-300 mb-1">
-                            <i class="fas fa-tv mr-2"></i>Select Season:
-                        </label>
-                        <select id="seasonSelect" class="custom-select w-full bg-gray-800 text-white rounded-lg border border-gray-600 p-2 focus:border-purple-400 focus:ring-purple-400 transition duration-200 ease-in-out">
-                            ${mediaData.seasons.filter(season => season.season_number !== 0).map(season =>
+    <div class="space-y-3">
+        <div>
+            <label for="seasonSelect" class="block text-sm font-medium text-gray-300 mb-1">
+                <i class="fas fa-tv mr-2"></i>Select Season:
+            </label>
+            <select id="seasonSelect" class="custom-select w-full bg-gray-800 text-white rounded-lg border border-gray-600 p-2 focus:border-purple-400 focus:ring-purple-400 transition duration-200 ease-in-out">
+                ${mediaData.seasons.filter(season => season.season_number !== 0).map(season =>
                 `<option value="${season.season_number}">${season.name || `Season ${season.season_number}`}</option>`
             ).join('')}
-                        </select>
-                    </div>
-                    <div>
-                        <label for="episodeSelect" class="block text-sm font-medium text-gray-300 mb-1">
-                            <i class="fas fa-film mr-2"></i>Select Episode:
-                        </label>
-                        <select id="episodeSelect" class="custom-select w-full bg-gray-800 text-white rounded-lg border border-gray-600 p-2 focus:border-purple-400 focus:ring-purple-400 transition duration-200 ease-in-out">
-                        </select>
-                    </div>
-                </div>
-            `;
+            </select>
+        </div>
+        <div>
+            <label for="episodeSelect" class="block text-sm font-medium text-gray-300 mb-1">
+                <i class="fas fa-film mr-2"></i>Select Episode:
+            </label>
+            <select id="episodeSelect" class="custom-select w-full bg-gray-800 text-white rounded-lg border border-gray-600 p-2 focus:border-purple-400 focus:ring-purple-400 transition duration-200 ease-in-out">
+            </select>
+        </div>
+                <div>
+            <label for="episodeSearch" class="block text-sm font-medium text-gray-300 mb-1">
+                <i class="fas fa-search mr-2"></i>Search Episode:
+            </label>
+            <input type="text" id="episodeSearch" class="custom-input w-full bg-gray-800 text-white rounded-lg border border-gray-600 p-2 focus:border-purple-400 focus:ring-purple-400 transition duration-200 ease-in-out" placeholder="Search for an episode...">
+        </div>
+    </div>
+`;
         }
 
         // HTML template with updated data
@@ -293,10 +299,8 @@ async function displaySelectedMedia(media, mediaType) {
             // Reset the video player content and hide it
             $videoPlayer.html('').addClass('hidden');
 
-            // Show all children in movieInfo (restoring the movie info section)
             $movieInfo.children().removeClass('hidden');
 
-            // Hide the close player button
             $closePlayerButton.addClass('hidden');
         }
 
@@ -327,26 +331,39 @@ async function displaySelectedMedia(media, mediaType) {
 
                 const episodeRuntime = season.episodes.reduce((total, episode) => total + (episode.runtime || 0), 0) / season.episodes.length || 0;
 
-
                 $('#runtime').html(`Runtime: ${Math.round(episodeRuntime)} min per episode`);
 
                 const currentDate = new Date();
 
-                $episodeSelect.html(season.episodes
-                    .map(episode => {
-                        const airDate = new Date(episode.air_date);
-                        const isAired = airDate <= currentDate;
+                const episodes = season.episodes.map(episode => ({
+                    number: episode.episode_number,
+                    name: episode.name || 'Untitled',
+                    airDate: new Date(episode.air_date),
+                    stillPath: episode.still_path,
+                    isAired: new Date(episode.air_date) <= currentDate
+                }));
 
-                        return `
-                    <option value="${episode.episode_number}" 
-                            data-image="https://image.tmdb.org/t/p/w500${episode.still_path}" 
-                            ${!isAired ? 'disabled style="color: grey;"' : ''}>
-                        Episode ${episode.episode_number}${episode.name ? `: ${episode.name}` : ' (Title not available)'} 
-                        ${!isAired ? '(Not aired yet)' : ''}
-                    </option>
-                `;
-                    }).join(''))
-                    .trigger('change');
+                function renderEpisodes(filteredEpisodes) {
+                    $episodeSelect.html(filteredEpisodes.map(episode => `
+                <option value="${episode.number}" 
+                        data-image="https://image.tmdb.org/t/p/w500${episode.stillPath}" 
+                        ${!episode.isAired ? 'disabled style="color: grey;"' : ''}>
+                    Episode ${episode.number}: ${episode.name} ${!episode.isAired ? '(Not aired yet)' : ''}
+                </option>
+            `).join('')).trigger('change');
+                }
+
+                renderEpisodes(episodes);
+
+                // Add search functionality
+                $('#episodeSearch').on('input', function() {
+                    const searchTerm = $(this).val().toLowerCase();
+                    const filteredEpisodes = episodes.filter(episode =>
+                        episode.name.toLowerCase().includes(searchTerm) || episode.number.toString().includes(searchTerm)
+                    );
+                    renderEpisodes(filteredEpisodes);
+                });
+
             } catch (error) {
                 console.error('Failed to fetch season details:', error);
                 $episodeSelect.html('<option>Failed to load episodes</option>');
@@ -357,6 +374,7 @@ async function displaySelectedMedia(media, mediaType) {
             await updateEpisodes();
         }
 
+        // Ensure the player updates on all interactions
         $playButton.on('click', updateVideo);
         $closePlayerButton.on('click', closeVideoPlayer);
         $languageSelect.on('change', function() {
@@ -372,7 +390,6 @@ async function displaySelectedMedia(media, mediaType) {
             updateVideo();
         });
         $episodeSelect.on('change', updateVideo);
-
 
     } catch (error) {
         console.error('Failed to display selected media:', error);
