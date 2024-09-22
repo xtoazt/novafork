@@ -318,7 +318,6 @@ async function displaySelectedMedia(media, mediaType) {
         $(window).on('resize', adjustIframeSize);
         adjustIframeSize();
 
-        // Function to update episodes dropdown based on selected season
         async function updateEpisodes() {
             const seasonNumber = $seasonSelect.val();
             if (!seasonNumber) return;
@@ -326,18 +325,27 @@ async function displaySelectedMedia(media, mediaType) {
             try {
                 const season = await fetchJson(`https://api.themoviedb.org/3/tv/${media.id}/season/${seasonNumber}?api_key=${apiKey}`);
 
-                // Calculate the runtime based on episode data for TV shows
                 const episodeRuntime = season.episodes.reduce((total, episode) => total + (episode.runtime || 0), 0) / season.episodes.length || 0;
 
-                // Update the runtime field for TV shows
+
                 $('#runtime').html(`Runtime: ${Math.round(episodeRuntime)} min per episode`);
 
+                const currentDate = new Date();
+
                 $episodeSelect.html(season.episodes
-                    .map(episode => `
-                <option value="${episode.episode_number}" data-image="https://image.tmdb.org/t/p/w500${episode.still_path}">
-                    Episode ${episode.episode_number}${episode.name ? `: ${episode.name}` : ''}
-                </option>
-            `).join(''))
+                    .map(episode => {
+                        const airDate = new Date(episode.air_date);
+                        const isAired = airDate <= currentDate;
+
+                        return `
+                    <option value="${episode.episode_number}" 
+                            data-image="https://image.tmdb.org/t/p/w500${episode.still_path}" 
+                            ${!isAired ? 'disabled style="color: grey;"' : ''}>
+                        Episode ${episode.episode_number}${episode.name ? `: ${episode.name}` : ' (Title not available)'} 
+                        ${!isAired ? '(Not aired yet)' : ''}
+                    </option>
+                `;
+                    }).join(''))
                     .trigger('change');
             } catch (error) {
                 console.error('Failed to fetch season details:', error);
@@ -361,9 +369,10 @@ async function displaySelectedMedia(media, mediaType) {
         });
         $seasonSelect.on('change', async function() {
             await updateEpisodes();
-            updateVideo();  // Update video with the first episode when the season changes
+            updateVideo();
         });
-        $episodeSelect.on('change', updateVideo);  // Update video on episode change
+        $episodeSelect.on('change', updateVideo);
+
 
     } catch (error) {
         console.error('Failed to display selected media:', error);
