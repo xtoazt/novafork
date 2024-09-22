@@ -1,26 +1,26 @@
-<body class="bg-gray-900 text-white min-h-screen">
-<div class="container mx-auto p-4">
+<body class="bg-gray-900 text-white min-h-screen font-sans antialiased">
+<div class="container mx-auto p-6">
   <div class="flex flex-col lg:flex-row gap-8">
     <!-- Poster and Controls Section -->
-    <div class="lg:w-1/3 space-y-6">
+    <div class="lg:w-1/3 space-y-8">
       <!-- Poster with Subtle Neon Hover Effect -->
-      <div class="relative rounded-2xl overflow-hidden glassmorphism-form">
-        <div class="absolute inset-0 bg-cover bg-center high-quality-bg"
+      <div class="relative rounded-2xl overflow-hidden glassmorphism-form shadow-lg transition-all duration-300 transform hover:scale-105 hover:shadow-[0_0_20px_rgba(128,0,128,0.7)]">
+        <div class="absolute inset-0 bg-cover bg-center high-quality-bg opacity-70 blur-sm"
              style="background-image: url('https://image.tmdb.org/t/p/original{{poster_path}}');">
         </div>
         <img id="poster" src="https://image.tmdb.org/t/p/w500{{poster_path}}" alt="{{title_or_name}}"
-             class="relative z-10 w-full h-auto rounded-lg shadow-xl transition-transform duration-300 hover:scale-105 hover:shadow-[0_0_15px_rgba(138,43,226,0.6)]">
+             class="relative z-10 w-full h-auto rounded-lg shadow-xl">
       </div>
 
       <!-- Controls -->
-      <div class="space-y-4 glassmorphism-form rounded-xl p-6">
+      <div class="glassmorphism-form rounded-xl p-6 space-y-6 shadow-lg">
         <!-- Language Select Dropdown -->
         <div>
-          <label for="languageSelect" class="block text-sm font-semibold text-gray-300 mb-2">
+          <label for="languageSelect" class="block text-base font-semibold text-gray-200 mb-2">
             <i class="fas fa-language mr-2"></i>Select Language:
           </label>
           <select id="languageSelect"
-                  class="custom-select w-full bg-gray-800 text-white rounded-lg border border-gray-600 p-2 focus:border-blue-400 focus:ring-blue-400 transition duration-200 ease-in-out">
+                  class="custom-select w-full bg-gray-800 text-white rounded-lg border border-gray-600 p-3 focus:border-purple-400 focus:ring-purple-400 transition duration-200 ease-in-out">
             <option value="en">English</option>
             <option value="fr">French</option>
           </select>
@@ -28,62 +28,62 @@
 
         <!-- Provider Select Dropdown -->
         <div>
-          <label for="providerSelect" class="block text-sm font-semibold text-gray-300 mb-2">
+          <label for="providerSelect" class="block text-base font-semibold text-gray-200 mb-2">
             <i class="fas fa-tv mr-2"></i>Select Content Provider:
           </label>
           <select id="providerSelect"
-                  class="custom-select w-full text-white rounded-lg border border-gray-600 p-2 focus:border-blue-400 focus:ring-blue-400 transition duration-200 ease-in-out">
-            <optgroup label="Best Providers no ads" class="bg-purple-700">
-              <option value="vidlink">vidlink</option>
-              <option value="vidbinge">vidbinge </option>
-              <option value="vidsrc">VidSrc - 4k movies and shows</option>
-              <option value="vidlinkdub">vidlink - different languages</option>
-              <option value="vidsrcnl">vidsrcnl</option>
-              <option value="vidsrc.rip">vidsrc.rip</option>
-            <optgroup label="Alternative Providers" class="bg-purple-700">
-            <option value="vidbinge">vidbinge - Ads May Appear </option>
-              <option value="vidsrcpro">VidSrcPro - Ads May Appear</option>
-              <option value="autoembed">autoembed - Ads May Appear</option>
-              <option value="nontonGo">NontonGo - Ads May Appear</option>
-              <option value="vidsrcxyz">VidSrcXYZ - Ads May Appear</option>
-              <option value="embedsoap">EmbedSoap - Ads May Appear</option>
-              <option value="smashystream">SmashyStream - Ads May Appear</option>
-              <option value="2embed">2Embed - Ads May Appear</option>
-              <option value="moviesapi">moviesapi - decent provider</option>
-              <option value="1vid1shar">1Vid1Shar - Ads May Appear</option>
-              <option value="moviee">Moviee - Ads May Appear</option>
-              <option value="multiembed">MultiEmbed - Ads May Appear</option>
-              <option value="multiembedvip">MultiEmbedVIP - Ads May Appear</option>
+                  class="custom-select w-full bg-gray-800 text-white rounded-lg border border-gray-600 p-3 focus:border-purple-400 focus:ring-purple-400 transition duration-200 ease-in-out">
+            <optgroup label="Best Providers (No Ads)" class="bg-purple-700 text-white">
+              <option value="vidlink">VidLink - No Ads</option>
+              <option value="vidbinge">VidBinge - No Ads</option>
+              <option value="vidsrc">VidSrc - 4K Movies & Shows</option>
+              <option value="vidlinkdub">VidLink - Multiple Languages</option>
+              <option value="vidsrcnl">VidSrc NL - No Ads</option>
+              <option value="vidsrc.rip">VidSrc.rip - No Ads</option>
             </optgroup>
-            <optgroup label="Anime Providers">
+            <optgroup label="Alternative Providers (Ads May Appear)" class="bg-purple-700 text-white">
+              <option value="vidbinge">VidBinge - Ads</option>
+              <option value="vidsrcpro">VidSrcPro - Ads</option>
+              <option value="autoembed">AutoEmbed - Ads</option>
+              <option value="nontonGo">NontonGo - Ads</option>
+              <option value="vidsrcxyz">VidSrcXYZ - Ads</option>
+              <option value="embedsoap">EmbedSoap - Ads</option>
+              <option value="smashystream">SmashyStream - Ads</option>
+              <option value="2embed">2Embed - Ads</option>
+              <option value="moviesapi">MoviesAPI - Decent Provider</option>
+              <option value="1vid1shar">1Vid1Shar - Ads</option>
+              <option value="moviee">Moviee - Ads</option>
+              <option value="multiembed">MultiEmbed - Ads</option>
+              <option value="multiembedvip">MultiEmbedVIP - Ads</option>
+            </optgroup>
+            <optgroup label="Anime Providers" class="bg-purple-700 text-white">
               <option value="AdminHiHi">AdminHiHi - Dubbed Episodes (No Ads)</option>
               <option value="2anime">2Anime - Dub Only</option>
-              <option value="anime">Anime - Subtitles Only</option>
-              <option value="2animesub">2Anime - Subtitles Only</option>
+              <option value="anime">Anime - Sub Only</option>
+              <option value="2animesub">2Anime - Sub Only</option>
             </optgroup>
             <option value="trailer">Trailer</option>
           </select>
         </div>
 
-        <p class="text-xs text-gray-400 mt-2">Note: The "Best Providers no ads" section contains providers with no ads. Other providers may include ads.</p>
+        <p class="text-xs text-gray-400">Note: The "Best Providers (No Ads)" section contains providers with no ads. Other providers may include ads.</p>
 
         {{season_section}}
 
         <!-- Play Button -->
         <button id="playButton"
-                class="w-full bg-purple-700 hover:bg-purple-800 text-white font-bold py-3 px-6 rounded-lg shadow-lg transition-all duration-300 ease-in-out transform hover:scale-105">
+                class="w-full bg-gradient-to-r from-purple-500 to-indigo-600 hover:bg-purple-700 text-white font-bold py-3 px-6 rounded-lg shadow-lg transition-all duration-300 ease-in-out transform hover:scale-105">
           <i class="fas fa-play mr-2"></i>Play
         </button>
         <button id="closePlayerButton"
-                class="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-6 rounded-lg shadow-lg transition-all duration-300 ease-in-out transform hover:scale-105 hidden">
+                class="w-full bg-gradient-to-r from-red-500 to-red-700 hover:bg-red-800 text-white font-bold py-3 px-6 rounded-lg shadow-lg transition-all duration-300 ease-in-out transform hover:scale-105 hidden">
           <i class="fas fa-times mr-2"></i>Close Player
         </button>
-
       </div>
     </div>
 
     <!-- Movie Info Section -->
-    <div id="movieInfo" class="lg:w-2/3 glassmorphism-form rounded-2xl p-8 space-y-6">
+    <div id="movieInfo" class="lg:w-2/3 glassmorphism-form rounded-2xl p-8 space-y-6 shadow-xl">
       <!-- Title and Release Date -->
       <div class="space-y-2">
         <h2 class="text-4xl font-extrabold text-white">{{title_or_name}}</h2>
@@ -91,7 +91,7 @@
       </div>
 
       <!-- Overview -->
-      <p class="text-sm text-gray-300 leading-relaxed">{{overview}}</p>
+      <p class="text-base text-gray-300 leading-relaxed">{{overview}}</p>
 
       <!-- Basic Info (Language, Type, Runtime, Genres) -->
       <div class="grid grid-cols-2 gap-4 text-sm">
@@ -119,21 +119,21 @@
         <div id="castList" class="flex overflow-x-auto pb-4 space-x-4 scrollbar-thin scrollbar-thumb-purple-600 scrollbar-track-gray-800">{{cast_list}}</div>
       </div>
 
+      <!-- Production Companies -->
       <div class="border-t border-gray-700 pt-4"></div>
       <h3 class="text-xl font-semibold text-white mb-4"><i class="fa-solid fa-building"></i> Production Companies</h3>
-      <div id="castList" class="flex overflow-x-auto pb-4 space-x-4 scrollbar-thin scrollbar-thumb-purple-600 scrollbar-track-gray-800">{{production_companies}}
-      </div>
-      <div id="videoPlayer" class="w-full rounded-2xl overflow-hidden hidden relative bg-gray-800 mt-6">
-        <div class="absolute inset-0 bg-cover bg-center rounded-2xl high-quality-bg"
+      <div id="productionCompaniesList" class="flex overflow-x-auto pb-4 space-x-4 scrollbar-thin scrollbar-thumb-purple-600 scrollbar-track-gray-800">{{production_companies}}</div>
+
+      <!-- Video Player -->
+      <div id="videoPlayer" class="w-full rounded-2xl overflow-hidden hidden relative bg-gray-800 mt-6 shadow-xl">
+        <div class="absolute inset-0 bg-cover bg-center rounded-2xl high-quality-bg opacity-50 blur-sm"
              style="background-image: url('https://image.tmdb.org/t/p/original{{poster_path}}');">
         </div>
         <div class="relative z-10 h-full overflow-auto rounded-2xl p-4">
-          <!-- The iframe will be injected here by updateVideo function -->
+          <!-- The iframe will be injected here by the updateVideo function -->
         </div>
       </div>
-
     </div>
   </div>
-</div>
 </div>
 </body>

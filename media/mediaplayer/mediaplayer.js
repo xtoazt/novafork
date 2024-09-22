@@ -335,6 +335,7 @@ async function displaySelectedMedia(media, mediaType) {
 
                 const currentDate = new Date();
 
+                // Store original episode data for searching
                 const episodes = season.episodes.map(episode => ({
                     number: episode.episode_number,
                     name: episode.name || 'Untitled',
@@ -343,24 +344,47 @@ async function displaySelectedMedia(media, mediaType) {
                     isAired: new Date(episode.air_date) <= currentDate
                 }));
 
+                // Utility function to escape HTML special characters
+                function escapeHtml(str) {
+                    return str.replace(/[&<>"'()]/g, function (match) {
+                        const escape = {
+                            '&': '&amp;',
+                            '<': '&lt;',
+                            '>': '&gt;',
+                            '"': '&quot;',
+                            "'": '&#39;',
+                            '(': '&#40;',
+                            ')': '&#41;'
+                        };
+                        return escape[match];
+                    });
+                }
+
+                // Function to render episodes in the dropdown
                 function renderEpisodes(filteredEpisodes) {
                     $episodeSelect.html(filteredEpisodes.map(episode => `
                 <option value="${episode.number}" 
                         data-image="https://image.tmdb.org/t/p/w500${episode.stillPath}" 
                         ${!episode.isAired ? 'disabled style="color: grey;"' : ''}>
-                    Episode ${episode.number}: ${episode.name} ${!episode.isAired ? '(Not aired yet)' : ''}
+                    Episode ${episode.number}: ${escapeHtml(episode.name)} ${!episode.isAired ? '(Not aired yet)' : ''}
                 </option>
             `).join('')).trigger('change');
                 }
 
+                // Render all episodes initially
                 renderEpisodes(episodes);
 
                 // Add search functionality
-                $('#episodeSearch').on('input', function() {
+                $('#episodeSearch').on('input', function () {
                     const searchTerm = $(this).val().toLowerCase();
+
+                    // Search for episodes by name or number
                     const filteredEpisodes = episodes.filter(episode =>
-                        episode.name.toLowerCase().includes(searchTerm) || episode.number.toString().includes(searchTerm)
+                        episode.name.toLowerCase().includes(searchTerm) ||
+                        episode.number.toString().includes(searchTerm)
                     );
+
+                    // Render the filtered episodes
                     renderEpisodes(filteredEpisodes);
                 });
 
@@ -369,6 +393,7 @@ async function displaySelectedMedia(media, mediaType) {
                 $episodeSelect.html('<option>Failed to load episodes</option>');
             }
         }
+
 
         if (mediaType === 'tv') {
             await updateEpisodes();
