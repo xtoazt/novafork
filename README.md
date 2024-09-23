@@ -58,7 +58,7 @@ Contributions are greatly appreciated! If you’d like to help improve Nova, fee
 
 ## Star History
 
-<a href="https://star-history.com/#fanlimgames/novafork&Date">
+<a href="https://star-history.com/#noname25495/novafork&Date">
  <picture>
    <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=fanlimgames/novafork&type=Date&theme=dark" />
    <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=fanlimgames/novafork&type=Date" />
