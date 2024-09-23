@@ -22,7 +22,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css?v=1.1">
 
     <!-- Conslidated in one Css file with versioning -->
-    <link rel="stylesheet" href="themes/themes.css?v=1.4.2">
+    <link rel="stylesheet" href="themes/themes.css?v=1.4.3">
 
     <script>
         window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };
@@ -61,7 +61,9 @@
     <div class="container mx-auto">
         <div class="text-center mb-12">
             <h1 class="text-6xl font-extrabold tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-600 neon-text">
-                <span class="text-blue-500">Nova</span>fork
+                <a href="/" id="logo" style="text-decoration: none;">
+                    <span class="text-blue-500">Nova</span>fork
+                </a>
             </h1>
             <p class="text-sm text-gray-400 mt-2">
                 Discover and stream your favorite content
@@ -199,6 +201,9 @@
         </div>
     </div>
 
+
+
+
 <!-- Scripts with versioning added -->
 <script src="media/mediaplayer/mediaplayer.js?v=1.2.4.1"></script>
 <script src="search/searchResults.js?v=1.1"></script>
@@ -206,6 +211,13 @@
 <script src="media/mediahider/mediahider.js?v=1.1"></script>
 <script src="media/mediashare/shareModal.js?v=1.1"></script>
 <script src="media/donatepopup/donatepopup.js?v=1.1"></script>
+
+
+<script>
+    document.getElementById('logo').addEventListener('click', function () {
+        window.location.href = window.location.origin;
+    });
+</script>
     <script>
         // Card glow effect and cursor-following behavior
         document.querySelectorAll('.card').forEach(card => {
