@@ -160,8 +160,12 @@ async function displaySelectedMedia(media, mediaType) {
         $mediaSection.addClass('hidden');
         return;
     } else {
-        // Show the media section if media is selected
         $mediaSection.removeClass('hidden');
+
+        document.getElementById('selectedMediaSection').scrollIntoView({
+            behavior: 'smooth',
+            block: 'start'
+        });
     }
 
     if (!apiKey) return console.error('API key is not available.');
