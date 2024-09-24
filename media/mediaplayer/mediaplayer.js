@@ -282,7 +282,7 @@ async function displaySelectedMedia(media, mediaType) {
         const $seasonSelect = $('#seasonSelect');
         const $episodeSelect = $('#episodeSelect');
 
-        let selectedProvider = 'vidlink'; // Set default provider
+        let selectedProvider = 'vidsrc'; // Set default provider
 
         async function updateVideo() {
             const provider = $providerSelect.length ? $providerSelect.val() : selectedProvider;
