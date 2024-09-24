@@ -61,8 +61,6 @@ async function getMovieEmbedUrl(mediaId, provider, apiKey) {
             return `https://vidsrc.rip/embed/movie/${mediaId}`;
         case 'vidbinge':
             return `https://vidbinge.dev/embed/movie/${mediaId}`;
-        case 'trailer':
-            return await fetchTrailer(mediaId, 'movie', apiKey);
         case 'moviesapi':
             return `https://moviesapi.club/movie/${mediaId}`;
         case 'moviee':
@@ -71,10 +69,13 @@ async function getMovieEmbedUrl(mediaId, provider, apiKey) {
             return `https://multiembed.mov/?video_id=${mediaId}&tmdb=1`;
         case 'multiembedvip':
             return `https://multiembed.mov/directstream.php?video_id=${mediaId}&tmdb=1`;
+        case 'vidsrcicu':
+            return `https://vidsrc.icu/embed/movie/${mediaId}`;  // New URL structure
         default:
             throw new Error('Provider not recognized.');
     }
 }
+
 
 async function getTvEmbedUrl(mediaId, seasonId, episodeId, provider, apiKey) {
     const primaryColor = '#FFFFFF';
@@ -109,8 +110,6 @@ async function getTvEmbedUrl(mediaId, seasonId, episodeId, provider, apiKey) {
         case 'AdminHiHi':
             const tvSlug = media.name.replace(/\s+/g, '-');
             return `https://embed.anicdn.top/v/${tvSlug}-dub/${episodeId}.html`;
-        case 'trailer':
-            return await fetchTrailer(mediaId, 'tv', apiKey);
         case 'moviesapi':
             return `https://moviesapi.club/tv/${mediaId}/${seasonId}/${episodeId}`;
         case 'vidlink':
@@ -129,10 +128,13 @@ async function getTvEmbedUrl(mediaId, seasonId, episodeId, provider, apiKey) {
             return `https://multiembed.mov/?video_id=${mediaId}&tmdb=1&s=${seasonId}&e=${episodeId}`;
         case 'multiembedvip':
             return `https://multiembed.mov/directstream.php?video_id=${mediaId}&tmdb=1&s=${seasonId}&e=${episodeId}`;
+        case 'vidsrcicu':
+            return `https://vidsrc.icu/embed/tv/${mediaId}/${seasonId}/${episodeId}`;
         default:
             throw new Error('Provider not recognized.');
     }
 }
+
 
 
 async function fetchMediaData(mediaId, mediaType, apiKey) {
