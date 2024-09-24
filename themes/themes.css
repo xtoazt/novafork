@@ -2,7 +2,6 @@
 ::-webkit-scrollbar {
     display: none;
 }
-
 html, body {
     background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
     font-family: 'Roboto', sans-serif;
@@ -138,9 +137,11 @@ button:active {
     height: 80vh;
     border: none;
     margin: 0 auto;
+    margin-top: 110px;
+    border-radius: 20px;
+    overflow: hidden;
 }
 
-/* Hide the background of the video player */
 #videoPlayer {
     background-color: transparent;
     padding: 0;
