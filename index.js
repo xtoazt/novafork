@@ -319,7 +319,6 @@ $(document).ready(async function () {
             const releaseDatesData = await releaseDatesResponse.json();
             const watchProvidersData = await watchProvidersResponse.json();
 
-            // Extract release dates and certifications
             const releases = releaseDatesData.results.flatMap(result => result.release_dates);
             const certifications = {};
 
@@ -395,17 +394,13 @@ $(document).ready(async function () {
                 releaseType = "Rental/Buy Available";
             }
 
-            return {
-                releaseType,
-                certifications
-            };
+            console.log('Certifications:', certifications);
+
+            return releaseType;
 
         } catch (error) {
-            console.error('Error occurred while fetching release type and certifications:', error);
-            return {
-                releaseType: "Unknown Quality",
-                certifications: {}
-            };
+            console.error('Error occurred while fetching release type:', error);
+            return "Unknown Quality";
         }
     }
 
