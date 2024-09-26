@@ -394,18 +394,19 @@ $(document).ready(async function () {
                 releaseType = "Rental/Buy Available";
             }
 
-            console.log('Certifications:', certifications);
-
-            return releaseType;
+            return {
+                releaseType,
+                certifications
+            };
 
         } catch (error) {
-            console.error('Error occurred while fetching release type:', error);
-            return "Unknown Quality";
+            console.error('Error occurred while fetching release type and certifications:', error);
+            return {
+                releaseType: "Unknown Quality",
+                certifications: {}
+            };
         }
     }
-
-
-
 
     async function displayPopularMedia(results) {
         $popularMedia.empty();
@@ -414,8 +415,16 @@ $(document).ready(async function () {
 
         const mediaWithReleaseType = await Promise.all(limitedResults.map(async (media) => {
             const mediaType = media.media_type || (media.title ? 'movie' : 'tv');
-            const releaseType = mediaType === 'movie' || mediaType === 'animation' ? await getReleaseType(media.id, mediaType) : '';
-            return { ...media, releaseType };
+
+            const releaseInfo = (mediaType === 'movie' || mediaType === 'animation')
+                ? await getReleaseType(media.id, mediaType)
+                : { releaseType: '', certifications: {} };
+
+            return {
+                ...media,
+                releaseType: releaseInfo.releaseType,
+                certifications: releaseInfo.certifications
+            };
         }));
 
         mediaWithReleaseType.forEach(media => {
@@ -427,6 +436,8 @@ $(document).ready(async function () {
 
             const mediaType = media.media_type || (media.title ? 'movie' : 'tv');
             const displayType = mediaType === 'movie' || mediaType === 'animation' ? media.releaseType : '';
+
+            const certification = media.certifications['US'] ? media.certifications['US'] : 'Not Rated';
 
             $mediaCard.html(`
             <img src="https://image.tmdb.org/t/p/w500${media.poster_path}" alt="${media.title || media.name}" class="media-image">
@@ -445,6 +456,7 @@ $(document).ready(async function () {
                         <span>${media.vote_average.toFixed(1)}/10</span>
                     </div>
                     <p><i class="fas fa-calendar-alt"></i> Release Date: ${formattedDate}</p>
+                    <p><i class="fas fa-certificate"></i> Certification: ${certification}</p>
                 </div>
             </div>
         `);
@@ -456,7 +468,6 @@ $(document).ready(async function () {
             $popularMedia.append($mediaCard);
         });
     }
-
 
     async function fetchMediaTrailer(mediaId, mediaType) {
         try {
