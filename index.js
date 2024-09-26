@@ -413,9 +413,11 @@ $(document).ready(async function () {
 
         const limitedResults = results.slice(0, 12);
 
+        // Fetch release type and certifications for each media (movie or tv)
         const mediaWithReleaseType = await Promise.all(limitedResults.map(async (media) => {
             const mediaType = media.media_type || (media.title ? 'movie' : 'tv');
 
+            // Fetch releaseType and certifications for movies and skip certifications for TV shows
             const releaseInfo = (mediaType === 'movie' || mediaType === 'animation')
                 ? await getReleaseType(media.id, mediaType)
                 : { releaseType: '', certifications: {} };
@@ -431,13 +433,17 @@ $(document).ready(async function () {
             const $mediaCard = $('<div class="media-card"></div>');
 
             const genreNames = media.genre_ids ? media.genre_ids.map(id => genreMap[id] || 'Unknown').join(', ') : 'Genre not available';
-            const formattedDate = media.release_date ? new Date(media.release_date).toLocaleDateString() : (media.first_air_date ? new Date(media.first_air_date).toLocaleDateString() : 'Date not available');
-            const ratingStars = Array.from({ length: 5 }, (_, i) => i < Math.round(media.vote_average / 2) ? '<i class="fas fa-star filled-star"></i>' : '<i class="fas fa-star empty-star"></i>').join('');
+
+            const formattedDate = media.release_date ? new Date(media.release_date).toLocaleDateString() :
+                (media.first_air_date ? new Date(media.first_air_date).toLocaleDateString() : 'Date not available');
+
+            const ratingStars = Array.from({ length: 5 }, (_, i) => i < Math.round(media.vote_average / 2) ?
+                '<i class="fas fa-star filled-star"></i>' : '<i class="fas fa-star empty-star"></i>').join('');
 
             const mediaType = media.media_type || (media.title ? 'movie' : 'tv');
-            const displayType = mediaType === 'movie' || mediaType === 'animation' ? media.releaseType : '';
+            const displayType = (mediaType === 'movie' || mediaType === 'animation') ? media.releaseType : '';
 
-            const certification = media.certifications['US'] ? media.certifications['US'] : 'Not Rated';
+            const certification = (mediaType === 'movie' && media.certifications['US']) ? media.certifications['US'] : '';
 
             $mediaCard.html(`
             <img src="https://image.tmdb.org/t/p/w500${media.poster_path}" alt="${media.title || media.name}" class="media-image">
@@ -456,7 +462,7 @@ $(document).ready(async function () {
                         <span>${media.vote_average.toFixed(1)}/10</span>
                     </div>
                     <p><i class="fas fa-calendar-alt"></i> Release Date: ${formattedDate}</p>
-                    <p><i class="fas fa-certificate"></i> Certification: ${certification}</p>
+                    ${certification ? `<p><i class="fas fa-certificate"></i> Certification: ${certification}</p>` : ''}
                 </div>
             </div>
         `);
@@ -468,6 +474,7 @@ $(document).ready(async function () {
             $popularMedia.append($mediaCard);
         });
     }
+
 
     async function fetchMediaTrailer(mediaId, mediaType) {
         try {
