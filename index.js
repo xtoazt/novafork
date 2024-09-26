@@ -319,7 +319,17 @@ $(document).ready(async function () {
             const releaseDatesData = await releaseDatesResponse.json();
             const watchProvidersData = await watchProvidersResponse.json();
 
+            // Extract release dates and certifications
             const releases = releaseDatesData.results.flatMap(result => result.release_dates);
+            const certifications = {};
+
+            releaseDatesData.results.forEach(result => {
+                const region = result.iso_3166_1;
+                const certificationEntry = result.release_dates.find(release => release.certification);
+                if (certificationEntry) {
+                    certifications[region] = certificationEntry.certification;
+                }
+            });
 
             const currentDate = new Date();
             const currentUtcDate = new Date(Date.UTC(
@@ -373,75 +383,85 @@ $(document).ready(async function () {
                 }
             }
 
+            let releaseType = "Unknown Quality";
+
             if (isInTheaters && !isStreamingAvailable && !isDigitalRelease) {
-                return "Cam";
-            }
-
-
-            if (isStreamingAvailable || isDigitalRelease) {
-                return "HD";
+                releaseType = "Cam";
+            } else if (isStreamingAvailable || isDigitalRelease) {
+                releaseType = "HD";
             } else if (hasFutureRelease && !isInTheaters) {
-                return "Not Released Yet";
+                releaseType = "Not Released Yet";
             } else if (isRentalOrPurchaseAvailable) {
-                return "Rental/Buy Available";
+                releaseType = "Rental/Buy Available";
             }
 
-            return "Unknown Quality";
+            return {
+                releaseType,
+                certifications
+            };
+
         } catch (error) {
-            console.error('Error occurred while fetching release type:', error);
-            return "Unknown Quality";
+            console.error('Error occurred while fetching release type and certifications:', error);
+            return {
+                releaseType: "Unknown Quality",
+                certifications: {}
+            };
         }
     }
 
 
 
+
     async function displayPopularMedia(results) {
         $popularMedia.empty();
-    
+
         const limitedResults = results.slice(0, 12);
-    
+
         const mediaWithReleaseType = await Promise.all(limitedResults.map(async (media) => {
             const mediaType = media.media_type || (media.title ? 'movie' : 'tv');
             const releaseType = mediaType === 'movie' || mediaType === 'animation' ? await getReleaseType(media.id, mediaType) : '';
             return { ...media, releaseType };
         }));
-    
+
         mediaWithReleaseType.forEach(media => {
             const $mediaCard = $('<div class="media-card"></div>');
-    
-            const genreNames = media.genre_ids ? media.genre_ids.map(id => genreMap[id] || 'Unknown').join(', ') : 'N/A';
-            const formattedDate = media.release_date ? new Date(media.release_date).toLocaleDateString() : (media.first_air_date ? new Date(media.first_air_date).toLocaleDateString() : 'Unknown Date');
-            const ratingStars = Array.from({ length: 5 }, (_, i) => i < Math.round(media.vote_average / 2) ? '<i class="fas fa-star"></i>' : '<i class="far fa-star"></i>').join('');
-    
+
+            const genreNames = media.genre_ids ? media.genre_ids.map(id => genreMap[id] || 'Unknown').join(', ') : 'Genre not available';
+            const formattedDate = media.release_date ? new Date(media.release_date).toLocaleDateString() : (media.first_air_date ? new Date(media.first_air_date).toLocaleDateString() : 'Date not available');
+            const ratingStars = Array.from({ length: 5 }, (_, i) => i < Math.round(media.vote_average / 2) ? '<i class="fas fa-star filled-star"></i>' : '<i class="fas fa-star empty-star"></i>').join('');
+
             const mediaType = media.media_type || (media.title ? 'movie' : 'tv');
             const displayType = mediaType === 'movie' || mediaType === 'animation' ? media.releaseType : '';
-    
+
             $mediaCard.html(`
-                <img src="https://image.tmdb.org/t/p/w500${media.poster_path}" alt="${media.title || media.name}" class="media-image">
-                ${displayType ? `<div class="release-type">${displayType}</div>` : ''}
-                <div class="media-content">
-                    <h3 class="media-title">${media.title || media.name}</h3>
-                    <p class="media-type">
-                        ${mediaType === 'movie' ? '<i class="fas fa-film"></i> Movie' : 
-                          mediaType === 'tv' ? '<i class="fas fa-tv"></i> TV Show' : 
-                          '<i class="fas fa-video"></i> Animation'}
-                    </p>
-                    <div class="media-details">
-                        <p><i class="fas fa-theater-masks"></i> Genres: ${genreNames}</p>
-                        <div>
-                            <span class="rating-stars">${ratingStars}</span>
-                            <span>${media.vote_average.toFixed(1)}/10</span>
-                        </div>
-                        <p><i class="fas fa-calendar-alt"></i> Release Date: ${formattedDate}</p>
+            <img src="https://image.tmdb.org/t/p/w500${media.poster_path}" alt="${media.title || media.name}" class="media-image">
+            ${displayType ? `<div class="release-type">${displayType}</div>` : ''}
+            <div class="media-content">
+                <h3 class="media-title">${media.title || media.name}</h3>
+                <p class="media-type">
+                    ${mediaType === 'movie' ? '<i class="fas fa-film" title="Movie"></i> Movie' :
+                mediaType === 'tv' ? '<i class="fas fa-tv" title="TV Show"></i> TV Show' :
+                    '<i class="fas fa-pencil-alt" title="Animation"></i> Animation'}
+                </p>
+                <div class="media-details">
+                    <p><i class="fas fa-theater-masks"></i> Genres: ${genreNames}</p>
+                    <div class="media-rating">
+                        <span class="rating-stars">${ratingStars}</span>
+                        <span>${media.vote_average.toFixed(1)}/10</span>
                     </div>
+                    <p><i class="fas fa-calendar-alt"></i> Release Date: ${formattedDate}</p>
                 </div>
-            `);
+            </div>
+        `);
+
             $mediaCard.on('click', function () {
                 fetchSelectedMedia(media.id, mediaType);
             });
+
             $popularMedia.append($mediaCard);
         });
     }
+
 
     async function fetchMediaTrailer(mediaId, mediaType) {
         try {
