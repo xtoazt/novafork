@@ -284,7 +284,8 @@ $(document).ready(async function () {
 
                 const releaseType = await getReleaseType(mediaId, mediaType);
 
-                const newUrl = `${window.location.origin}${window.location.pathname}?id=${mediaId}`;
+                const titleSlug = media.title ? media.title.toLowerCase().replace(/[^a-z0-9]+/g, '-') : media.name.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+                const newUrl = `${window.location.origin}${window.location.pathname}?title=${encodeURIComponent(titleSlug)}`;
                 window.history.pushState({ mediaId, mediaType, title: media.title || media.name }, '', newUrl);
 
                 displaySelectedMedia(media, mediaType, releaseType);
@@ -305,7 +306,6 @@ $(document).ready(async function () {
             $videoPlayerContainer.addClass('hidden');
         }
     }
-
 
     async function getReleaseType(mediaId, mediaType) {
         try {
@@ -539,14 +539,17 @@ $(document).ready(async function () {
 
     async function loadMediaFromUrlParams() {
         const urlParams = new URLSearchParams(window.location.search);
-        const mediaId = urlParams.get('id');
+        const title = urlParams.get('title');
 
-        if (mediaId) {
-            const mediaType = mediaId.startsWith('tv') ? 'tv' : 'movie';
-            await fetchSelectedMedia(mediaId, mediaType);
+        if (title) {
+            const response = await $.getJSON(`https://api.themoviedb.org/3/search/multi?api_key=${API_KEY}&query=${encodeURIComponent(title)}`);
+            const media = response.results.find(item => (item.title && item.title.toLowerCase().replace(/[^a-z0-9]+/g, '-') === title) || (item.name && item.name.toLowerCase().replace(/[^a-z0-9]+/g, '-') === title));
+            if (media) {
+                const mediaType = media.media_type || (media.title ? 'movie' : 'tv');
+                await fetchSelectedMedia(media.id, mediaType);
+            }
         }
     }
-
 
     if ($categorySelect.length) {
         $categorySelect.on('change', function () {
