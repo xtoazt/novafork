@@ -249,6 +249,8 @@ $(document).ready(async function () {
     }
 
     async function updateMediaDisplay() {
+        $popularMedia.html('<p>Loading...</p>');
+
         if (currentMediaType === 'actor' && currentActorId) {
             await fetchMoviesAndShowsByActor(currentActorId, currentPage);
         } else if (currentMediaType === 'search') {
@@ -408,16 +410,16 @@ $(document).ready(async function () {
         }
     }
 
+    let displayedMediaIds = new Set();
+
     async function displayPopularMedia(results) {
         $popularMedia.empty();
+        displayedMediaIds.clear();
 
         const limitedResults = results.slice(0, 12);
 
-        // Fetch release type and certifications for each media (movie or tv)
         const mediaWithReleaseType = await Promise.all(limitedResults.map(async (media) => {
             const mediaType = media.media_type || (media.title ? 'movie' : 'tv');
-
-            // Fetch releaseType and certifications for movies and skip certifications for TV shows
             const releaseInfo = (mediaType === 'movie' || mediaType === 'animation')
                 ? await getReleaseType(media.id, mediaType)
                 : { releaseType: '', certifications: {} };
@@ -430,10 +432,15 @@ $(document).ready(async function () {
         }));
 
         mediaWithReleaseType.forEach(media => {
+            if (displayedMediaIds.has(media.id)) {
+                return;
+            }
+
+            displayedMediaIds.add(media.id);
+
             const $mediaCard = $('<div class="media-card"></div>');
 
             const genreNames = media.genre_ids ? media.genre_ids.map(id => genreMap[id] || 'Unknown').join(', ') : 'Genre not available';
-
             const formattedDate = media.release_date ? new Date(media.release_date).toLocaleDateString() :
                 (media.first_air_date ? new Date(media.first_air_date).toLocaleDateString() : 'Date not available');
 
@@ -474,6 +481,44 @@ $(document).ready(async function () {
             $popularMedia.append($mediaCard);
         });
     }
+
+    if ($actorSearchInput.length) {
+        $actorSearchInput.on(
+            'input',
+            debounce(async function () {
+                const actorName = $actorSearchInput.val().trim();
+
+                if (actorName.length < 2) {
+                    currentActorId = null;
+                    currentMediaType = 'popular';
+                    currentPage = 1;
+                    displayedMediaIds.clear();
+                    await fetchPopularMedia(currentPage);
+                    return;
+                }
+
+                if (actorName.length > 2) {
+                    const response = await $.getJSON(
+                        `https://api.themoviedb.org/3/search/person?api_key=${API_KEY}&query=${encodeURIComponent(actorName)}`
+                    );
+                    if (response.results.length > 0) {
+                        const actorId = response.results[0].id;
+                        currentActorId = actorId;
+                        currentMediaType = 'actor';
+                        currentPage = 1;
+                        displayedMediaIds.clear();
+                        await fetchMoviesAndShowsByActor(actorId, currentPage);
+                    } else {
+                        handleError('No actor found with that name.');
+                        clearMediaDisplay();
+                        totalPages = 1;
+                        updatePaginationControls(currentPage, totalPages);
+                    }
+                }
+            }, 500)
+        );
+    }
+
 
 
     async function fetchMediaTrailer(mediaId, mediaType) {
