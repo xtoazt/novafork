@@ -307,108 +307,126 @@ $(document).ready(async function () {
         }
     }
 
-    async function getReleaseType(mediaId, mediaType) {
+    const cache = new Map();
+
+    async function getReleaseType(mediaId, mediaType, region = 'US') {
         try {
+            const cacheKey = `${mediaId}_${mediaType}`;
+            if (cache.has(cacheKey)) {
+                return cache.get(cacheKey);
+            }
+
+            // Fetch release dates and watch providers concurrently
             const [releaseDatesResponse, watchProvidersResponse] = await Promise.all([
                 fetch(`https://api.themoviedb.org/3/${mediaType}/${mediaId}/release_dates?api_key=${API_KEY}`),
                 fetch(`https://api.themoviedb.org/3/${mediaType}/${mediaId}/watch/providers?api_key=${API_KEY}`)
             ]);
 
-            if (!releaseDatesResponse.ok || !watchProvidersResponse.ok) {
-                throw new Error('Failed to fetch release type or watch providers.');
-            }
+            if (!releaseDatesResponse.ok) throw new Error('Failed to fetch release dates.');
+            if (!watchProvidersResponse.ok) throw new Error('Failed to fetch watch providers.');
 
             const releaseDatesData = await releaseDatesResponse.json();
             const watchProvidersData = await watchProvidersResponse.json();
 
-            const releases = releaseDatesData.results.flatMap(result => result.release_dates);
-            const certifications = {};
-
-            releaseDatesData.results.forEach(result => {
-                const region = result.iso_3166_1;
-                const certificationEntry = result.release_dates.find(release => release.certification);
-                if (certificationEntry) {
-                    certifications[region] = certificationEntry.certification;
-                }
-            });
-
-            const currentDate = new Date();
             const currentUtcDate = new Date(Date.UTC(
-                currentDate.getUTCFullYear(),
-                currentDate.getUTCMonth(),
-                currentDate.getUTCDate()
+                new Date().getUTCFullYear(),
+                new Date().getUTCMonth(),
+                new Date().getUTCDate()
             ));
 
-            const isDigitalRelease = releases.some(release =>
-                (release.type === 4 || release.type === 6) && new Date(release.release_date).getTime() <= currentUtcDate.getTime()
-            );
+            const releases = releaseDatesData.results.flatMap(result => result.release_dates);
 
-            let isInTheaters = false;
+            const certifications = extractCertifications(releaseDatesData, region);
 
-            for (const theaterRelease of releases.filter(release => release.type === 3)) {
-                const theaterReleaseDate = new Date(theaterRelease.release_date);
-                const theaterReleaseUtcDate = new Date(Date.UTC(
-                    theaterReleaseDate.getUTCFullYear(),
-                    theaterReleaseDate.getUTCMonth(),
-                    theaterReleaseDate.getUTCDate()
-                ));
+            const isDigitalRelease = checkDigitalRelease(releases, currentUtcDate);
+            const isInTheaters = checkTheaterRelease(releases, currentUtcDate);
+            const hasFutureRelease = checkFutureRelease(releases, currentUtcDate);
 
-                if (theaterReleaseUtcDate.getTime() <= currentUtcDate.getTime()) {
-                    isInTheaters = true;
-                    break;
-                }
-            }
+            const isStreamingAvailable = checkStreamingAvailability(watchProvidersData);
+            const isRentalOrPurchaseAvailable = checkRentalOrPurchaseAvailability(watchProvidersData);
 
-            const hasFutureRelease = releases.some(release =>
-                new Date(release.release_date).getTime() > currentUtcDate.getTime()
-            );
+            const releaseType = determineReleaseType({
+                isInTheaters,
+                isStreamingAvailable,
+                isDigitalRelease,
+                hasFutureRelease,
+                isRentalOrPurchaseAvailable
+            });
 
-            let isStreamingAvailable = false;
-            const availableRegions = Object.keys(watchProvidersData.results || {});
+            const result = { releaseType, certifications };
+            cache.set(cacheKey, result);
 
-            for (const region of availableRegions) {
-                const providers = watchProvidersData.results?.[region]?.flatrate || [];
-                if (providers.length > 0) {
-                    isStreamingAvailable = true;
-                    break;
-                }
-            }
-
-            let isRentalOrPurchaseAvailable = false;
-            for (const region of availableRegions) {
-                const rentalProviders = watchProvidersData.results?.[region]?.rent || [];
-                const buyProviders = watchProvidersData.results?.[region]?.buy || [];
-                if (rentalProviders.length > 0 || buyProviders.length > 0) {
-                    isRentalOrPurchaseAvailable = true;
-                    break;
-                }
-            }
-
-            let releaseType = "Unknown Quality";
-
-            if (isInTheaters && !isStreamingAvailable && !isDigitalRelease) {
-                releaseType = "Cam";
-            } else if (isStreamingAvailable || isDigitalRelease) {
-                releaseType = "HD";
-            } else if (hasFutureRelease && !isInTheaters) {
-                releaseType = "Not Released Yet";
-            } else if (isRentalOrPurchaseAvailable) {
-                releaseType = "Rental/Buy Available";
-            }
-
-            return {
-                releaseType,
-                certifications
-            };
+            return result;
 
         } catch (error) {
-            console.error('Error occurred while fetching release type and certifications:', error);
+            console.error('Error fetching release type and certifications:', error.message);
             return {
                 releaseType: "Unknown Quality",
                 certifications: {}
             };
         }
     }
+
+    function extractCertifications(releaseDatesData, region) {
+        const certifications = {};
+
+        releaseDatesData.results.forEach(result => {
+            const certificationEntry = result.release_dates.find(release => release.certification);
+            if (certificationEntry) {
+                certifications[result.iso_3166_1] = certificationEntry.certification;
+            }
+        });
+
+        return certifications[region] || 'No Certification Available'; // Return certification for specific region or a default message
+    }
+
+    function checkDigitalRelease(releases, currentUtcDate) {
+        return releases.some(release =>
+            [4, 6].includes(release.type) && new Date(release.release_date).getTime() <= currentUtcDate.getTime()
+        );
+    }
+
+    function checkTheaterRelease(releases, currentUtcDate) {
+        return releases.some(release => {
+            const releaseDate = new Date(release.release_date);
+            return release.type === 3 && releaseDate.getTime() <= currentUtcDate.getTime();
+        });
+    }
+
+// Check for future releases
+    function checkFutureRelease(releases, currentUtcDate) {
+        return releases.some(release => new Date(release.release_date).getTime() > currentUtcDate.getTime());
+    }
+
+    function checkStreamingAvailability(watchProvidersData) {
+        const availableRegions = Object.keys(watchProvidersData.results || {});
+        return availableRegions.some(region =>
+            (watchProvidersData.results?.[region]?.flatrate || []).length > 0
+        );
+    }
+
+    function checkRentalOrPurchaseAvailability(watchProvidersData) {
+        const availableRegions = Object.keys(watchProvidersData.results || {});
+        return availableRegions.some(region => {
+            const rentProviders = watchProvidersData.results?.[region]?.rent || [];
+            const buyProviders = watchProvidersData.results?.[region]?.buy || [];
+            return rentProviders.length > 0 || buyProviders.length > 0;
+        });
+    }
+    function determineReleaseType({ isInTheaters, isStreamingAvailable, isDigitalRelease, hasFutureRelease, isRentalOrPurchaseAvailable }) {
+        if (isInTheaters && !isStreamingAvailable && !isDigitalRelease) {
+            return "Cam";
+        } else if (isStreamingAvailable || isDigitalRelease) {
+            return "HD";
+        } else if (hasFutureRelease && !isInTheaters) {
+            return "Not Released Yet";
+        } else if (isRentalOrPurchaseAvailable) {
+            return "Rental/Buy Available";
+        } else {
+            return "Unknown Quality";
+        }
+    }
+
 
     let displayedMediaIds = new Set();
 
