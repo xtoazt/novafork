@@ -344,33 +344,36 @@ button:active {
     font-size: 16px;
 } */
 
-/* Media Cards and Containers to display info */
+/* Container for media cards */
 .media-container {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-    gap: 1.5rem;
-    padding: 2rem;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); /* Fluid grid layout */
+    gap: 2rem;
+    padding: 2.5rem;
+    background: #1a1a2e;
 }
 
+/* Media Card Styling */
 .media-card {
     position: relative;
-    background: rgba(255, 255, 255, 0.05);
-    backdrop-filter: blur(10px);
-    border-radius: 15px;
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.07);
+    backdrop-filter: blur(12px);
+    border-radius: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.15);
     overflow: hidden;
-    transition: all 0.3s ease;
-    transform-style: preserve-3d;
-    height: 300px;
+    transition: transform 0.5s ease-in-out, box-shadow 0.5s ease-in-out;
+    height: 100%; /* Allow flexible height */
+    cursor: pointer;
 }
 
+/* Smooth hover effect with scale and shadow */
 .media-card:hover {
-    transform: scale(1.05);
-    box-shadow: 0 0 30px rgba(138, 43, 226, 0.4);
-    height: auto;
+    transform: scale(1.08) translateY(-5px);
+    box-shadow: 0 12px 30px rgba(138, 43, 226, 0.3);
     z-index: 10;
 }
 
+/* Subtle gradient background */
 .media-card::before {
     content: '';
     position: absolute;
@@ -378,254 +381,171 @@ button:active {
     left: 0;
     right: 0;
     bottom: 0;
-    background: linear-gradient(135deg, rgba(138, 43, 226, 0.2) 0%, rgba(138, 43, 226, 0) 100%);
+    background: linear-gradient(135deg, rgba(138, 43, 226, 0.25) 0%, rgba(138, 43, 226, 0) 100%);
     opacity: 0;
-    transition: opacity 0.3s ease;
+    transition: opacity 0.5s ease-in-out;
 }
 
 .media-card:hover::before {
     opacity: 1;
 }
 
+/* Image with fluid hover effect */
 .media-image {
     width: 100%;
     height: 100%;
     object-fit: cover;
-    transition: transform 0.3s ease;
+    transition: transform 0.6s ease-in-out;
 }
 
 .media-card:hover .media-image {
-    transform: scale(1.1);
+    transform: scale(1.15);
 }
 
+/* Slide-up content with smooth transition */
 .media-content {
     position: absolute;
     bottom: 0;
     left: 0;
     right: 0;
-    padding: 1rem;
-    background: rgba(0, 0, 0, 0.7);
+    padding: 0.75rem;
+    background: rgba(0, 0, 0, 0.8);
     transform: translateY(100%);
-    transition: transform 0.3s ease;
+    transition: transform 0.5s ease-in-out;
 }
 
 .media-card:hover .media-content {
     transform: translateY(0);
 }
 
+/* Smaller typography for titles and details */
 .media-title {
-    font-size: 1rem;
+    font-size: 0.85rem;
     font-weight: 600;
     color: #fff;
     margin-bottom: 0.5rem;
 }
 
-.media-type {
-    font-size: 0.75rem;
-    color: #a0aec0;
-    margin-bottom: 0.5rem;
-}
-
-.media-details {
-    font-size: 0.75rem;
-    color: #a0aec0;
-}
-
-.rating-stars {
-    color: #f6e05e;
-    margin-right: 0.5rem;
-}
-
-.release-type {
-    position: absolute;
-    top: 0.5rem;
-    right: 0.5rem;
-    background: rgba(138, 43, 226, 0.6);
-    color: #fff;
-    padding: 0.25rem 0.5rem;
-    border-radius: 9999px;
-    font-size: 0.75rem;
-}
-
-.media-container:hover .media-card:not(:hover) {
-    filter: blur(3px);
-}
-
-.media-container {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-    gap: 1.5rem;
-    padding: 2rem;
-}
-
-.media-card {
-    position: relative;
-    background: rgba(255, 255, 255, 0.05);
-    backdrop-filter: blur(10px);
-    border-radius: 15px;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    overflow: hidden;
-    transition: all 0.3s ease;
-    transform-style: preserve-3d;
-    height: 300px;
-    cursor: pointer;
-}
-
-.media-card:hover {
-    transform: scale(1.05) translateY(-10px);
-    box-shadow: 0 0 30px rgba(138, 43, 226, 0.4);
-    height: auto;
-    z-index: 10;
-}
-
-.media-image {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    transition: transform 0.3s ease;
-}
-
-.media-card:hover .media-image {
-    transform: scale(1.1);
-}
-
-.media-content {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    padding: 1rem;
-    background: rgba(0, 0, 0, 0.7);
-    transform: translateY(100%);
-    transition: transform 0.3s ease;
-}
-
-.media-card:hover .media-content {
-    transform: translateY(0);
-}
-
-.media-title {
-    font-size: 1rem;
-    font-weight: 600;
-    color: #fff;
-    margin-bottom: 0.5rem;
-}
-
-.media-type {
-    font-size: 0.75rem;
-    color: #a0aec0;
-    margin-bottom: 0.5rem;
-}
-
-.media-details {
-    font-size: 0.75rem;
-    color: #a0aec0;
-}
-
-.media-genres,
-.media-rating,
-.media-release-date {
+.media-type, .media-details {
+    font-size: 0.7rem;
+    color: #c0cbdc;
     margin-bottom: 0.25rem;
 }
 
+/* Rating stars with softened glow */
 .rating-stars {
     color: #f6e05e;
     margin-right: 0.5rem;
 }
 
-.media-container:hover .media-card:not(:hover) {
-    filter: blur(3px);
+/* Release type badge with rounded shape */
+.release-type {
+    position: absolute;
+    top: 0.75rem;
+    right: 0.75rem;
+    background: rgba(138, 43, 226, 0.75);
+    color: #fff;
+    padding: 0.25rem 0.5rem;
+    border-radius: 9999px;
+    font-size: 0.65rem;
+    font-weight: 600;
 }
 
+/* Glow animation with more fluid effect */
 @keyframes glow {
-    0% { box-shadow: 0 0 5px rgba(138, 43, 226, 0.4); }
-    50% { box-shadow: 0 0 20px rgba(138, 43, 226, 0.6); }
-    100% { box-shadow: 0 0 5px rgba(138, 43, 226, 0.4); }
+    0% { box-shadow: 0 0 10px rgba(138, 43, 226, 0.3); }
+    50% { box-shadow: 0 0 20px rgba(138, 43, 226, 0.5); }
+    100% { box-shadow: 0 0 10px rgba(138, 43, 226, 0.3); }
 }
 
 .media-card:hover {
-    animation: glow 2s infinite;
+    animation: glow 3s ease-in-out infinite; /* Slower, more fluid glow animation */
 }
 
-
-.glassmorphism {
-    background: rgba(255, 255, 255, 0.05);
-    backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+/* Blur effect for non-hovered cards with gradual transition */
+.media-container:hover .media-card:not(:hover) {
+    filter: blur(3px);
+    transition: filter 0.5s ease-in-out;
 }
+
+/* Card background with a fluid shadow transition */
 .card {
-    transition: all 0.3s ease;
-    background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%);
+    transition: all 0.4s ease-in-out;
+    background: linear-gradient(135deg, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0.07) 100%);
 }
+
 .card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+    transform: translateY(-6px);
+    box-shadow: 0 12px 25px rgba(0,0,0,0.25);
 }
+
 .glow {
-    box-shadow: 0 0 15px rgba(123, 31, 162, 0.5);
+    box-shadow: 0 0 18px rgba(123, 31, 162, 0.5);
 }
+
 .neon-text {
-    text-shadow: 0 0 5px rgba(123, 31, 162, 0.7), 0 0 10px rgba(123, 31, 162, 0.5);
+    text-shadow: 0 0 6px rgba(123, 31, 162, 0.7), 0 0 12px rgba(123, 31, 162, 0.5);
 }
+
 @keyframes slideInRight {
     0% {
-      transform: translateX(0);
-      opacity: 1;
+        transform: translateX(0);
+        opacity: 1;
     }
     100% {
-      transform: translateX(100%);
-      opacity: 0;
+        transform: translateX(100%);
+        opacity: 0;
     }
-  }
-  
-  @keyframes slideOutLeft {
+}
+
+@keyframes slideOutLeft {
     0% {
-      transform: translateX(100%);
-      opacity: 0;
+        transform: translateX(100%);
+        opacity: 0;
     }
     100% {
-      transform: translateX(0);
-      opacity: 1;
+        transform: translateX(0);
+        opacity: 1;
     }
-  }
-  
-  @keyframes fadeIn {
+}
+
+@keyframes fadeIn {
     0% {
-      opacity: 0;
+        opacity: 0;
     }
     100% {
-      opacity: 1;
+        opacity: 1;
     }
-  }
-  
-  @keyframes fadeOut {
+}
+
+@keyframes fadeOut {
     0% {
-      opacity: 1;
+        opacity: 1;
     }
     100% {
-      opacity: 0;
+        opacity: 0;
     }
-  }
-  
-  .poster-container.slide-out {
-    animation: slideInRight 1s forwards;
-  }
-  
-  .movie-info.fade-out {
-    animation: fadeOut 1s forwards;
-  }
-  
-  .movie-info.fade-in {
-    animation: fadeIn 1s forwards;
-  }
-  
-  #videoPlayer.fade-in {
-    animation: fadeIn 1s forwards;
-  }
-  
-  #videoPlayer.fade-out {
-    animation: fadeOut 1s forwards;
-  }
+}
+
+.poster-container.slide-out {
+    animation: slideInRight 1s ease forwards;
+}
+
+.movie-info.fade-out {
+    animation: fadeOut 1s ease forwards;
+}
+
+.movie-info.fade-in {
+    animation: fadeIn 1s ease forwards;
+}
+
+#videoPlayer.fade-in {
+    animation: fadeIn 1s ease forwards;
+}
+
+#videoPlayer.fade-out {
+    animation: fadeOut 1s ease forwards;
+}
 
 
 #searchSuggestions {
