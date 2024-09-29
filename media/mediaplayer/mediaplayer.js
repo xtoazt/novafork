@@ -290,16 +290,25 @@ async function displaySelectedMedia(media, mediaType) {
                 ? await getTvEmbedUrl(media.id, $seasonSelect.val(), $episodeSelect.val(), provider, apiKey)
                 : await getMovieEmbedUrl(media.id, provider, apiKey);
 
+            let sandboxAttribute = '';
+
+            if (provider === 'vidlink') {
+                sandboxAttribute = 'sandbox="allow-same-origin allow-scripts"';
+            }
+
             $videoPlayer.html(`
-                   <iframe src="${endpoint}" 
-                    class="video-iframe"
-                    allowfullscreen>
-            </iframe>
-        </div>
+        <iframe 
+            src="${endpoint}" 
+            class="video-iframe"
+            allowfullscreen
+            ${sandboxAttribute}>
+        </iframe>
     `).removeClass('hidden');
+
             $movieInfo.children().not($videoPlayer).addClass('hidden');
             $closePlayerButton.removeClass('hidden');
         }
+
 
         async function closeVideoPlayer() {
             // Reset the video player content and hide it
