@@ -285,48 +285,55 @@ async function displaySelectedMedia(media, mediaType) {
         let selectedProvider = 'vidsrc'; // Set default provider
 
         async function updateVideo() {
-            const provider = $providerSelect.length ? $providerSelect.val() : selectedProvider;
-            const endpoint = mediaType === 'tv'
-                ? await getTvEmbedUrl(media.id, $seasonSelect.val(), $episodeSelect.val(), provider, apiKey)
-                : await getMovieEmbedUrl(media.id, provider, apiKey);
+            try {
+                const provider = $providerSelect.length ? $providerSelect.val() : selectedProvider;
+                let endpoint;
 
-            let sandboxAttribute = '';
-
-            if (provider === 'vidlink') {
-                sandboxAttribute = 'sandbox="allow-same-origin allow-scripts allow-forms"';
-            }
-
-            $videoPlayer.html(`
-        <iframe 
-            src="${endpoint}" 
-            class="video-iframe"
-            allowfullscreen
-            ${sandboxAttribute}>
-        </iframe>
-    `).removeClass('hidden');
-
-            $movieInfo.children().not($videoPlayer).addClass('hidden');
-            $closePlayerButton.removeClass('hidden');
-
-            $('iframe').on('load', function () {
-                const iframe = $(this)[0].contentWindow;
-
-                try {
-                    iframe.document.addEventListener('click', function (event) {
-                        if (event.target.tagName === 'A' || event.target.tagName === 'BUTTON') {
-                            event.preventDefault();
-                        }
-                    });
-
-                    ['beforeunload', 'unload', 'submit'].forEach(eventType => {
-                        iframe.document.addEventListener(eventType, function (event) {
-                            event.preventDefault();
-                        });
-                    });
-                } catch (error) {
-                    console.error('Error in iframe protection:', error);
+                if (mediaType === 'tv') {
+                    endpoint = await getTvEmbedUrl(media.id, $seasonSelect.val(), $episodeSelect.val(), provider, apiKey);
+                } else {
+                    endpoint = await getMovieEmbedUrl(media.id, provider, apiKey);
                 }
-            });
+
+                const sandboxAttribute = provider === 'vidlink' ? 'sandbox="allow-same-origin allow-scripts allow-forms"' : '';
+
+                const iframeHtml = `
+            <iframe 
+                src="${endpoint}" 
+                class="video-iframe" 
+                allowfullscreen 
+                ${sandboxAttribute}>
+            </iframe>
+        `;
+
+                $videoPlayer.html(iframeHtml).removeClass('hidden');
+
+                $movieInfo.children().not($videoPlayer).addClass('hidden');
+                $closePlayerButton.removeClass('hidden');
+
+                $('iframe').one('load', function () {
+                    const iframeWindow = this.contentWindow;
+
+                    if (iframeWindow) {
+                        try {
+                            iframeWindow.document.addEventListener('click', function (event) {
+                                const target = event.target.tagName;
+                                if (target === 'A' || target === 'BUTTON') {
+                                    event.preventDefault();
+                                }
+                            });
+
+                            ['beforeunload', 'unload', 'submit'].forEach(eventType => {
+                                iframeWindow.document.addEventListener(eventType, event => event.preventDefault());
+                            });
+                        } catch (error) {
+                            console.error('Error in iframe event handling:', error);
+                        }
+                    }
+                });
+            } catch (error) {
+                console.error('Error updating video:', error);
+            }
         }
 
 
