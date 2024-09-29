@@ -293,7 +293,7 @@ async function displaySelectedMedia(media, mediaType) {
             let sandboxAttribute = '';
 
             if (provider === 'vidlink') {
-                sandboxAttribute = 'sandbox="allow-same-origin allow-scripts"';
+                sandboxAttribute = 'sandbox="allow-same-origin allow-scripts allow-forms"';
             }
 
             $videoPlayer.html(`
@@ -307,7 +307,28 @@ async function displaySelectedMedia(media, mediaType) {
 
             $movieInfo.children().not($videoPlayer).addClass('hidden');
             $closePlayerButton.removeClass('hidden');
+
+            $('iframe').on('load', function () {
+                const iframe = $(this)[0].contentWindow;
+
+                try {
+                    iframe.document.addEventListener('click', function (event) {
+                        if (event.target.tagName === 'A' || event.target.tagName === 'BUTTON') {
+                            event.preventDefault();
+                        }
+                    });
+
+                    ['beforeunload', 'unload', 'submit'].forEach(eventType => {
+                        iframe.document.addEventListener(eventType, function (event) {
+                            event.preventDefault();
+                        });
+                    });
+                } catch (error) {
+                    console.error('Error in iframe protection:', error);
+                }
+            });
         }
+
 
 
         async function closeVideoPlayer() {
