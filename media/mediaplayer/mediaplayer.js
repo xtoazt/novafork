@@ -298,7 +298,6 @@ async function displaySelectedMedia(media, mediaType) {
 
             $videoPlayer.html(`
         <iframe 
-            id="videoIframe"
             src="${endpoint}" 
             class="video-iframe"
             allowfullscreen
@@ -313,148 +312,22 @@ async function displaySelectedMedia(media, mediaType) {
                 const iframe = $(this)[0].contentWindow;
 
                 try {
-                    iframe.eval(`
-                (function() {
-                    const blockedTags = ['A', 'BUTTON', 'IFRAME', 'SCRIPT', 'LINK', 'DIV'];
-                    const blockedKeywords = ['ads', 'track', 'click', 'analytics', 'banner', 'popup', 'sponsored'];
-                    const adDomains = ['adservice', 'doubleclick', 'googlesyndication', 'amazon-adsystem', 'outbrain'];
+                    iframe.document.addEventListener('click', function (event) {
+                        if (event.target.tagName === 'A' || event.target.tagName === 'BUTTON') {
+                            event.preventDefault();
+                        }
+                    });
 
-                    // Utility function to check if URL is blocked
-                    const isBlockedUrl = (url) => {
-                        return blockedKeywords.some(keyword => url.includes(keyword)) || adDomains.some(domain => url.includes(domain));
-                    };
-
-                    // MutationObserver to detect new elements being dynamically injected into the DOM
-                    const observer = new MutationObserver((mutations) => {
-                        mutations.forEach(mutation => {
-                            mutation.addedNodes.forEach(node => {
-                                if (node.nodeType === 1) { // Only process element nodes
-                                    const tagName = node.tagName.toUpperCase();
-                                    if (blockedTags.includes(tagName) || isBlockedUrl(node.src || node.href || '')) {
-                                        console.log('Blocked dynamically injected ad element:', tagName);
-                                        node.remove(); // Remove the ad element from the DOM
-                                    }
-                                    // Remove any inline event handlers that could trigger ads (onClick, onLoad)
-                                    node.removeAttribute('onClick');
-                                    node.removeAttribute('onLoad');
-                                }
-                            });
+                    ['beforeunload', 'unload', 'submit'].forEach(eventType => {
+                        iframe.document.addEventListener(eventType, function (event) {
+                            event.preventDefault();
                         });
                     });
-
-                    observer.observe(document.body, { childList: true, subtree: true });
-
-                    // Block window.open to prevent popups
-                    window.open = function() {
-                        console.log('Blocked attempt to open new window or popup');
-                        return null;
-                    };
-
-                    // Prevent attempts to change window location (redirects)
-                    const originalLocation = window.location;
-                    Object.defineProperty(window, 'location', {
-                        get: function() {
-                            return originalLocation;
-                        },
-                        set: function(url) {
-                            if (isBlockedUrl(url)) {
-                                console.log('Blocked attempt to change location to ad/tracking URL:', url);
-                                return null;
-                            }
-                            return originalLocation = url;
-                        }
-                    });
-
-                    // Block dynamic element creation for scripts, iframes, and links (ads)
-                    const originalCreateElement = document.createElement;
-                    document.createElement = function(tag) {
-                        if (blockedTags.includes(tag.toUpperCase())) {
-                            console.log('Blocked attempt to create', tag, 'element');
-                            return null;
-                        }
-                        return originalCreateElement.apply(this, arguments);
-                    };
-
-                    // Block XMLHttpRequests and Fetch calls to ad domains and tracking services
-                    const originalXHR = XMLHttpRequest.prototype.open;
-                    XMLHttpRequest.prototype.open = function(method, url) {
-                        if (isBlockedUrl(url)) {
-                            console.log('Blocked ad-related XMLHttpRequest to:', url);
-                            return null;
-                        }
-                        return originalXHR.apply(this, arguments);
-                    };
-
-                    const originalFetch = window.fetch;
-                    window.fetch = function(url, options) {
-                        if (typeof url === 'string' && isBlockedUrl(url)) {
-                            console.log('Blocked ad-related fetch to:', url);
-                            return null;
-                        }
-                        return originalFetch.apply(this, arguments);
-                    };
-
-                    // Block stylesheets and external media from ad-serving domains
-                    const originalAppendChild = Node.prototype.appendChild;
-                    Node.prototype.appendChild = function(child) {
-                        if (child.tagName === 'LINK' && child.rel === 'stylesheet' && isBlockedUrl(child.href)) {
-                            console.log('Blocked attempt to load external stylesheet:', child.href);
-                            return null;
-                        }
-                        if ((child.tagName === 'IMG' || child.tagName === 'VIDEO') && isBlockedUrl(child.src)) {
-                            console.log('Blocked attempt to load ad media:', child.src);
-                            return null;
-                        }
-                        return originalAppendChild.apply(this, arguments);
-                    };
-
-                    // Block adding of event listeners for ad-related actions
-                    const originalAddEventListener = EventTarget.prototype.addEventListener;
-                    EventTarget.prototype.addEventListener = function(type, listener, options) {
-                        const listenerStr = listener.toString();
-                        if (type === 'click' && (listenerStr.includes('ads') || listenerStr.includes('track') || listenerStr.includes('popup'))) {
-                            console.log('Blocked event listener for ads:', type);
-                            return null;
-                        }
-                        return originalAddEventListener.apply(this, arguments);
-                    };
-
-                    // Block setTimeout if it contains ad-related logic
-                    const originalSetTimeout = window.setTimeout;
-                    window.setTimeout = function(callback, delay) {
-                        const callbackStr = callback.toString();
-                        if (callbackStr.includes('ads') || callbackStr.includes('popup') || callbackStr.includes('track')) {
-                            console.log('Blocked setTimeout ad-related logic.');
-                            return null;
-                        }
-                        return originalSetTimeout.apply(this, arguments);
-                    };
-
-                    // Block inline event handlers like onClick or onLoad
-                    document.addEventListener('click', function(event) {
-                        const blockedElement = blockedTags.includes(event.target.tagName) || event.target.getAttribute('onclick');
-                        if (blockedElement || isBlockedUrl(event.target.href || '')) {
-                            event.preventDefault();
-                            console.log('Blocked click event on:', event.target);
-                        }
-                    });
-
-                    // Block common ad-related events such as unload and submit
-                    ['beforeunload', 'unload', 'submit', 'scroll', 'resize', 'focus'].forEach(function(eventType) {
-                        document.addEventListener(eventType, function(event) {
-                            event.preventDefault();
-                            console.log('Blocked event:', eventType);
-                        });
-                    });
-                })();
-            `);
                 } catch (error) {
-                    console.error('Error in advanced iframe protection:', error);
+                    console.error('Error in iframe protection:', error);
                 }
             });
         }
-
-
 
 
 
@@ -583,4 +456,3 @@ async function displaySelectedMedia(media, mediaType) {
         console.error('Failed to display selected media:', error);
     }
 }
-
