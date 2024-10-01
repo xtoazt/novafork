@@ -153,12 +153,10 @@ async function fetchTrailer(mediaId, mediaType, apiKey) {
 
 async function displaySelectedMedia(media, mediaType) {
     const $selectedMovie = $('#selectedMovie');
-    const $mediaSection = $('#selectedMediaSection'); // The section to hide/show
+    const $mediaSection = $('#selectedMediaSection');
     const apiKey = await getApiKey();
 
-    // Check if the media is valid
     if (!media || !media.id) {
-        // Hide the entire media section if no media is selected
         $mediaSection.addClass('hidden');
         return;
     } else {
@@ -178,7 +176,6 @@ async function displaySelectedMedia(media, mediaType) {
             fetchCastData(media.id, mediaType, apiKey)
         ]);
 
-        // Genres and common data
         const genres = mediaData.genres?.map(genre => genre.name).join(', ') || 'Unknown Genre';
         const language = mediaData.original_language?.toUpperCase() || 'Unknown';
         const releaseDate = media.release_date || media.first_air_date || 'Unknown Release Date';
@@ -186,91 +183,55 @@ async function displaySelectedMedia(media, mediaType) {
         const budget = mediaType === 'movie' ? (mediaData.budget ? `$${mediaData.budget.toLocaleString()}` : 'Unknown') : 'N/A';
         const revenue = mediaType === 'movie' ? (mediaData.revenue ? `$${mediaData.revenue.toLocaleString()}` : 'Unknown') : 'N/A';
 
-        // Ratings and popularity
         const ratings = `
-        <div class="flex items-center space-x-2">
-            <i class="fas fa-star text-yellow-400"></i>
-            <span class="text-lg font-semibold text-white">${(mediaData.vote_average || 0).toFixed(1)}</span>
-            <span class="text-sm text-gray-400">/10</span>
-        </div>`;
-        const popularity = `
             <div class="flex items-center space-x-2">
-                <i class="fas fa-fire text-orange-500"></i>
-                <span class="text-lg font-semibold text-white">${(mediaData.popularity || 0).toFixed(1)}</span>
-                <span class="text-sm text-gray-400">Popularity</span>
+                <i class="fas fa-star text-yellow-400"></i>
+                <span class="text-lg font-semibold text-white">${(mediaData.vote_average || 0).toFixed(1)}</span>
+                <span class="text-sm text-gray-400">/10</span>
             </div>`;
+        const popularity = `
+                <div class="flex items-center space-x-2">
+                    <i class="fas fa-fire text-orange-500"></i>
+                    <span class="text-lg font-semibold text-white">${(mediaData.popularity || 0).toFixed(1)}</span>
+                    <span class="text-sm text-gray-400">Popularity</span>
+                </div>`;
 
-        // Cast
         const castList = castData.cast.slice(0, 5).map(actor => `
-            <div class="flex-shrink-0 w-28 mx-2 text-center">
-                <div class="w-28 h-28 mx-auto mb-2 rounded-full overflow-hidden border-2 border-purple-500 shadow-lg">
-                    <img src="https://image.tmdb.org/t/p/w500${actor.profile_path}" alt="${actor.name}" 
-                         class="w-full h-full object-cover" onerror="this.src='path/to/placeholder-image.jpg';">
+                <div class="flex-shrink-0 w-28 mx-2 text-center">
+                    <div class="w-28 h-28 mx-auto mb-2 rounded-full overflow-hidden border-2 border-purple-500 shadow-lg">
+                        <img src="${actor.profile_path ? 'https://image.tmdb.org/t/p/w500' + actor.profile_path : 'path/to/placeholder-image.jpg'}" alt="${actor.name}" 
+                             class="w-full h-full object-cover" onerror="this.src='path/to/placeholder-image.jpg';">
+                    </div>
+                    <p class="text-white font-semibold text-sm truncate">${actor.name}</p>
+                    <p class="text-gray-400 text-xs truncate">${actor.character}</p>
                 </div>
-                <p class="text-white font-semibold text-sm truncate">${actor.name}</p>
-                <p class="text-gray-400 text-xs truncate">${actor.character}</p>
-            </div>
-        `).join('');
+            `).join('');
 
-        // Runtime logic
         let runtime;
-        let seasonSection = '';
 
         if (mediaType === 'movie') {
-            // Movie-specific runtime
             runtime = `${mediaData.runtime || 'N/A'} min`;
         } else if (mediaType === 'tv') {
-            // TV-specific logic: Display seasons and calculate episode runtime
             runtime = `${Math.round(mediaData.episode_run_time.reduce((a, b) => a + b, 0) / mediaData.episode_run_time.length)} min per episode`;
-
-            seasonSection = `
-    <div class="space-y-3">
-        <div>
-            <label for="seasonSelect" class="block text-sm font-medium text-gray-300 mb-1">
-                <i class="fas fa-tv mr-2"></i>Select Season:
-            </label>
-            <select id="seasonSelect" class="custom-select w-full bg-gray-800 text-white rounded-lg border border-gray-600 p-2 focus:border-purple-400 focus:ring-purple-400 transition duration-200 ease-in-out">
-                ${mediaData.seasons.filter(season => season.season_number !== 0).map(season =>
-                `<option value="${season.season_number}">${season.name || `Season ${season.season_number}`}</option>`
-            ).join('')}
-            </select>
-        </div>
-        <div>
-            <label for="episodeSelect" class="block text-sm font-medium text-gray-300 mb-1">
-                <i class="fas fa-film mr-2"></i>Select Episode:
-            </label>
-            <select id="episodeSelect" class="custom-select w-full bg-gray-800 text-white rounded-lg border border-gray-600 p-2 focus:border-purple-400 focus:ring-purple-400 transition duration-200 ease-in-out">
-            </select>
-        </div>
-                <div>
-            <label for="episodeSearch" class="block text-sm font-medium text-gray-300 mb-1">
-                <i class="fas fa-search mr-2"></i>Search Episode:
-            </label>
-            <input type="text" id="episodeSearch" class="custom-input w-full bg-gray-800 text-white rounded-lg border border-gray-600 p-2 focus:border-purple-400 focus:ring-purple-400 transition duration-200 ease-in-out" placeholder="Search for an episode...">
-        </div>
-    </div>
-`;
         }
 
-        // HTML template with updated data
         const template = await fetch('media/mediaTemplate.html').then(response => response.text());
 
         $selectedMovie.html(template
-            .replace(/{{poster_path}}/g, `https://image.tmdb.org/t/p/w500${media.poster_path}`)
+            .replace(/{{poster_path}}/g, `${media.poster_path}`)
             .replace(/{{title_or_name}}/g, media.title || media.name)
-            .replace(/{{season_section}}/g, seasonSection)
             .replace(/{{release_date_or_first_air_date}}/g, releaseDate)
             .replace(/{{overview}}/g, media.overview || 'No overview available.')
             .replace(/{{type}}/g, mediaType === 'movie' ? 'Movie' : 'TV Show')
-            .replace(/{{language}}/g, `Language: ${language}`)
-            .replace(/{{genres}}/g, `Genres: ${genres}`)
-            .replace(/{{runtime}}/g, `Runtime: ${runtime}`)
-            .replace(/{{budget}}/g, `Budget: ${budget}`)
-            .replace(/{{revenue}}/g, `Revenue: ${revenue}`)
+            .replace(/{{language}}/g, `${language}`)
+            .replace(/{{genres}}/g, `${genres}`)
+            .replace(/{{runtime}}/g, `${runtime}`)
+            .replace(/{{budget}}/g, `${budget}`)
+            .replace(/{{revenue}}/g, `${revenue}`)
             .replace(/{{ratings}}/g, ratings)
             .replace(/{{popularity}}/g, popularity)
             .replace(/{{cast_list}}/g, castList)
-            .replace(/{{production_companies}}/g, `Production Companies: ${productionCompanies}`)
+            .replace(/{{production_companies}}/g, `${productionCompanies}`)
         );
 
         const $videoPlayer = $('#videoPlayer');
@@ -279,10 +240,18 @@ async function displaySelectedMedia(media, mediaType) {
         const $closePlayerButton = $('#closePlayerButton');
         const $languageSelect = $('#languageSelect');
         const $providerSelect = $('#providerSelect');
-        const $seasonSelect = $('#seasonSelect');
-        const $episodeSelect = $('#episodeSelect');
+        const $selectEpisodeButton = $('#selectEpisodeButton');
+        const $episodeModal = $('#episodeModal');
 
-        let selectedProvider = 'vidsrc'; // Set default provider
+        let selectedProvider = 'vidsrc';
+        let selectedEpisode = null;
+        let selectedSeason = null;
+        let episodesData = [];
+        let seasonsData = [];
+
+        if (mediaType === 'tv') {
+            seasonsData = mediaData.seasons.filter(season => season.season_number !== 0);
+        }
 
         async function updateVideo() {
             try {
@@ -290,7 +259,11 @@ async function displaySelectedMedia(media, mediaType) {
                 let endpoint;
 
                 if (mediaType === 'tv') {
-                    endpoint = await getTvEmbedUrl(media.id, $seasonSelect.val(), $episodeSelect.val(), provider, apiKey);
+                    if (!selectedSeason || !selectedEpisode) {
+                        alert('Please select a season and an episode.');
+                        return;
+                    }
+                    endpoint = await getTvEmbedUrl(media.id, selectedSeason, selectedEpisode, provider, apiKey);
                 } else {
                     endpoint = await getMovieEmbedUrl(media.id, provider, apiKey);
                 }
@@ -298,13 +271,13 @@ async function displaySelectedMedia(media, mediaType) {
                 const sandboxAttribute = provider === 'vidlink' ? 'sandbox="allow-same-origin allow-scripts allow-forms"' : '';
 
                 const iframeHtml = `
-            <iframe 
-                src="${endpoint}" 
-                class="video-iframe" 
-                allowfullscreen 
-                ${sandboxAttribute}>
-            </iframe>
-        `;
+                        <iframe 
+                            src="${endpoint}" 
+                            class="video-iframe" 
+                            allowfullscreen 
+                            ${sandboxAttribute}>
+                        </iframe>
+                    `;
 
                 $videoPlayer.html(iframeHtml).removeClass('hidden');
 
@@ -336,113 +309,218 @@ async function displaySelectedMedia(media, mediaType) {
             }
         }
 
-
-
         async function closeVideoPlayer() {
-            // Reset the video player content and hide it
             $videoPlayer.html('').addClass('hidden');
-
             $movieInfo.children().removeClass('hidden');
-
             $closePlayerButton.addClass('hidden');
         }
 
         function adjustIframeSize() {
             const $iframe = $('#dynamicIframe');
-
-            // Get the current viewport width and height
             const viewportWidth = $(window).width();
             const viewportHeight = $(window).height();
-
-            // Adjust iframe size based on the viewport size
             $iframe.css({
                 width: `${viewportWidth}px`,
                 height: `${viewportHeight}px`
             });
         }
 
-        // Attach event listener to resize iframe on window resize
         $(window).on('resize', adjustIframeSize);
         adjustIframeSize();
 
-        async function updateEpisodes() {
-            const seasonNumber = $seasonSelect.val();
+        async function updateEpisodes(seasonNumber) {
             if (!seasonNumber) return;
 
             try {
                 const season = await fetchJson(`https://api.themoviedb.org/3/tv/${media.id}/season/${seasonNumber}?api_key=${apiKey}`);
 
-                const episodeRuntime = season.episodes.reduce((total, episode) => total + (episode.runtime || 0), 0) / season.episodes.length || 0;
-
-                $('#runtime').html(`Runtime: ${Math.round(episodeRuntime)} min per episode`);
-
                 const currentDate = new Date();
 
-                // Store original episode data for searching
-                const episodes = season.episodes.map(episode => ({
+                const airedEpisodes = season.episodes.filter(episode => {
+                    const airDate = new Date(episode.air_date);
+                    return airDate <= currentDate;
+                });
+
+                if (airedEpisodes.length === 0) {
+                    $('#runtime').html('No episodes have aired yet.');
+                } else {
+                    const episodeRuntime = airedEpisodes.reduce((total, episode) => total + (episode.runtime || 0), 0) / airedEpisodes.length || 0;
+                    $('#runtime').html(`Runtime: ${Math.round(episodeRuntime)} min per episode`);
+                }
+
+                episodesData = airedEpisodes.map(episode => ({
                     number: episode.episode_number,
                     name: episode.name || 'Untitled',
                     airDate: new Date(episode.air_date),
                     stillPath: episode.still_path,
-                    isAired: new Date(episode.air_date) <= currentDate
+                    overview: episode.overview || 'No description available.'
                 }));
 
-                // Utility function to escape HTML special characters
-                function escapeHtml(str) {
-                    return str.replace(/[&<>"'()]/g, function (match) {
-                        const escape = {
-                            '&': '&amp;',
-                            '<': '&lt;',
-                            '>': '&gt;',
-                            '"': '&quot;',
-                            "'": '&#39;',
-                            '(': '&#40;',
-                            ')': '&#41;'
-                        };
-                        return escape[match];
-                    });
-                }
+                selectedEpisode = null;
 
-                // Function to render episodes in the dropdown
-                function renderEpisodes(filteredEpisodes) {
-                    $episodeSelect.html(filteredEpisodes.map(episode => `
-                <option value="${episode.number}" 
-                        data-image="https://image.tmdb.org/t/p/w500${episode.stillPath}" 
-                        ${!episode.isAired ? 'disabled style="color: grey;"' : ''}>
-                    Episode ${episode.number}: ${escapeHtml(episode.name)} ${!episode.isAired ? '(Not aired yet)' : ''}
-                </option>
-            `).join('')).trigger('change');
-                }
+                $('#episodeGrid').html(renderEpisodeGrid(episodesData));
 
-                // Render all episodes initially
-                renderEpisodes(episodes);
+                $('.episodes-grid').scrollTop(0);
 
-                // Add search functionality
-                $('#episodeSearch').on('input', function () {
-                    const searchTerm = $(this).val().toLowerCase();
-
-                    // Search for episodes by name or number
-                    const filteredEpisodes = episodes.filter(episode =>
-                        episode.name.toLowerCase().includes(searchTerm) ||
-                        episode.number.toString().includes(searchTerm)
-                    );
-
-                    // Render the filtered episodes
-                    renderEpisodes(filteredEpisodes);
-                });
+                attachEpisodeDescriptionToggle();
 
             } catch (error) {
                 console.error('Failed to fetch season details:', error);
-                $episodeSelect.html('<option>Failed to load episodes</option>');
             }
         }
 
-
-        if (mediaType === 'tv') {
-            await updateEpisodes();
+        function escapeHtml(str) {
+            return str.replace(/[&<>"'()]/g, function (match) {
+                const escape = {
+                    '&': '&amp;',
+                    '<': '&lt;',
+                    '>': '&gt;',
+                    '"': '&quot;',
+                    "'": '&#39;',
+                    '(': '&#40;',
+                    ')': '&#41;'
+                };
+                return escape[match];
+            });
         }
 
-        // Ensure the player updates on all interactions
+        function renderEpisodeGrid(episodes) {
+            return episodes.map(episode => `
+                    <div class="episode-item bg-gray-800 rounded-lg overflow-hidden shadow-md hover:shadow-lg transition duration-300 transform hover:-translate-y-1 cursor-pointer relative" data-episode-number="${episode.number}">
+                        <img src="${episode.stillPath ? 'https://image.tmdb.org/t/p/w780' + episode.stillPath : 'path/to/placeholder-image.jpg'}" alt="Episode ${episode.number}" class="w-full h-32 object-cover">
+                        <div class="p-3">
+                            <h3 class="text-white text-base font-semibold mb-1">E${episode.number}: ${escapeHtml(episode.name)}</h3>
+                            <p class="text-gray-400 text-xs mb-2">Air Date: ${episode.airDate ? episode.airDate.toLocaleDateString() : 'Unknown'}</p>
+                            <button class="description-toggle absolute top-2 right-2 text-white rounded-full p-1 focus:outline-none">
+                                <i class="fas fa-info-circle"></i>
+                            </button>
+                            <div class="description-content hidden mt-2 text-gray-300 text-sm bg-gray-900 bg-opacity-90 p-2 rounded-lg absolute inset-0 overflow-y-auto">
+                                <button class="close-description absolute top-2 right-2 text-white rounded-full p-1 focus:outline-none">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                                <p>${escapeHtml(episode.overview)}</p>
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+        }
+
+        function renderSeasonList(seasons) {
+            return seasons.map(season => `
+                    <div class="season-item flex items-center mb-2 cursor-pointer hover:bg-gray-800 p-2 rounded-lg transition" data-season-number="${season.season_number}">
+                        <img src="${season.poster_path ? 'https://image.tmdb.org/t/p/w200' + season.poster_path : 'path/to/placeholder-image.jpg'}" alt="Season ${season.season_number}" class="w-12 h-18 object-cover rounded-lg flex-shrink-0">
+                        <div class="ml-3">
+                            <h4 class="text-white text-base font-semibold">Season ${season.season_number}</h4>
+                            <p class="text-gray-400 text-xs">${season.episode_count} Episodes</p>
+                        </div>
+                    </div>
+                `).join('');
+        }
+
+        function openEpisodeModal() {
+            if (mediaType !== 'tv') {
+                alert('Episode selection is only available for TV shows.');
+                return;
+            }
+
+            if (seasonsData.length === 0) {
+                alert('No seasons are available for this show.');
+                return;
+            }
+
+            const modalContent = `
+                    <div class="modal-overlay fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50">
+                        <div class="modal-container bg-gray-900 rounded-lg shadow-xl overflow-hidden max-w-full w-full md:max-w-4xl md:w-auto max-h-full relative">
+                            <button id="closeModalButton" class="absolute top-4 right-4 text-gray-300 text-2xl hover:text-white focus:outline-none">&times;</button>
+                            <div class="flex flex-col md:flex-row h-full">
+                                <div class="seasons-list md:w-1/4 w-full bg-gray-800 overflow-y-auto custom-scrollbar max-h-screen">
+                                    <h3 class="text-lg font-bold text-white p-4 border-b border-gray-700">Seasons</h3>
+                                    <div class="p-2">
+                                        ${renderSeasonList(seasonsData)}
+                                    </div>
+                                </div>
+                                <div class="episodes-grid md:w-3/4 w-full p-4 overflow-y-auto custom-scrollbar max-h-screen">
+                                    <h2 class="text-xl font-bold text-white mb-4">Select Episode</h2>
+                                    <input type="text" id="episodeSearchInput" class="w-full mb-2 p-2 bg-gray-700 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500" placeholder="Search episodes...">
+                                    <div id="episodeGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+
+            $episodeModal.html(modalContent).removeClass('hidden');
+
+            $('#closeModalButton').on('click', function() {
+                $episodeModal.addClass('hidden').html('');
+            });
+
+            $('.season-item').on('click', async function() {
+                const seasonNumber = $(this).data('season-number');
+                selectedSeason = seasonNumber;
+
+                $('.season-item').removeClass('bg-gray-700');
+                $(this).addClass('bg-gray-700');
+
+                await updateEpisodes(seasonNumber);
+
+                attachEpisodeDescriptionToggle();
+            });
+
+            if (!selectedSeason) {
+                $('.season-item').first().click();
+            } else {
+                $(`.season-item[data-season-number="${selectedSeason}"]`).click();
+            }
+
+            $('#episodeSearchInput').on('input', function() {
+                const searchTerm = $(this).val().toLowerCase();
+                const filteredEpisodes = episodesData.filter(episode =>
+                    episode.name.toLowerCase().includes(searchTerm) ||
+                    episode.number.toString().includes(searchTerm)
+                );
+                $('#episodeGrid').html(renderEpisodeGrid(filteredEpisodes));
+
+                attachEpisodeDescriptionToggle();
+            });
+
+            $('#episodeGrid').on('click', '.episode-item', function(event) {
+                if ($(event.target).closest('.description-toggle').length > 0 || $(event.target).closest('.description-content').length > 0) {
+                    return;
+                }
+                const episodeNumber = $(this).data('episode-number');
+                selectEpisode(episodeNumber);
+                $episodeModal.addClass('hidden').html('');
+            });
+
+            function attachEpisodeDescriptionToggle() {
+                $('.description-toggle').off('click').on('click', function(event) {
+                    event.stopPropagation();
+                    const $descriptionContent = $(this).closest('.episode-item').find('.description-content');
+                    $descriptionContent.fadeToggle();
+                });
+
+                $('.close-description').off('click').on('click', function(event) {
+                    event.stopPropagation();
+                    $(this).closest('.description-content').fadeOut();
+                });
+            }
+
+            attachEpisodeDescriptionToggle();
+        }
+
+        function selectEpisode(episodeNumber) {
+            selectedEpisode = episodeNumber;
+            const episode = episodesData.find(ep => ep.number === episodeNumber);
+            if (episode) {
+                $selectEpisodeButton.html(`<i class="fas fa-list mr-2"></i>Selected: S${selectedSeason}E${episode.number} - ${escapeHtml(episode.name)}`);
+            } else {
+                $selectEpisodeButton.text(`Episode ${episodeNumber} Selected`);
+            }
+            updateVideo();
+        }
+
         $playButton.on('click', updateVideo);
         $closePlayerButton.on('click', closeVideoPlayer);
         $languageSelect.on('change', function() {
@@ -453,13 +531,12 @@ async function displaySelectedMedia(media, mediaType) {
             selectedProvider = $(this).val();
             updateVideo();
         });
-        $seasonSelect.on('change', async function() {
-            await updateEpisodes();
-            updateVideo();
+        $selectEpisodeButton.on('click', function() {
+            openEpisodeModal();
         });
-        $episodeSelect.on('change', updateVideo);
 
     } catch (error) {
         console.error('Failed to display selected media:', error);
     }
 }
+
