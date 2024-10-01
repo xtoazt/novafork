@@ -386,35 +386,45 @@ async function displaySelectedMedia(media, mediaType) {
 
         function renderEpisodeGrid(episodes) {
             return episodes.map(episode => `
-                    <div class="episode-item bg-gray-800 rounded-lg overflow-hidden shadow-md hover:shadow-lg transition duration-300 transform hover:-translate-y-1 cursor-pointer relative" data-episode-number="${episode.number}">
-                        <img src="${episode.stillPath ? 'https://image.tmdb.org/t/p/w780' + episode.stillPath : 'path/to/placeholder-image.jpg'}" alt="Episode ${episode.number}" class="w-full h-32 object-cover">
-                        <div class="p-3">
-                            <h3 class="text-white text-base font-semibold mb-1">E${episode.number}: ${escapeHtml(episode.name)}</h3>
-                            <p class="text-gray-400 text-xs mb-2">Air Date: ${episode.airDate ? episode.airDate.toLocaleDateString() : 'Unknown'}</p>
-                            <button class="description-toggle absolute top-2 right-2 text-white rounded-full p-1 focus:outline-none">
-                                <i class="fas fa-info-circle"></i>
-                            </button>
-                            <div class="description-content hidden mt-2 text-gray-300 text-sm bg-gray-900 bg-opacity-90 p-2 rounded-lg absolute inset-0 overflow-y-auto">
-                                <button class="close-description absolute top-2 right-2 text-white rounded-full p-1 focus:outline-none">
-                                    <i class="fas fa-times"></i>
-                                </button>
-                                <p>${escapeHtml(episode.overview)}</p>
-                            </div>
-                        </div>
-                    </div>
-                `).join('');
+        <div class="episode-item bg-gradient-to-br from-gray-800 via-gray-900 to-black rounded-xl overflow-hidden shadow-lg hover:shadow-2xl transition duration-300 transform hover:-translate-y-2 cursor-pointer relative group" data-episode-number="${episode.number}">
+            <div class="relative">
+                <img src="${episode.stillPath ? 'https://image.tmdb.org/t/p/w780' + episode.stillPath : 'https://via.placeholder.com/780x439?text=No+Image'}" alt="Episode ${episode.number}" class="w-full h-48 sm:h-40 object-cover">
+                <div class="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-80"></div>
+                <div class="absolute bottom-2 left-2">
+                    <h3 class="text-white text-sm font-semibold">E${episode.number}: ${escapeHtml(episode.name)}</h3>
+                </div>
+                <button class="description-toggle absolute top-2 right-2 text-white bg-purple-600 bg-opacity-80 rounded-full p-2 focus:outline-none opacity-0 group-hover:opacity-100 transition-opacity">
+                    <i class="fas fa-info-circle"></i>
+                </button>
+            </div>
+            <div class="p-4">
+                <p class="text-gray-400 text-xs mb-2"><i class="fas fa-calendar-alt mr-1"></i>${episode.airDate ? episode.airDate.toLocaleDateString() : 'Unknown'}</p>
+                <div class="description-content hidden mt-2 text-gray-200 text-sm bg-gray-900 bg-opacity-95 p-6 rounded-lg absolute inset-0 overflow-y-auto z-30">
+                    <button class="close-description absolute top-4 right-4 text-white rounded-full p-2 focus:outline-none">
+                        <i class="fas fa-times"></i>
+                    </button>
+                    <h3 class="text-white text-lg font-bold mb-4">Episode ${episode.number}: ${escapeHtml(episode.name)}</h3>
+                    <p>${escapeHtml(episode.overview)}</p>
+                </div>
+            </div>
+        </div>
+    `).join('');
         }
 
         function renderSeasonList(seasons) {
             return seasons.map(season => `
-                    <div class="season-item flex items-center mb-2 cursor-pointer hover:bg-gray-800 p-2 rounded-lg transition" data-season-number="${season.season_number}">
-                        <img src="${season.poster_path ? 'https://image.tmdb.org/t/p/w200' + season.poster_path : 'path/to/placeholder-image.jpg'}" alt="Season ${season.season_number}" class="w-12 h-18 object-cover rounded-lg flex-shrink-0">
-                        <div class="ml-3">
-                            <h4 class="text-white text-base font-semibold">Season ${season.season_number}</h4>
-                            <p class="text-gray-400 text-xs">${season.episode_count} Episodes</p>
-                        </div>
-                    </div>
-                `).join('');
+        <div class="season-item flex items-center mb-4 cursor-pointer hover:bg-gray-700 p-3 rounded-lg transition relative group" data-season-number="${season.season_number}">
+            <div class="relative w-20 h-28">
+                <img src="${season.poster_path ? 'https://image.tmdb.org/t/p/w200' + season.poster_path : 'https://via.placeholder.com/200x300?text=No+Image'}" alt="Season ${season.season_number}" class="w-full h-full object-cover rounded-lg shadow-md">
+                <div class="absolute inset-0 bg-black bg-opacity-50 opacity-0 group-hover:opacity-100 transition-opacity rounded-lg"></div>
+            </div>
+            <div class="ml-4">
+                <h4 class="text-white text-lg font-semibold">Season ${season.season_number}</h4>
+                <p class="text-gray-400 text-sm">${season.episode_count} Episodes</p>
+            </div>
+            <i class="fas fa-chevron-right text-gray-400 absolute right-4 opacity-0 group-hover:opacity-100 transition-opacity"></i>
+        </div>
+    `).join('');
         }
 
         function openEpisodeModal() {
@@ -429,30 +439,36 @@ async function displaySelectedMedia(media, mediaType) {
             }
 
             const modalContent = `
-                    <div class="modal-overlay fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50">
-                        <div class="modal-container bg-gray-900 rounded-lg shadow-xl overflow-hidden max-w-full w-full md:max-w-4xl md:w-auto max-h-full relative">
-                            <button id="closeModalButton" class="absolute top-4 right-4 text-gray-300 text-2xl hover:text-white focus:outline-none">&times;</button>
-                            <div class="flex flex-col md:flex-row h-full">
-                                <div class="seasons-list md:w-1/4 w-full bg-gray-800 overflow-y-auto custom-scrollbar max-h-screen">
-                                    <h3 class="text-lg font-bold text-white p-4 border-b border-gray-700">Seasons</h3>
-                                    <div class="p-2">
-                                        ${renderSeasonList(seasonsData)}
-                                    </div>
-                                </div>
-                                <div class="episodes-grid md:w-3/4 w-full p-4 overflow-y-auto custom-scrollbar max-h-screen">
-                                    <h2 class="text-xl font-bold text-white mb-4">Select Episode</h2>
-                                    <input type="text" id="episodeSearchInput" class="w-full mb-2 p-2 bg-gray-700 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500" placeholder="Search episodes...">
-                                    <div id="episodeGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-                                    </div>
-                                </div>
-                            </div>
+        <div class="modal-overlay fixed inset-0 bg-black bg-opacity-90 flex items-center justify-center z-50">
+            <div class="modal-container bg-gradient-to-br from-gray-900 to-black rounded-3xl shadow-2xl overflow-hidden max-w-full w-full md:max-w-6xl md:w-auto max-h-full relative">
+                <button id="closeModalButton" class="absolute top-6 right-6 text-gray-300 text-3xl hover:text-white focus:outline-none">&times;</button>
+                <div class="flex flex-col md:flex-row h-full">
+                    <!-- Seasons List -->
+                    <div class="seasons-list md:w-1/3 w-full bg-gray-800 bg-opacity-80 overflow-y-auto custom-scrollbar max-h-screen">
+                        <h3 class="text-2xl font-bold text-white p-6 border-b border-gray-700">Seasons</h3>
+                        <div class="p-4 space-y-3">
+                            ${renderSeasonList(seasonsData)}
                         </div>
                     </div>
-                `;
+                    <!-- Episodes Grid -->
+                    <div class="episodes-grid md:w-2/3 w-full p-6 overflow-y-auto custom-scrollbar max-h-screen bg-gray-900 bg-opacity-80">
+                        <h2 class="text-3xl font-bold text-white mb-6">Select Episode</h2>
+                        <div class="mb-6">
+                            <input type="text" id="episodeSearchInput" class="w-full p-3 bg-gray-800 text-white rounded-full focus:outline-none focus:ring-2 focus:ring-purple-600" placeholder="Search episodes...">
+                        </div>
+                        <div id="episodeGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            <!-- Episodes will be rendered here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
 
             $episodeModal.html(modalContent).removeClass('hidden');
 
-            $('#closeModalButton').on('click', function() {
+
+        $('#closeModalButton').on('click', function() {
                 $episodeModal.addClass('hidden').html('');
             });
 
