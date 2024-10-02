@@ -406,8 +406,12 @@ async function displaySelectedMedia(media, mediaType) {
             return episodes.map(episode => {
                 const episodeKey = `s${selectedSeason}e${episode.number}`;
                 let progressPercentage = 0;
+                let watchedMinutes = 0;
+                let durationMinutes = 0;
 
                 if (showProgress && showProgress[episodeKey] && showProgress[episodeKey].progress && showProgress[episodeKey].progress.duration > 0) {
+                    watchedMinutes = Math.round(showProgress[episodeKey].progress.watched / 60); // Convert seconds to minutes
+                    durationMinutes = Math.round(showProgress[episodeKey].progress.duration / 60); // Convert seconds to minutes
                     progressPercentage = (showProgress[episodeKey].progress.watched / showProgress[episodeKey].progress.duration) * 100;
                     progressPercentage = Math.min(Math.max(progressPercentage, 0), 100); // Ensure between 0 and 100
                 }
@@ -429,6 +433,7 @@ async function displaySelectedMedia(media, mediaType) {
                 </div>
                 <div class="p-4">
                     <p class="text-gray-400 text-xs mb-2"><i class="fas fa-calendar-alt mr-1"></i>${episode.airDate ? episode.airDate.toLocaleDateString() : 'Unknown'}</p>
+                    <p class="text-gray-300 text-xs mt-1">Watched: ${watchedMinutes} min / ${durationMinutes} min</p>
                     <div class="description-content hidden mt-2 text-gray-200 text-sm bg-gray-900 bg-opacity-95 p-6 rounded-lg absolute inset-0 overflow-y-auto z-30">
                         <button class="close-description absolute top-4 right-4 text-white rounded-full p-2 focus:outline-none">
                             <i class="fas fa-times"></i>
@@ -455,7 +460,7 @@ async function displaySelectedMedia(media, mediaType) {
                 for (let key in showProgress) {
                     if (showProgress.hasOwnProperty(key)) {
                         const [s, e] = key.split('e');
-                        const seasonNum = parseInt(s.substring(1), 10); // Remove 's' and parse
+                        const seasonNum = parseInt(s.substring(1), 10);
                         const episodeNum = parseInt(e, 10);
 
                         if (seasonNum === seasonNumber && showProgress[key].progress && showProgress[key].progress.watched > 0) {
@@ -512,14 +517,12 @@ async function displaySelectedMedia(media, mediaType) {
             <div class="modal-container bg-gradient-to-br from-gray-900 to-black rounded-3xl shadow-2xl overflow-hidden max-w-full w-full md:max-w-6xl md:w-auto max-h-full relative">
                 <button id="closeModalButton" class="absolute top-6 right-6 text-gray-300 text-3xl hover:text-white focus:outline-none">&times;</button>
                 <div class="flex flex-col md:flex-row h-full">
-                    <!-- Seasons List -->
                     <div class="seasons-list md:w-1/3 w-full bg-gray-800 bg-opacity-80 overflow-y-auto custom-scrollbar max-h-screen">
                         <h3 class="text-2xl font-bold text-white p-6 border-b border-gray-700">Seasons</h3>
                         <div class="p-4 space-y-3">
                             ${renderSeasonList(seasonsData)}
                         </div>
                     </div>
-                    <!-- Episodes Grid -->
                     <div class="episodes-grid md:w-2/3 w-full p-6 overflow-y-auto custom-scrollbar max-h-screen bg-gray-900 bg-opacity-80">
                         <h2 class="text-3xl font-bold text-white mb-6">Select Episode</h2>
                         <div class="mb-6">
@@ -535,6 +538,7 @@ async function displaySelectedMedia(media, mediaType) {
 
             $episodeModal.html(modalContent).removeClass('hidden');
 
+            // Close modal handler
             $('#closeModalButton').on('click', function() {
                 $episodeModal.addClass('hidden').html('');
             });
@@ -568,7 +572,6 @@ async function displaySelectedMedia(media, mediaType) {
                 }, 100);
             }
 
-            // Episode search functionality
             $('#episodeSearchInput').on('input', function() {
                 const searchTerm = $(this).val().toLowerCase();
                 const filteredEpisodes = episodesData.filter(episode =>
@@ -580,7 +583,6 @@ async function displaySelectedMedia(media, mediaType) {
                 attachEpisodeDescriptionToggle();
             });
 
-            // Episode selection handler
             $('#episodeGrid').on('click', '.episode-item', function(event) {
                 if ($(event.target).closest('.description-toggle').length > 0 || $(event.target).closest('.description-content').length > 0) {
                     return;
@@ -590,7 +592,6 @@ async function displaySelectedMedia(media, mediaType) {
                 $episodeModal.addClass('hidden').html('');
             });
 
-            // Toggle episode description
             function attachEpisodeDescriptionToggle() {
                 $('.description-toggle').off('click').on('click', function(event) {
                     event.stopPropagation();
@@ -617,7 +618,6 @@ async function displaySelectedMedia(media, mediaType) {
             }
             updateVideo();
 
-            // Save selected episode to localStorage
             const storedData = JSON.parse(localStorage.getItem('vidLinkProgress') || '{}');
             const mediaId = media.id;
             let mediaData = storedData[mediaId];
@@ -679,6 +679,7 @@ async function displaySelectedMedia(media, mediaType) {
         $selectEpisodeButton.on('click', function() {
             openEpisodeModal();
         });
+
 
     } catch (error) {
         console.error('Failed to display selected media:', error);
