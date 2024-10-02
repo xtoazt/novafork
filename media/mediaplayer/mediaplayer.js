@@ -253,6 +253,20 @@ async function displaySelectedMedia(media, mediaType) {
             seasonsData = mediaData.seasons.filter(season => season.season_number !== 0);
         }
 
+        window.addEventListener('message', function(event) {
+            if (event.origin !== 'https://vidlink.pro') {
+                return;
+            }
+
+            if (event.data && event.data.type === 'MEDIA_DATA') {
+                // Get the media data from the message
+                const mediaData = event.data.data;
+
+                // Save the media data to localStorage
+                localStorage.setItem('vidLinkProgress', JSON.stringify(mediaData));
+            }
+        });
+
         async function updateVideo() {
             try {
                 const provider = $providerSelect.length ? $providerSelect.val() : selectedProvider;
@@ -271,13 +285,13 @@ async function displaySelectedMedia(media, mediaType) {
                 const sandboxAttribute = provider === 'vidlink' ? 'sandbox="allow-same-origin allow-scripts allow-forms"' : '';
 
                 const iframeHtml = `
-                        <iframe 
-                            src="${endpoint}" 
-                            class="video-iframe" 
-                            allowfullscreen 
-                            ${sandboxAttribute}>
-                        </iframe>
-                    `;
+                <iframe 
+                    src="${endpoint}" 
+                    class="video-iframe" 
+                    allowfullscreen 
+                    ${sandboxAttribute}>
+                </iframe>
+            `;
 
                 $videoPlayer.html(iframeHtml).removeClass('hidden');
 
@@ -383,34 +397,50 @@ async function displaySelectedMedia(media, mediaType) {
                 return escape[match];
             });
         }
-
         function renderEpisodeGrid(episodes) {
-            return episodes.map(episode => `
-        <div class="episode-item bg-gradient-to-br from-gray-800 via-gray-900 to-black rounded-xl overflow-hidden shadow-lg hover:shadow-2xl transition duration-300 transform hover:-translate-y-2 cursor-pointer relative group" data-episode-number="${episode.number}">
-            <div class="relative">
-                <img src="${episode.stillPath ? 'https://image.tmdb.org/t/p/w780' + episode.stillPath : 'https://via.placeholder.com/780x439?text=No+Image'}" alt="Episode ${episode.number}" class="w-full h-48 sm:h-40 object-cover">
-                <div class="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-80"></div>
-                <div class="absolute bottom-2 left-2">
-                    <h3 class="text-white text-sm font-semibold">E${episode.number}: ${escapeHtml(episode.name)}</h3>
-                </div>
-                <button class="description-toggle absolute top-2 right-2 text-white bg-purple-600 bg-opacity-80 rounded-full p-2 focus:outline-none opacity-0 group-hover:opacity-100 transition-opacity">
-                    <i class="fas fa-info-circle"></i>
-                </button>
-            </div>
-            <div class="p-4">
-                <p class="text-gray-400 text-xs mb-2"><i class="fas fa-calendar-alt mr-1"></i>${episode.airDate ? episode.airDate.toLocaleDateString() : 'Unknown'}</p>
-                <div class="description-content hidden mt-2 text-gray-200 text-sm bg-gray-900 bg-opacity-95 p-6 rounded-lg absolute inset-0 overflow-y-auto z-30">
-                    <button class="close-description absolute top-4 right-4 text-white rounded-full p-2 focus:outline-none">
-                        <i class="fas fa-times"></i>
-                    </button>
-                    <h3 class="text-white text-lg font-bold mb-4">Episode ${episode.number}: ${escapeHtml(episode.name)}</h3>
-                    <p>${escapeHtml(episode.overview)}</p>
-                </div>
-            </div>
-        </div>
-    `).join('');
-        }
+            const storedData = JSON.parse(localStorage.getItem('vidLinkProgress') || '{}');
+            const mediaData = storedData[media.id];
+            const showProgress = mediaData && mediaData.type === 'tv' ? mediaData.show_progress : {};
 
+            return episodes.map(episode => {
+                const episodeKey = `s${selectedSeason}e${episode.number}`;
+                let progressPercentage = 0;
+
+                if (showProgress && showProgress[episodeKey] && showProgress[episodeKey].progress.duration > 0) {
+                    progressPercentage = (showProgress[episodeKey].progress.watched / showProgress[episodeKey].progress.duration) * 100;
+                    progressPercentage = Math.min(Math.max(progressPercentage, 0), 100); // Ensure between 0 and 100
+                }
+
+                return `
+            <div class="episode-item bg-gradient-to-br from-gray-800 via-gray-900 to-black rounded-xl overflow-hidden shadow-lg hover:shadow-2xl transition duration-300 transform hover:-translate-y-2 cursor-pointer relative group" data-episode-number="${episode.number}">
+                <div class="relative">
+                    <img src="${episode.stillPath ? 'https://image.tmdb.org/t/p/w780' + episode.stillPath : 'https://via.placeholder.com/780x439?text=No+Image'}" alt="Episode ${episode.number}" class="w-full h-48 sm:h-40 object-cover">
+                    <div class="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-80"></div>
+                    <div class="absolute bottom-2 left-2">
+                        <h3 class="text-white text-sm font-semibold">E${episode.number}: ${escapeHtml(episode.name)}</h3>
+                    </div>
+                    <button class="description-toggle absolute top-2 right-2 text-white bg-purple-600 bg-opacity-80 rounded-full p-2 focus:outline-none opacity-0 group-hover:opacity-100 transition-opacity">
+                        <i class="fas fa-info-circle"></i>
+                    </button>
+                    <!-- Progress Bar -->
+                    <div class="absolute bottom-0 left-0 w-full h-2 bg-gray-700">
+                        <div class="h-full bg-purple-500" style="width: ${progressPercentage}%;"></div>
+                    </div>
+                </div>
+                <div class="p-4">
+                    <p class="text-gray-400 text-xs mb-2"><i class="fas fa-calendar-alt mr-1"></i>${episode.airDate ? episode.airDate.toLocaleDateString() : 'Unknown'}</p>
+                    <div class="description-content hidden mt-2 text-gray-200 text-sm bg-gray-900 bg-opacity-95 p-6 rounded-lg absolute inset-0 overflow-y-auto z-30">
+                        <button class="close-description absolute top-4 right-4 text-white rounded-full p-2 focus:outline-none">
+                            <i class="fas fa-times"></i>
+                        </button>
+                        <h3 class="text-white text-lg font-bold mb-4">Episode ${episode.number}: ${escapeHtml(episode.name)}</h3>
+                        <p>${escapeHtml(episode.overview)}</p>
+                    </div>
+                </div>
+            </div>
+        `;
+            }).join('');
+        }
         function renderSeasonList(seasons) {
             return seasons.map(season => `
         <div class="season-item flex items-center mb-4 cursor-pointer hover:bg-gray-700 p-3 rounded-lg transition relative group" data-season-number="${season.season_number}">
@@ -426,8 +456,7 @@ async function displaySelectedMedia(media, mediaType) {
         </div>
     `).join('');
         }
-
-        function openEpisodeModal() {
+        async function openEpisodeModal() {
             if (mediaType !== 'tv') {
                 alert('Episode selection is only available for TV shows.');
                 return;
@@ -436,6 +465,17 @@ async function displaySelectedMedia(media, mediaType) {
             if (seasonsData.length === 0) {
                 alert('No seasons are available for this show.');
                 return;
+            }
+
+            // Retrieve stored data to preselect last watched season and episode
+            const storedData = JSON.parse(localStorage.getItem('vidLinkProgress') || '{}');
+            const mediaData = storedData[media.id];
+            let preselectedSeason = null;
+            let preselectedEpisode = null;
+
+            if (mediaData && mediaData.type === 'tv') {
+                preselectedSeason = parseInt(mediaData.last_season_watched, 10);
+                preselectedEpisode = parseInt(mediaData.last_episode_watched, 10);
             }
 
             const modalContent = `
@@ -467,12 +507,12 @@ async function displaySelectedMedia(media, mediaType) {
 
             $episodeModal.html(modalContent).removeClass('hidden');
 
-
-        $('#closeModalButton').on('click', function() {
+            // Close modal handler
+            $('#closeModalButton').on('click', function () {
                 $episodeModal.addClass('hidden').html('');
             });
 
-            $('.season-item').on('click', async function() {
+            $('.season-item').on('click', async function () {
                 const seasonNumber = $(this).data('season-number');
                 selectedSeason = seasonNumber;
 
@@ -484,13 +524,24 @@ async function displaySelectedMedia(media, mediaType) {
                 attachEpisodeDescriptionToggle();
             });
 
-            if (!selectedSeason) {
-                $('.season-item').first().click();
+            if (preselectedSeason && seasonsData.some(season => season.season_number === preselectedSeason)) {
+                selectedSeason = preselectedSeason;
+                $(`.season-item[data-season-number="${selectedSeason}"]`).addClass('bg-gray-700');
+                await updateEpisodes(selectedSeason);
             } else {
-                $(`.season-item[data-season-number="${selectedSeason}"]`).click();
+                $('.season-item').first().click();
             }
 
-            $('#episodeSearchInput').on('input', function() {
+            if (preselectedEpisode) {
+                const checkEpisodesLoaded = setInterval(() => {
+                    if ($('#episodeGrid').children().length > 0) {
+                        selectEpisode(preselectedEpisode);
+                        clearInterval(checkEpisodesLoaded);
+                    }
+                }, 100);
+            }
+
+            $('#episodeSearchInput').on('input', function () {
                 const searchTerm = $(this).val().toLowerCase();
                 const filteredEpisodes = episodesData.filter(episode =>
                     episode.name.toLowerCase().includes(searchTerm) ||
@@ -501,7 +552,8 @@ async function displaySelectedMedia(media, mediaType) {
                 attachEpisodeDescriptionToggle();
             });
 
-            $('#episodeGrid').on('click', '.episode-item', function(event) {
+            // Episode selection handler
+            $('#episodeGrid').on('click', '.episode-item', function (event) {
                 if ($(event.target).closest('.description-toggle').length > 0 || $(event.target).closest('.description-content').length > 0) {
                     return;
                 }
@@ -510,14 +562,15 @@ async function displaySelectedMedia(media, mediaType) {
                 $episodeModal.addClass('hidden').html('');
             });
 
+            // Toggle episode description
             function attachEpisodeDescriptionToggle() {
-                $('.description-toggle').off('click').on('click', function(event) {
+                $('.description-toggle').off('click').on('click', function (event) {
                     event.stopPropagation();
                     const $descriptionContent = $(this).closest('.episode-item').find('.description-content');
                     $descriptionContent.fadeToggle();
                 });
 
-                $('.close-description').off('click').on('click', function(event) {
+                $('.close-description').off('click').on('click', function (event) {
                     event.stopPropagation();
                     $(this).closest('.description-content').fadeOut();
                 });
@@ -526,6 +579,7 @@ async function displaySelectedMedia(media, mediaType) {
             attachEpisodeDescriptionToggle();
         }
 
+// Function to handle episode selection and save progress
         function selectEpisode(episodeNumber) {
             selectedEpisode = episodeNumber;
             const episode = episodesData.find(ep => ep.number === episodeNumber);
@@ -535,6 +589,53 @@ async function displaySelectedMedia(media, mediaType) {
                 $selectEpisodeButton.text(`Episode ${episodeNumber} Selected`);
             }
             updateVideo();
+
+            // Save selected episode to localStorage
+            const storedData = JSON.parse(localStorage.getItem('vidLinkProgress') || '{}');
+            const mediaId = media.id;
+            const mediaData = storedData[mediaId];
+
+            if (mediaData && mediaData.type === 'tv') {
+                if (!storedData[mediaId]) {
+                    storedData[mediaId] = {
+                        id: media.id,
+                        type: media.type,
+                        title: media.title,
+                        poster_path: media.poster_path,
+                        backdrop_path: media.backdrop_path,
+                        progress: {}, // general progress
+                        last_updated: Date.now(),
+                        number_of_episodes: media.number_of_episodes,
+                        number_of_seasons: media.number_of_seasons,
+                        last_season_watched: "",
+                        last_episode_watched: "",
+                        show_progress: {}
+                    };
+                }
+
+                const episodeKey = `s${selectedSeason}e${selectedEpisode}`;
+
+                storedData[mediaId].last_season_watched = selectedSeason.toString();
+                storedData[mediaId].last_episode_watched = selectedEpisode.toString();
+
+                // Initialize show_progress for the episode if not present
+                if (!storedData[mediaId].show_progress[episodeKey]) {
+                    storedData[mediaId].show_progress[episodeKey] = {
+                        season: selectedSeason.toString(),
+                        episode: selectedEpisode.toString(),
+                        progress: {
+                            watched: 0,
+                            duration: 0
+                        },
+                        last_updated: Date.now()
+                    };
+                }
+
+                // Update last_updated timestamp
+                storedData[mediaId].show_progress[episodeKey].last_updated = Date.now();
+
+                localStorage.setItem('vidLinkProgress', JSON.stringify(storedData));
+            }
         }
 
         $playButton.on('click', updateVideo);
