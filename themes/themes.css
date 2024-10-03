@@ -362,7 +362,7 @@ button:active {
     border: 1px solid rgba(255, 255, 255, 0.15);
     overflow: hidden;
     transition: transform 0.5s ease-in-out, box-shadow 0.5s ease-in-out;
-    height: 100%; /* Allow flexible height */
+    height: 100%;
     cursor: pointer;
 }
 
@@ -547,6 +547,89 @@ button:active {
     animation: fadeOut 1s ease forwards;
 }
 
+
+/*
+dev notice this below controls the info player design
+*/
+
+.custom-scrollbar::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+    background: #1a202c;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+    background-color: #2d3748;
+    border-radius: 4px;
+    border: 2px solid #1a202c;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background-color: #4a5568;
+}
+.custom-scrollbar {
+    scrollbar-width: thin;
+    scrollbar-color: #2d3748 #1a202c;
+}
+.glassmorphism-form {
+    backdrop-filter: blur(15px);
+    background: rgba(0, 0, 0, 0.5);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+#videoPlayer {
+    background: rgba(0, 0, 0, 0.8);
+}
+.btn-gradient {
+    background: linear-gradient(90deg, #4b0082, #000000);
+}
+.btn-gradient:hover {
+    background: linear-gradient(90deg, #6a0dad, #1a1a1a);
+}
+select optgroup {
+    background-color: #2d3748;
+    color: #e2e8f0;
+}
+.note {
+    color: #a0aec0;
+}
+.btn-gradient {
+    background: linear-gradient(90deg, #4b0082, #000000);
+    transition: transform 0.3s, background 0.3s;
+}
+.btn-gradient:hover {
+    transform: scale(1.05);
+    background: linear-gradient(90deg, #6a0dad, #1a1a1a);
+}
+.custom-select.sm-select {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.875rem;
+}
+.btn-sm {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.875rem;
+}
+.description-content {
+    background: rgba(17, 17, 17, 0.95);
+    color: #e2e8f0;
+}
+.description-content h3 {
+    color: #9f7aea;
+}
+.close-description {
+    background-color: #6b46c1;
+    transition: background-color 0.3s;
+}
+.close-description:hover {
+    background-color: #805ad5;
+}
+.fas.fa-chevron-right {
+    color: #9f7aea;
+}
+
+
+
+
+/* the searchbar theme */
 
 #searchSuggestions {
     position: absolute;
