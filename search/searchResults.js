@@ -1,7 +1,7 @@
-
 $(document).ready(function() {
     const API_BASE_URL = 'https://api.themoviedb.org/3';
     let apiKey;
+    let genreMap = {}; // Global genre map
 
     const handleError = (message, error) => {
         console.error(message, error);
@@ -42,25 +42,25 @@ $(document).ready(function() {
         $('#searchSuggestions').html('<div class="spinner"></div>').removeClass('hidden');
     };
 
-    const highlightText = (text, query) => 
+    const highlightText = (text, query) =>
         query ? text.replace(new RegExp(`(${query})`, 'gi'), '<span class="highlight">$1</span>') : text;
 
-    const displaySearchSuggestions = async (results, query, genreMap) => {
+    const displaySearchSuggestions = (results, query) => {
         const $searchSuggestions = $('#searchSuggestions');
         if (results.length === 0) {
             $searchSuggestions.html('<div class="no-suggestions">No suggestions available</div>').removeClass('hidden');
             return;
         }
-    
+
         const suggestionsHTML = results.map(media => {
             const mediaTypeLabel = media.media_type === 'movie' ? '🎬 Movie' : '📺 TV Show';
             const mediaTitle = media.title || media.name;
             const mediaRating = media.vote_average ? media.vote_average.toFixed(1) : 'N/A';
             const highlightedTitle = highlightText(mediaTitle, query);
             const genreNames = (media.genre_ids || []).map(id => genreMap[id] || 'Unknown').slice(0, 2).join(', ');
-            const year = media.release_date ? new Date(media.release_date).getFullYear() : 
-                         (media.first_air_date ? new Date(media.first_air_date).getFullYear() : 'N/A');
-    
+            const year = media.release_date ? new Date(media.release_date).getFullYear() :
+                (media.first_air_date ? new Date(media.first_air_date).getFullYear() : 'N/A');
+
             return `
                 <div class="suggestion-item" data-id="${media.id}" data-type="${media.media_type}">
                     <img src="https://image.tmdb.org/t/p/w185${media.poster_path}" alt="${mediaTitle}" class="suggestion-poster">
@@ -78,26 +78,26 @@ $(document).ready(function() {
                 </div>
             `;
         }).join('');
-    
+
         $searchSuggestions.html(suggestionsHTML).removeClass('hidden');
-    
-        $searchSuggestions.find('.suggestion-item').on('click', async function() {
+
+        $searchSuggestions.find('.suggestion-item').on('click', function() {
             const mediaId = $(this).data('id');
             const mediaType = $(this).data('type');
             fetchSelectedMedia(mediaId, mediaType);
             $searchSuggestions.addClass('hidden');
         });
-    
+
         setupKeyboardNavigation($searchSuggestions);
     };
-    
-    const displaySearchResults = (results, genreMap) => {
+
+    const displaySearchResults = (results) => {
         const $mediaContainer = $('#mediaContainer');
         if (results.length === 0) {
             $mediaContainer.html('<div class="p-4 text-gray-400 text-center">No results found</div>');
             return;
         }
-    
+
         const resultsHTML = results.map(media => {
             const genreNames = (media.genre_ids || []).map(id => genreMap[id] || 'Unknown').join(', ');
             const formattedDate = media.release_date ? new Date(media.release_date).toLocaleDateString() : 'N/A';
@@ -105,7 +105,7 @@ $(document).ready(function() {
             const displayDate = media.media_type === 'movie' ? formattedDate : firstAirDate;
             const year = media.release_date ? new Date(media.release_date).getFullYear() : 'N/A';
             const ratingStars = '★'.repeat(Math.round(media.vote_average / 2)) + '☆'.repeat(5 - Math.round(media.vote_average / 2));
-    
+
             return `
                 <div class="media-card" data-id="${media.id}" data-type="${media.media_type}">
                     <img src="https://image.tmdb.org/t/p/w500${media.poster_path}" alt="${media.title || media.name}" class="media-image">
@@ -124,9 +124,9 @@ $(document).ready(function() {
                 </div>
             `;
         }).join('');
-    
+
         $mediaContainer.html(resultsHTML);
-    
+
         $mediaContainer.find('.media-card').on('click', function() {
             const mediaId = $(this).data('id');
             const mediaType = $(this).data('type');
@@ -144,11 +144,14 @@ $(document).ready(function() {
         showLoading();
 
         try {
-            const genres = await fetchAllGenres();
-            const genreMap = genres.reduce((map, genre) => ({ ...map, [genre.id]: genre.name }), {});
+            // Ensure genres are already fetched
+            if (Object.keys(genreMap).length === 0) {
+                const genres = await fetchAllGenres();
+                genreMap = genres.reduce((map, genre) => ({ ...map, [genre.id]: genre.name }), {});
+            }
 
             const { results } = await $.getJSON(`${API_BASE_URL}/search/multi?api_key=${apiKey}&query=${encodeURIComponent(searchInputValue)}`);
-            displaySearchSuggestions(results, searchInputValue, genreMap);
+            displaySearchSuggestions(results, searchInputValue);
         } catch (error) {
             handleError('An error occurred while fetching search results:', error);
         }
@@ -194,22 +197,12 @@ $(document).ready(function() {
         }
     };
 
-    const fetchPopularMedia = async (page = 1) => {
-        try {
-            const { results, page: currentPage, total_pages: totalPages } = await $.getJSON(`${API_BASE_URL}/trending/all/week?api_key=${apiKey}&page=${page}`);
-            displaySearchResults(results);
-            updatePaginationControls(currentPage, totalPages);
-            fetchUpcomingMedia();
-        } catch (error) {
-            handleError('An error occurred while fetching popular media:', error);
-        }
-    };
-
     const fetchTopRatedMedia = async (page = 1) => {
         try {
             const { results, page: currentPage, total_pages: totalPages } = await $.getJSON(`${API_BASE_URL}/movie/top_rated?api_key=${apiKey}&page=${page}`);
             displaySearchResults(results);
-            updatePaginationControls(currentPage, totalPages);
+            // Removed pagination controls since they're handled elsewhere
+            fetchUpcomingMedia();
         } catch (error) {
             handleError('An error occurred while fetching top-rated media:', error);
         }
@@ -226,47 +219,11 @@ $(document).ready(function() {
     };
 
     const displayUpcomingMedia = (mediaList) => {
-        const upcomingMediaHTML = mediaList.map(media => 
+        const upcomingMediaHTML = mediaList.map(media =>
             `<div class="text-zinc-300 mb-2"><span>${media.title}:</span> <span>${media.release_date}</span></div>`
         ).join('');
         $('#upcomingMedia').html(upcomingMediaHTML);
     };
-
-    const updatePaginationControls = (currentPage, totalPages) => {
-        $('#currentPage').text(currentPage);
-        $('#prevPage').prop('disabled', currentPage === 1).off('click').on('click', () => changePage(currentPage - 1));
-        $('#nextPage').prop('disabled', currentPage === totalPages).off('click').on('click', () => changePage(currentPage + 1));
-    };
-
-    const changePage = (page) => {
-        const type = $('input[name="mediaType"]:checked').val();
-        if (type === 'popular') {
-            fetchPopularMedia(page);
-        } else if (type === 'top_rated') {
-            fetchTopRatedMedia(page);
-        }
-    };
-
-    $('#searchInput').on('input', handleSearchInput);
-
-    $('#randomButton').on('click', async function() {
-        try {
-            const { results } = await $.getJSON(`${API_BASE_URL}/trending/all/week?api_key=${apiKey}`);
-            const randomMedia = results[Math.floor(Math.random() * results.length)];
-            fetchSelectedMedia(randomMedia.id, randomMedia.media_type);
-        } catch (error) {
-            handleError('An error occurred while fetching trending media:', error);
-        }
-    });
-
-    $('input[name="mediaType"]').on('change', function() {
-        const type = $(this).val();
-        if (type === 'popular') {
-            fetchPopularMedia();
-        } else if (type === 'top_rated') {
-            fetchTopRatedMedia();
-        }
-    });
 
     $(window).on('popstate', async (event) => {
         if (event.originalEvent.state && event.originalEvent.state.title) {
@@ -291,10 +248,34 @@ $(document).ready(function() {
     const init = async () => {
         apiKey = await getApiKey();
         if (apiKey) {
-            fetchPopularMedia();
+            // Fetch and store genres globally
+            const genres = await fetchAllGenres();
+            genreMap = genres.reduce((map, genre) => ({ ...map, [genre.id]: genre.name }), {});
+
+            // Removed fetchPopularMedia call
+            fetchTopRatedMedia();
             fetchUpcomingMedia();
         }
     };
 
     init();
+
+    $('#searchInput').on('input', handleSearchInput);
+
+    $('#randomButton').on('click', async function() {
+        try {
+            const { results } = await $.getJSON(`${API_BASE_URL}/trending/all/week?api_key=${apiKey}`);
+            const randomMedia = results[Math.floor(Math.random() * results.length)];
+            fetchSelectedMedia(randomMedia.id, randomMedia.media_type);
+        } catch (error) {
+            handleError('An error occurred while fetching trending media:', error);
+        }
+    });
+
+    $('input[name="mediaType"]').on('change', function() {
+        const type = $(this).val();
+        if (type === 'top_rated') {
+            fetchTopRatedMedia();
+        }
+    });
 });
