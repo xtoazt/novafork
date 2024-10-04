@@ -429,10 +429,14 @@ $(document).ready(async function () {
 
 
     let displayedMediaIds = new Set();
-
     async function displayPopularMedia(results) {
         $popularMedia.empty();
         displayedMediaIds.clear();
+
+        // Ensure padding-left for proper alignment on mobile
+        if (!$popularMedia.hasClass('pl-4')) {
+            $popularMedia.addClass('pl-4');
+        }
 
         const limitedResults = results.slice(0, 12);
 
@@ -449,27 +453,38 @@ $(document).ready(async function () {
             };
         }));
 
+        // Iterate through each media item and create corresponding media cards
         mediaWithReleaseType.forEach(media => {
+            // Skip if the media has already been displayed
             if (displayedMediaIds.has(media.id)) {
                 return;
             }
 
+            // Mark the media as displayed
             displayedMediaIds.add(media.id);
 
-            const $mediaCard = $('<div class="media-card"></div>');
+            // Create a new media card using the classes from themes.css
+            const $mediaCard = $('<div class="media-card flex-shrink-0"></div>');
 
+            // Map genre IDs to genre names
             const genreNames = media.genre_ids ? media.genre_ids.map(id => genreMap[id] || 'Unknown').join(', ') : 'Genre not available';
+
+            // Format the release date
             const formattedDate = media.release_date ? new Date(media.release_date).toLocaleDateString() :
                 (media.first_air_date ? new Date(media.first_air_date).toLocaleDateString() : 'Date not available');
 
+            // Generate rating stars based on vote average
             const ratingStars = Array.from({ length: 5 }, (_, i) => i < Math.round(media.vote_average / 2) ?
-                '<i class="fas fa-star filled-star"></i>' : '<i class="fas fa-star empty-star"></i>').join('');
+                '<i class="fas fa-star rating-stars"></i>' : '<i class="fas fa-star text-gray-400"></i>').join('');
 
+            // Determine media type and display type
             const mediaType = media.media_type || (media.title ? 'movie' : 'tv');
             const displayType = (mediaType === 'movie' || mediaType === 'animation') ? media.releaseType : '';
 
+            // Get certification information if available
             const certification = (mediaType === 'movie' && media.certifications['US']) ? media.certifications['US'] : '';
 
+            // Populate the media card's HTML content
             $mediaCard.html(`
             <img src="https://image.tmdb.org/t/p/w500${media.poster_path}" alt="${media.title || media.name}" class="media-image">
             ${displayType ? `<div class="release-type">${displayType}</div>` : ''}
@@ -492,13 +507,16 @@ $(document).ready(async function () {
             </div>
         `);
 
+            // Add a click event to fetch and display the selected media
             $mediaCard.on('click', function () {
                 fetchSelectedMedia(media.id, mediaType);
             });
 
+            // Append the media card to the popular media container
             $popularMedia.append($mediaCard);
         });
     }
+
 
     if ($actorSearchInput.length) {
         $actorSearchInput.on(

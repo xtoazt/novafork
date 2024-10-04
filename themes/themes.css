@@ -353,6 +353,15 @@ button:active {
     background: #1a1a2e;
 }
 
+/* Responsive adjustments for smaller screens */
+@media (max-width: 768px) {
+    .media-container {
+        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); /* Make grid items smaller for smaller screens */
+        gap: 1rem;
+        padding: 1.5rem;
+    }
+}
+
 /* Media Card Styling */
 .media-card {
     position: relative;
@@ -364,6 +373,13 @@ button:active {
     transition: transform 0.5s ease-in-out, box-shadow 0.5s ease-in-out;
     height: 100%;
     cursor: pointer;
+    max-width: 220px;
+}
+
+@media (max-width: 768px) {
+    .media-card {
+        max-width: 150px;
+    }
 }
 
 /* Smooth hover effect with scale and shadow */
@@ -398,11 +414,16 @@ button:active {
     transition: transform 0.6s ease-in-out;
 }
 
+@media (max-width: 768px) {
+    .media-image {
+        height: 200px;
+    }
+}
+
 .media-card:hover .media-image {
     transform: scale(1.15);
 }
 
-/* Slide-up content with smooth transition */
 .media-content {
     position: absolute;
     bottom: 0;
@@ -418,12 +439,17 @@ button:active {
     transform: translateY(0);
 }
 
-/* Smaller typography for titles and details */
 .media-title {
     font-size: 0.85rem;
     font-weight: 600;
     color: #fff;
     margin-bottom: 0.5rem;
+}
+
+@media (max-width: 768px) {
+    .media-title {
+        font-size: 0.75rem;
+    }
 }
 
 .media-type, .media-details {
@@ -432,13 +458,17 @@ button:active {
     margin-bottom: 0.25rem;
 }
 
-/* Rating stars with softened glow */
+@media (max-width: 768px) {
+    .media-type, .media-details {
+        font-size: 0.6rem;
+    }
+}
+
 .rating-stars {
     color: #f6e05e;
     margin-right: 0.5rem;
 }
 
-/* Release type badge with rounded shape */
 .release-type {
     position: absolute;
     top: 0.75rem;
@@ -451,6 +481,13 @@ button:active {
     font-weight: 600;
 }
 
+@media (max-width: 768px) {
+    .release-type {
+        font-size: 0.55rem;
+        padding: 0.2rem 0.4rem;
+    }
+}
+
 /* Glow animation with more fluid effect */
 @keyframes glow {
     0% { box-shadow: 0 0 10px rgba(138, 43, 226, 0.3); }
@@ -459,16 +496,14 @@ button:active {
 }
 
 .media-card:hover {
-    animation: glow 3s ease-in-out infinite; /* Slower, more fluid glow animation */
+    animation: glow 3s ease-in-out infinite;
 }
 
-/* Blur effect for non-hovered cards with gradual transition */
 .media-container:hover .media-card:not(:hover) {
     filter: blur(3px);
     transition: filter 0.5s ease-in-out;
 }
 
-/* Card background with a fluid shadow transition */
 .card {
     transition: all 0.4s ease-in-out;
     background: linear-gradient(135deg, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0.07) 100%);
@@ -479,6 +514,7 @@ button:active {
     box-shadow: 0 12px 25px rgba(0,0,0,0.25);
 }
 
+
 .glow {
     box-shadow: 0 0 18px rgba(123, 31, 162, 0.5);
 }
@@ -486,6 +522,7 @@ button:active {
 .neon-text {
     text-shadow: 0 0 6px rgba(123, 31, 162, 0.7), 0 0 12px rgba(123, 31, 162, 0.5);
 }
+
 
 @keyframes slideInRight {
     0% {
@@ -563,69 +600,107 @@ dev notice this below controls the info player design
     background-color: #2d3748;
     border-radius: 4px;
     border: 2px solid #1a202c;
+    transition: background-color 0.3s ease, border-color 0.3s ease;
 }
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
     background-color: #4a5568;
+    border-color: #2d3748;
 }
 .custom-scrollbar {
     scrollbar-width: thin;
     scrollbar-color: #2d3748 #1a202c;
 }
+
 .glassmorphism-form {
-    backdrop-filter: blur(15px);
-    background: rgba(0, 0, 0, 0.5);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(20px) saturate(180%);
+    background: rgba(17, 17, 17, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    border-radius: 8px;
+    transition: backdrop-filter 0.5s ease, box-shadow 0.5s ease;
 }
+
 #videoPlayer {
-    background: rgba(0, 0, 0, 0.8);
+    background: rgba(0, 0, 0, 0.85);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
 }
+
 .btn-gradient {
     background: linear-gradient(90deg, #4b0082, #000000);
+    border-radius: 6px;
+    padding: 0.5rem 1rem;
+    transition: transform 0.3s, background 0.3s, box-shadow 0.3s ease;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
 }
 .btn-gradient:hover {
+    transform: scale(1.08);
     background: linear-gradient(90deg, #6a0dad, #1a1a1a);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
 }
+
 select optgroup {
     background-color: #2d3748;
     color: #e2e8f0;
+    font-weight: bold;
 }
+
 .note {
     color: #a0aec0;
+    font-style: italic;
 }
-.btn-gradient {
-    background: linear-gradient(90deg, #4b0082, #000000);
-    transition: transform 0.3s, background 0.3s;
-}
-.btn-gradient:hover {
-    transform: scale(1.05);
-    background: linear-gradient(90deg, #6a0dad, #1a1a1a);
-}
-.custom-select.sm-select {
-    padding: 0.25rem 0.5rem;
-    font-size: 0.875rem;
-}
+
 .btn-sm {
-    padding: 0.25rem 0.5rem;
+    padding: 0.3rem 0.6rem;
     font-size: 0.875rem;
+    border-radius: 4px;
 }
+
 .description-content {
     background: rgba(17, 17, 17, 0.95);
     color: #e2e8f0;
+    padding: 1rem;
+    border-radius: 6px;
 }
 .description-content h3 {
     color: #9f7aea;
+    font-size: 1.5rem;
 }
+
 .close-description {
     background-color: #6b46c1;
-    transition: background-color 0.3s;
+    border-radius: 4px;
+    padding: 0.5rem;
+    transition: background-color 0.3s ease, transform 0.3s ease;
 }
 .close-description:hover {
     background-color: #805ad5;
-}
-.fas.fa-chevron-right {
-    color: #9f7aea;
+    transform: scale(1.05);
 }
 
+.fas.fa-chevron-right {
+    color: #9f7aea;
+    transition: color 0.3s ease;
+}
+.fas.fa-chevron-right:hover {
+    color: #d6bcfa;
+}
+
+#popularMedia::-webkit-scrollbar {
+    display: none;
+}
+
+#popularMedia {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+
+#popularMedia {
+    scroll-snap-type: x mandatory;
+}
+
+#popularMedia .card {
+    scroll-snap-align: start;
+}
 
 
 
