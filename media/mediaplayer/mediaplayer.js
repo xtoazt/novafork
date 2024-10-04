@@ -422,34 +422,40 @@ async function displaySelectedMedia(media, mediaType) {
                 }
 
                 return `
-            <div class="episode-item bg-gradient-to-br from-black via-gray-900 to-purple-900 rounded-xl overflow-hidden shadow-lg hover:shadow-2xl transition duration-300 transform hover:-translate-y-2 cursor-pointer relative group" data-episode-number="${episode.number}">
-                <div class="relative">
-                    <img src="${episode.stillPath ? 'https://image.tmdb.org/t/p/w780' + episode.stillPath : 'https://via.placeholder.com/780x439?text=No+Image'}" alt="Episode ${episode.number}" class="w-full h-48 sm:h-40 object-cover">
-                    <div class="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-90"></div>
-                    <div class="absolute bottom-2 left-2">
-                        <h3 class="text-purple-300 text-sm font-semibold">E${episode.number}: ${escapeHtml(episode.name)}</h3>
-                    </div>
-                    <button class="description-toggle absolute top-2 right-2 text-white bg-purple-700 bg-opacity-80 rounded-full p-2 focus:outline-none opacity-0 group-hover:opacity-100 transition-opacity">
-                        <i class="fas fa-info-circle"></i>
-                    </button>
-                    <div class="absolute bottom-0 left-0 w-full h-2 bg-gray-800">
-                        <div class="h-full bg-purple-600" style="width: ${progressPercentage}%;"></div>
-                    </div>
+        <div class="episode-item bg-gradient-to-br from-black via-gray-900 to-purple-900 rounded-xl overflow-hidden shadow-lg hover:shadow-2xl transition duration-300 transform hover:-translate-y-2 cursor-pointer relative group" data-episode-number="${episode.number}">
+            <div class="relative">
+                <img 
+                    src="${episode.stillPath ? 'https://image.tmdb.org/t/p/w780' + episode.stillPath : 'https://via.placeholder.com/780x439?text=No+Image'}"
+                    data-src-high="${episode.stillPath ? 'https://image.tmdb.org/t/p/original' + episode.stillPath : ''}" 
+                    alt="Episode ${episode.number}"
+                    class="w-full h-48 sm:h-40 object-cover lazyload transition-opacity duration-500"
+                    loading="lazy"
+                >
+                <div class="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-90"></div>
+                <div class="absolute bottom-2 left-2">
+                    <h3 class="text-purple-300 text-sm font-semibold">E${episode.number}: ${escapeHtml(episode.name)}</h3>
                 </div>
-                <div class="p-4 relative bg-black bg-opacity-70">
-                    <p class="text-purple-200 text-xs mb-2"><i class="fas fa-calendar-alt mr-1"></i>${episode.airDate ? new Date(episode.airDate).toLocaleDateString() : 'Unknown'}</p>
-                    <p class="text-purple-300 text-xs mt-1">Watched: ${watchedMinutes} min / ${durationMinutes} min</p>
-                    
-                    <!-- Description content with improved styling and transition -->
-                    <div class="description-content hidden mt-2 text-purple-100 text-sm bg-black bg-opacity-95 p-6 rounded-lg absolute inset-0 overflow-y-auto z-30 transition transform opacity-0 scale-95 group-hover:opacity-100 group-hover:scale-100 duration-300 ease-in-out">
-                        <button class="close-description absolute top-4 right-4 text-white bg-red-600 hover:bg-red-700 p-2 rounded-full focus:outline-none">
-                            <i class="fas fa-times"></i>
-                        </button>
-                        <h3 class="text-purple-400 text-lg font-bold mb-4">Episode ${episode.number}: ${escapeHtml(episode.name)}</h3>
-                        <p>${escapeHtml(episode.overview)}</p>
-                    </div>
+                <button class="description-toggle absolute top-2 right-2 text-white bg-purple-700 bg-opacity-80 rounded-full p-2 focus:outline-none opacity-0 group-hover:opacity-100 transition-opacity">
+                    <i class="fas fa-info-circle"></i>
+                </button>
+                <div class="absolute bottom-0 left-0 w-full h-2 bg-gray-800">
+                    <div class="h-full bg-purple-600" style="width: ${progressPercentage}%;"></div>
                 </div>
             </div>
+            <div class="p-4 relative bg-black bg-opacity-70">
+                <p class="text-purple-200 text-xs mb-2"><i class="fas fa-calendar-alt mr-1"></i>${episode.airDate ? new Date(episode.airDate).toLocaleDateString() : 'Unknown'}</p>
+                <p class="text-purple-300 text-xs mt-1">Watched: ${watchedMinutes} min / ${durationMinutes} min</p>
+                
+                <!-- Description content with improved styling and transition -->
+                <div class="description-content hidden mt-2 text-purple-100 text-sm bg-black bg-opacity-95 p-6 rounded-lg absolute inset-0 overflow-y-auto z-30 transition transform opacity-0 scale-95 group-hover:opacity-100 group-hover:scale-100 duration-300 ease-in-out">
+                    <button class="close-description absolute top-4 right-4 text-white bg-red-600 hover:bg-red-700 p-2 rounded-full focus:outline-none">
+                        <i class="fas fa-times"></i>
+                    </button>
+                    <h3 class="text-purple-400 text-lg font-bold mb-4">Episode ${episode.number}: ${escapeHtml(episode.name)}</h3>
+                    <p>${escapeHtml(episode.overview)}</p>
+                </div>
+            </div>
+        </div>
         `;
             }).join('');
         }
@@ -468,7 +474,6 @@ async function displaySelectedMedia(media, mediaType) {
                     if (showProgress.hasOwnProperty(key)) {
                         const [s, e] = key.split('e');
                         const seasonNum = parseInt(s.substring(1), 10);
-                        const episodeNum = parseInt(e, 10);
 
                         if (seasonNum === seasonNumber && showProgress[key].progress && showProgress[key].progress.watched > 0) {
                             episodesWatched++;
@@ -481,7 +486,14 @@ async function displaySelectedMedia(media, mediaType) {
                 return `
             <div class="season-item flex items-center mb-4 cursor-pointer hover:bg-gray-800 p-3 rounded-lg transition relative group" data-season-number="${seasonNumber}">
                 <div class="relative w-20 h-28">
-                    <img src="${season.poster_path ? 'https://image.tmdb.org/t/p/w200' + season.poster_path : 'https://via.placeholder.com/200x300?text=No+Image'}" alt="Season ${seasonNumber}" class="w-full h-full object-cover rounded-lg shadow-md">
+                    <!-- Progressive Loading: Start with w200, load original when needed -->
+                    <img 
+                        src="${season.poster_path ? 'https://image.tmdb.org/t/p/w200' + season.poster_path : 'https://via.placeholder.com/200x300?text=No+Image'}"
+                        data-src-high="${season.poster_path ? 'https://image.tmdb.org/t/p/original' + season.poster_path : ''}" 
+                        alt="Season ${seasonNumber}" 
+                        class="w-full h-full object-cover rounded-lg shadow-md lazyload transition-opacity duration-500"
+                        loading="lazy"
+                    >
                     <div class="absolute inset-0 bg-black bg-opacity-60 opacity-0 group-hover:opacity-100 transition-opacity rounded-lg"></div>
                 </div>
                 <div class="ml-4 flex-1 bg-black bg-opacity-60 p-2 rounded-lg">
@@ -497,6 +509,7 @@ async function displaySelectedMedia(media, mediaType) {
         `;
             }).join('');
         }
+
 
 
         async function openEpisodeModal() {
