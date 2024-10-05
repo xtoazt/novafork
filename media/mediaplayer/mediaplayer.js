@@ -282,19 +282,18 @@ async function displaySelectedMedia(media, mediaType) {
                     endpoint = await getMovieEmbedUrl(media.id, provider, apiKey);
                 }
 
-                const sandboxAttribute = provider === 'vidlink' ? 'sandbox="allow-same-origin allow-scripts allow-forms"' : '';
+                const referrerPolicy = provider === 'vidbinge' ? 'referrerpolicy="origin-when-cross-origin"' : '';
 
                 const iframeHtml = `
-                <iframe 
-                    src="${endpoint}" 
-                    class="video-iframe" 
-                    allowfullscreen 
-                    ${sandboxAttribute}>
-                </iframe>
-            `;
+        <iframe 
+            src="${endpoint}" 
+            class="video-iframe" 
+            allowfullscreen 
+            ${referrerPolicy}>
+        </iframe>
+        `;
 
                 $videoPlayer.html(iframeHtml).removeClass('hidden');
-
                 $movieInfo.children().not($videoPlayer).addClass('hidden');
                 $closePlayerButton.removeClass('hidden');
 
