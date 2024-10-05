@@ -272,6 +272,7 @@ async function displaySelectedMedia(media, mediaType) {
                 const provider = $providerSelect.length ? $providerSelect.val() : selectedProvider;
                 let endpoint;
 
+                // Determine whether we are embedding a movie or TV show
                 if (mediaType === 'tv') {
                     if (!selectedSeason || !selectedEpisode) {
                         alert('Please select a season and an episode.');
@@ -282,26 +283,35 @@ async function displaySelectedMedia(media, mediaType) {
                     endpoint = await getMovieEmbedUrl(media.id, provider, apiKey);
                 }
 
+                // Apply sandbox for vidlink provider and referrerpolicy for vidbinge
+                const sandboxAttribute = provider === 'vidlink' ? 'sandbox="allow-same-origin allow-scripts allow-forms"' : '';
                 const referrerPolicy = provider === 'vidbinge' ? 'referrerpolicy="origin-when-cross-origin"' : '';
 
+                // Generate the iframe HTML with the relevant attributes
                 const iframeHtml = `
         <iframe 
             src="${endpoint}" 
             class="video-iframe" 
             allowfullscreen 
+            ${sandboxAttribute} 
             ${referrerPolicy}>
         </iframe>
         `;
 
+                // Insert the iframe into the video player container
                 $videoPlayer.html(iframeHtml).removeClass('hidden');
+
+                // Hide the other movie info elements and show the close button for the player
                 $movieInfo.children().not($videoPlayer).addClass('hidden');
                 $closePlayerButton.removeClass('hidden');
 
+                // Event listener for iframe load event
                 $('iframe').one('load', function () {
                     const iframeWindow = this.contentWindow;
 
                     if (iframeWindow) {
                         try {
+                            // Prevent click events on A and BUTTON tags inside the iframe
                             iframeWindow.document.addEventListener('click', function (event) {
                                 const target = event.target.tagName;
                                 if (target === 'A' || target === 'BUTTON') {
@@ -309,6 +319,7 @@ async function displaySelectedMedia(media, mediaType) {
                                 }
                             });
 
+                            // Prevent page unload, submit, etc., inside the iframe
                             ['beforeunload', 'unload', 'submit'].forEach(eventType => {
                                 iframeWindow.document.addEventListener(eventType, event => event.preventDefault());
                             });
