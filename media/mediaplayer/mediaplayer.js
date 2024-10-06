@@ -282,9 +282,6 @@ async function displaySelectedMedia(media, mediaType) {
                 } else {
                     endpoint = await getMovieEmbedUrl(media.id, provider, apiKey);
                 }
-
-                // Apply sandbox for vidlink provider and referrerpolicy for vidbinge
-                const sandboxAttribute = provider === 'vidlink' ? 'sandbox="allow-same-origin allow-scripts allow-forms"' : '';
                 const referrerPolicy = provider === 'vidbinge' ? 'referrerpolicy="origin-when-cross-origin"' : '';
 
                 // Generate the iframe HTML with the relevant attributes
