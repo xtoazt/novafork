@@ -286,19 +286,17 @@ async function displaySelectedMedia(media, mediaType) {
                 const sandboxAttribute = provider === 'vidlink' ? 'sandbox="allow-same-origin allow-scripts allow-forms"' : '';
                 const referrerPolicy = provider === 'vidbinge' ? 'referrerpolicy="origin-when-cross-origin"' : '';
                 const iframeHtml = `
-        <iframe 
-            src="${endpoint}" 
-            class="video-iframe" 
-            allowfullscreen 
-            ${sandboxAttribute} 
-            ${referrerPolicy}>
-        </iframe>
+            <iframe 
+                src="${endpoint}" 
+                class="video-iframe" 
+                allowfullscreen 
+                ${sandboxAttribute} 
+                ${referrerPolicy}>
+            </iframe>
         `;
 
-                // Insert the iframe into the video player container
                 $videoPlayer.html(iframeHtml).removeClass('hidden');
 
-                // Hide the other movie info elements and show the close button for the player
                 $movieInfo.children().not($videoPlayer).addClass('hidden');
                 $closePlayerButton.removeClass('hidden');
 
@@ -308,13 +306,29 @@ async function displaySelectedMedia(media, mediaType) {
 
                     if (iframeWindow) {
                         try {
-                            // Prevent click events on A and BUTTON tags inside the iframe
+                            // Disable all click events inside the iframe on A and BUTTON tags
                             iframeWindow.document.addEventListener('click', function (event) {
                                 const target = event.target.tagName;
                                 if (target === 'A' || target === 'BUTTON') {
                                     event.preventDefault();
+                                    console.log('Blocked click on:', target);
                                 }
                             });
+
+                            iframeWindow.open = function () {
+                                console.log('Blocked pop-up attempt');
+                                return null;
+                            };
+
+                            iframeWindow.eval(`
+                        (function() {
+                            const originalOpen = window.open;
+                            window.open = function(...args) {
+                                console.log('Blocked window.open call with args:', args);
+                                return null;
+                            };
+                        })();
+                    `);
 
                             // Prevent page unload, submit, etc., inside the iframe
                             ['beforeunload', 'unload', 'submit'].forEach(eventType => {
