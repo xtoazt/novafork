@@ -49,6 +49,7 @@
               <option value="vidbinge">VidBinge - Best Provider 1[4k]</option>
               <option value="vidsrcnl">VidSrc NL - Best Provider 2</option>
               <option value="vidsrc">VidSrc - Best Provider 3</option>
+              <option value="cinescrape">Cinescrape - 4K Movies</option>
             </optgroup>
             <optgroup label="Alternative Providers (Ads May Appear)">
               <option value="vidsrcicu">VidSrc ICU - Ads</option>
@@ -169,6 +170,33 @@
     transform: scale(1.05);
     background: linear-gradient(90deg, #6a0dad, #1a1a1a);
   }
+  /* Loading Screen Styles */
+#loadingScreen {
+    display: hidden;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0, 0, 0, 0.9);
+    color: #fff;
+    z-index: 9999;
+}
+
+#progressBar {
+    width: 0;
+    background-color: #6a0dad;
+    height: 100%;
+}
+
 </style>
+
+<!-- Loading Screen -->
+<div id="loadingScreen" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-90 z-50 hidden">
+  <div class="text-center">
+    <div class="w-64 h-2 bg-gray-800 rounded-full overflow-hidden mb-4">
+      <div id="progressBar" class="h-full bg-purple-600 transition-all duration-300"></div>
+    </div>
+    <p id="loadingMessage" class="text-white text-lg font-semibold">Initializing...</p>
+  </div>
+</div>
+
 </body>
 </html>
