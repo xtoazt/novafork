@@ -22,6 +22,7 @@ async function fetchJson(url) {
     }
 }
 
+
 async function getMovieEmbedUrl(mediaId, provider, apiKey) {
     const primaryColor = '#FFFFFF';
     const secondaryColor = '#FFFFFF';
@@ -70,12 +71,101 @@ async function getMovieEmbedUrl(mediaId, provider, apiKey) {
         case 'multiembedvip':
             return `https://multiembed.mov/directstream.php?video_id=${mediaId}&tmdb=1`;
         case 'vidsrcicu':
-            return `https://vidsrc.icu/embed/movie/${mediaId}`;  // New URL structure
+            return `https://vidsrc.icu/embed/movie/${mediaId}`;
+            case 'cinescrape':
+    try {
+        showLoadingScreen(); 
+        const response = await fetch(`https://cinescrape.com/${mediaId}`);
+        if (!response.ok) throw new Error('Network response was not ok');
+        const data = await response.json();
+
+        const videoSources = data.videoSources || [];
+        let selectedSource = null;
+
+        // Find the first 4K source available, ignoring ORG
+        selectedSource = videoSources.find(source => source.label === '4K');
+
+        // If no 4K source is found, fallback to highest quality available (excluding ORG)
+        if (!selectedSource) {
+            const labelOrder = ['1080P', '720P', '360P'];
+            for (let label of labelOrder) {
+                selectedSource = videoSources.find(source => source.label === label);
+                if (selectedSource) break;
+            }
+        }
+
+        // If still not found, take the first available source
+        if (!selectedSource) selectedSource = videoSources[1];
+
+        if (!selectedSource) throw new Error('No video source available');
+
+        // Modify the URL
+        let videoUrl = selectedSource.file;
+        // Replace '.mkv' with '.mp4'
+        videoUrl = videoUrl.replace('.mkv', '.mp4');
+        // Replace the domain with 'https://mp4.febbox.net'
+        const urlObj = new URL(videoUrl);
+        urlObj.protocol = 'https:';
+        urlObj.hostname = 'mp4.febbox.net';
+        videoUrl = urlObj.toString();
+
+        return videoUrl;
+    } catch (error) {
+        console.error('Error fetching video from Cinescrape:', error);
+        throw error;
+    }          
         default:
             throw new Error('Provider not recognized.');
     }
 }
 
+
+// Define loading messages
+const loadingMessages = [
+    "Contacting server...",
+    "Fetching data...",
+    "URL received...",
+    "Parsing data...",
+    "Streaming in 4K HDR...",
+    "Almost ready..."
+];
+
+// Function to show loading screen and initiate progress
+function showLoadingScreen() {
+    const loadingScreen = document.getElementById('loadingScreen');
+    const progressBar = document.getElementById('progressBar');
+    const loadingMessage = document.getElementById('loadingMessage');
+  
+    // Messages to display during loading
+    const messages = [
+      "Contacting server...",
+      "Fetching Data...",
+      "URL received...",
+      "Parsing...",
+      "Displaying 4K HDR!"
+    ];
+  
+    let currentProgress = 0;
+    loadingScreen.classList.remove('hidden'); // Show loading screen
+  
+    // Interval to simulate loading progress and change messages
+    const interval = setInterval(() => {
+      if (currentProgress >= 100) {
+        clearInterval(interval);
+        loadingScreen.classList.add('hidden'); // Hide loading screen when done
+      } else {
+        currentProgress += 20; // Increase progress (adjust for a smooth transition)
+        progressBar.style.width = `${currentProgress}%`;
+        loadingMessage.textContent = messages[Math.floor(currentProgress / 20)]; // Update message
+      }
+    }, 3000); // Change message every 3 seconds
+  }
+
+// Function to hide loading screen
+function hideLoadingScreen() {
+    const loadingScreen = document.getElementById("loadingScreen");
+    loadingScreen.classList.add("hidden");
+}
 
 async function getTvEmbedUrl(mediaId, seasonId, episodeId, provider, apiKey) {
     const primaryColor = '#FFFFFF';
@@ -268,10 +358,11 @@ async function displaySelectedMedia(media, mediaType) {
         });
 
         async function updateVideo() {
+            
             try {
                 const provider = $providerSelect.length ? $providerSelect.val() : selectedProvider;
                 let endpoint;
-
+        
                 // Determine whether we are embedding a movie or TV show
                 if (mediaType === 'tv') {
                     if (!selectedSeason || !selectedEpisode) {
@@ -282,67 +373,79 @@ async function displaySelectedMedia(media, mediaType) {
                 } else {
                     endpoint = await getMovieEmbedUrl(media.id, provider, apiKey);
                 }
+        
+                let playerHtml;
+                if (provider === 'cinescrape') {
+                    const videoHtml = `
+                         <video controls autoplay style="height: 600px; width: 100%;" class="video-element">
+                            <source src="${endpoint}" type="video/mp4">
+                            Your browser does not support the video tag.
+                        </video>
+                    `;
+                    $videoPlayer.html(videoHtml).removeClass('hidden');
+                    $movieInfo.children().not($videoPlayer).addClass('hidden');
+                    $closePlayerButton.removeClass('hidden');
+                } else {
+                    const sandboxAttribute = provider === 'vidlink' ? 'sandbox="allow-same-origin allow-scripts allow-forms"' : '';
+                    const referrerPolicy = provider === 'vidbinge' ? 'referrerpolicy="origin-when-cross-origin"' : '';
+                    const iframeHtml = `
+                        <iframe 
+                            src="${endpoint}" 
+                            class="video-iframe" 
+                            allowfullscreen 
+                            ${sandboxAttribute} 
+                            ${referrerPolicy}>
+                        </iframe>
+                    `;
+        
+                    $videoPlayer.html(iframeHtml).removeClass('hidden');
+                    $movieInfo.children().not($videoPlayer).addClass('hidden');
+                    $closePlayerButton.removeClass('hidden');
 
-                const sandboxAttribute = provider === 'vidlink' ? 'sandbox="allow-same-origin allow-scripts allow-forms"' : '';
-                const referrerPolicy = provider === 'vidbinge' ? 'referrerpolicy="origin-when-cross-origin"' : '';
-                const iframeHtml = `
-            <iframe 
-                src="${endpoint}" 
-                class="video-iframe" 
-                allowfullscreen 
-                ${sandboxAttribute} 
-                ${referrerPolicy}>
-            </iframe>
-        `;
-
-                $videoPlayer.html(iframeHtml).removeClass('hidden');
-
-                $movieInfo.children().not($videoPlayer).addClass('hidden');
-                $closePlayerButton.removeClass('hidden');
-
-                // Event listener for iframe load event
-                $('iframe').one('load', function () {
-                    const iframeWindow = this.contentWindow;
-
-                    if (iframeWindow) {
-                        try {
-                            // Disable all click events inside the iframe on A and BUTTON tags
-                            iframeWindow.document.addEventListener('click', function (event) {
-                                const target = event.target.tagName;
-                                if (target === 'A' || target === 'BUTTON') {
-                                    event.preventDefault();
-                                    console.log('Blocked click on:', target);
-                                }
-                            });
-
-                            iframeWindow.open = function () {
-                                console.log('Blocked pop-up attempt');
-                                return null;
-                            };
-
-                            iframeWindow.eval(`
-                        (function() {
-                            const originalOpen = window.open;
-                            window.open = function(...args) {
-                                console.log('Blocked window.open call with args:', args);
-                                return null;
-                            };
-                        })();
-                    `);
-
-                            // Prevent page unload, submit, etc., inside the iframe
-                            ['beforeunload', 'unload', 'submit'].forEach(eventType => {
-                                iframeWindow.document.addEventListener(eventType, event => event.preventDefault());
-                            });
-                        } catch (error) {
-                            console.error('Error in iframe event handling:', error);
+                    $('iframe').one('load', function () {
+                        const iframeWindow = this.contentWindow;
+            
+                        if (iframeWindow) {
+                            try {
+                                // Disable all click events inside the iframe on A and BUTTON tags
+                                iframeWindow.document.addEventListener('click', function (event) {
+                                    const target = event.target.tagName;
+                                    if (target === 'A' || target === 'BUTTON') {
+                                        event.preventDefault();
+                                        console.log('Blocked click on:', target);
+                                    }
+                                });
+            
+                                iframeWindow.open = function () {
+                                    console.log('Blocked pop-up attempt');
+                                    return null;
+                                };
+            
+                                iframeWindow.eval(`(function() {
+                                    const originalOpen = window.open;
+                                    window.open = function(...args) {
+                                        console.log('Blocked window.open call with args:', args);
+                                        return null;
+                                    };
+                                })();`);
+            
+                                // Prevent page unload, submit, etc., inside the iframe
+                                ['beforeunload', 'unload', 'submit'].forEach(eventType => {
+                                    iframeWindow.document.addEventListener(eventType, event => event.preventDefault());
+                                });
+                            } catch (error) {
+                                console.error('Error in iframe event handling:', error);
+                            }
                         }
-                    }
-                });
+                    });
+        
+                // Event listener for iframe load event
+                }
             } catch (error) {
                 console.error('Error updating video:', error);
             }
         }
+           
 
         async function closeVideoPlayer() {
             $videoPlayer.html('').addClass('hidden');
