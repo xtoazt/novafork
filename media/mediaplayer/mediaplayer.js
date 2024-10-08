@@ -68,6 +68,8 @@ async function getMovieEmbedUrl(mediaId, provider, apiKey) {
             return `https://moviee.tv/embed/movie/${mediaId}`;
         case 'multiembed':
             return `https://multiembed.mov/?video_id=${mediaId}&tmdb=1`;
+        case 'embedsu':
+            return `https://embed.su/embed/movie/${mediaId}`;
         case 'multiembedvip':
             return `https://multiembed.mov/directstream.php?video_id=${mediaId}&tmdb=1`;
         case 'vidsrcicu':
@@ -220,6 +222,8 @@ async function getTvEmbedUrl(mediaId, seasonId, episodeId, provider, apiKey) {
             return `https://multiembed.mov/directstream.php?video_id=${mediaId}&tmdb=1&s=${seasonId}&e=${episodeId}`;
         case 'vidsrcicu':
             return `https://vidsrc.icu/embed/tv/${mediaId}/${seasonId}/${episodeId}`;
+        case 'embedsu':
+            return `https://embed.su/embed/tv/${mediaId}/${seasonId}/${episodeId}`;
         default:
             throw new Error('Provider not recognized.');
     }
