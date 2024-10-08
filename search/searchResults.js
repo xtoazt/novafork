@@ -1,11 +1,9 @@
-$(document).ready(function() {
+$(document).ready(async function() {
     const API_BASE_URL = 'https://api.themoviedb.org/3';
     let apiKey;
-    let genreMap = {}; // Global genre map
+    const genreMap = {};
 
-    const handleError = (message, error) => {
-        console.error(message, error);
-    };
+    const handleError = (message, error) => console.error(message, error);
 
     const getApiKey = async () => {
         try {
@@ -23,10 +21,11 @@ $(document).ready(function() {
                 $.getJSON(`${API_BASE_URL}/genre/movie/list?api_key=${apiKey}&language=en-US`),
                 $.getJSON(`${API_BASE_URL}/genre/tv/list?api_key=${apiKey}&language=en-US`)
             ]);
-            return [...movieGenres.genres, ...tvGenres.genres];
+            [...movieGenres.genres, ...tvGenres.genres].forEach(genre => {
+                genreMap[genre.id] = genre.name;
+            });
         } catch (error) {
             handleError('Failed to fetch genres.', error);
-            return [];
         }
     };
 
@@ -100,10 +99,8 @@ $(document).ready(function() {
 
         const resultsHTML = results.map(media => {
             const genreNames = (media.genre_ids || []).map(id => genreMap[id] || 'Unknown').join(', ');
-            const formattedDate = media.release_date ? new Date(media.release_date).toLocaleDateString() : 'N/A';
-            const firstAirDate = media.first_air_date ? new Date(media.first_air_date).toLocaleDateString() : 'N/A';
-            const displayDate = media.media_type === 'movie' ? formattedDate : firstAirDate;
-            const year = media.release_date ? new Date(media.release_date).getFullYear() : 'N/A';
+            const releaseDate = media.release_date || media.first_air_date || 'N/A';
+            const formattedDate = releaseDate !== 'N/A' ? new Date(releaseDate).toLocaleDateString() : 'N/A';
             const ratingStars = '★'.repeat(Math.round(media.vote_average / 2)) + '☆'.repeat(5 - Math.round(media.vote_average / 2));
 
             return `
@@ -118,7 +115,7 @@ $(document).ready(function() {
                                 <span class="rating-stars">${ratingStars}</span>
                                 <span>${media.vote_average.toFixed(1)}/10</span>
                             </div>
-                            <p class="media-release-date">Release: ${displayDate}</p>
+                            <p class="media-release-date">Release: ${formattedDate}</p>
                         </div>
                     </div>
                 </div>
@@ -134,28 +131,44 @@ $(document).ready(function() {
         });
     };
 
-    const handleSearchInput = debounce(async () => {
-        const searchInputValue = $('#searchInput').val().trim().toLowerCase();
-        if (!searchInputValue) {
-            $('#searchSuggestions').empty();
-            return;
-        }
-
-        showLoading();
-
+    const fetchSelectedMedia = async (mediaId, mediaType) => {
         try {
-            // Ensure genres are already fetched
-            if (Object.keys(genreMap).length === 0) {
-                const genres = await fetchAllGenres();
-                genreMap = genres.reduce((map, genre) => ({ ...map, [genre.id]: genre.name }), {});
-            }
+            const media = await $.getJSON(`${API_BASE_URL}/${mediaType}/${mediaId}?api_key=${apiKey}`);
+            displaySelectedMedia(media, mediaType);
 
-            const { results } = await $.getJSON(`${API_BASE_URL}/search/multi?api_key=${apiKey}&query=${encodeURIComponent(searchInputValue)}`);
-            displaySearchSuggestions(results, searchInputValue);
+            const title = media.title || media.name;
+            const formattedTitle = title.toLowerCase().replace(/ /g, '-').replace(/[^\w-]/g, '');
+            history.pushState({ title }, title, `?title=${formattedTitle}`);
         } catch (error) {
-            handleError('An error occurred while fetching search results:', error);
+            handleError('An error occurred while fetching media details:', error);
         }
-    }, 300);
+    };
+
+    const fetchTopRatedMedia = async () => {
+        try {
+            const { results } = await $.getJSON(`${API_BASE_URL}/movie/top_rated?api_key=${apiKey}`);
+            displaySearchResults(results);
+        } catch (error) {
+            handleError('An error occurred while fetching top-rated media:', error);
+        }
+    };
+
+    const fetchUpcomingMedia = async () => {
+        try {
+            const { results } = await $.getJSON(`${API_BASE_URL}/movie/upcoming?api_key=${apiKey}&language=en-US`);
+            const upcomingMovies = results.filter(media => new Date(media.release_date) > new Date());
+            displayUpcomingMedia(upcomingMovies);
+        } catch (error) {
+            handleError('An error occurred while fetching upcoming media:', error);
+        }
+    };
+
+    const displayUpcomingMedia = (mediaList) => {
+        const upcomingMediaHTML = mediaList.map(media =>
+            `<div class="text-zinc-300 mb-2"><span>${media.title}:</span> <span>${media.release_date}</span></div>`
+        ).join('');
+        $('#upcomingMedia').html(upcomingMediaHTML);
+    };
 
     const setupKeyboardNavigation = ($container) => {
         const $items = $container.find('.suggestion-item');
@@ -183,52 +196,27 @@ $(document).ready(function() {
         });
     };
 
-    const fetchSelectedMedia = async (mediaId, mediaType) => {
-        try {
-            const media = await $.getJSON(`${API_BASE_URL}/${mediaType}/${mediaId}?api_key=${apiKey}`);
-            displaySelectedMedia(media, mediaType);
-
-            const title = media.title || media.name;
-            const formattedTitle = title.toLowerCase().replace(/ /g, '-').replace(/[^\w-]/g, '');
-            const newUrl = `?title=${formattedTitle}`;
-            history.pushState({ title }, title, newUrl);
-        } catch (error) {
-            handleError('An error occurred while fetching media details:', error);
+    const handleSearchInput = debounce(async () => {
+        const query = $('#searchInput').val().trim().toLowerCase();
+        if (!query) {
+            $('#searchSuggestions').empty();
+            return;
         }
-    };
 
-    const fetchTopRatedMedia = async (page = 1) => {
+        showLoading();
+
         try {
-            const { results, page: currentPage, total_pages: totalPages } = await $.getJSON(`${API_BASE_URL}/movie/top_rated?api_key=${apiKey}&page=${page}`);
-            displaySearchResults(results);
-            // Removed pagination controls since they're handled elsewhere
-            fetchUpcomingMedia();
+            const { results } = await $.getJSON(`${API_BASE_URL}/search/multi?api_key=${apiKey}&query=${encodeURIComponent(query)}`);
+            displaySearchSuggestions(results, query);
         } catch (error) {
-            handleError('An error occurred while fetching top-rated media:', error);
+            handleError('An error occurred while fetching search results:', error);
         }
-    };
-
-    const fetchUpcomingMedia = async () => {
-        try {
-            const { results } = await $.getJSON(`${API_BASE_URL}/movie/upcoming?api_key=${apiKey}&language=en-US&page=1`);
-            const upcomingMovies = results.filter(media => new Date(media.release_date) > new Date());
-            displayUpcomingMedia(upcomingMovies);
-        } catch (error) {
-            handleError('An error occurred while fetching upcoming media:', error);
-        }
-    };
-
-    const displayUpcomingMedia = (mediaList) => {
-        const upcomingMediaHTML = mediaList.map(media =>
-            `<div class="text-zinc-300 mb-2"><span>${media.title}:</span> <span>${media.release_date}</span></div>`
-        ).join('');
-        $('#upcomingMedia').html(upcomingMediaHTML);
-    };
+    }, 300);
 
     $(window).on('popstate', async (event) => {
-        if (event.originalEvent.state && event.originalEvent.state.title) {
-            const title = event.originalEvent.state.title;
-            const media = await searchMediaByTitle(title);
+        const state = event.originalEvent.state;
+        if (state && state.title) {
+            const media = await searchMediaByTitle(state.title);
             if (media) {
                 displaySelectedMedia(media, media.media_type);
             }
@@ -248,21 +236,17 @@ $(document).ready(function() {
     const init = async () => {
         apiKey = await getApiKey();
         if (apiKey) {
-            // Fetch and store genres globally
-            const genres = await fetchAllGenres();
-            genreMap = genres.reduce((map, genre) => ({ ...map, [genre.id]: genre.name }), {});
-
-            // Removed fetchPopularMedia call
-            fetchTopRatedMedia();
-            fetchUpcomingMedia();
+            await fetchAllGenres();
+            await fetchTopRatedMedia();
+            await fetchUpcomingMedia();
         }
     };
 
-    init();
+    await init();
 
     $('#searchInput').on('input', handleSearchInput);
 
-    $('#randomButton').on('click', async function() {
+    $('#randomButton').on('click', async () => {
         try {
             const { results } = await $.getJSON(`${API_BASE_URL}/trending/all/week?api_key=${apiKey}`);
             const randomMedia = results[Math.floor(Math.random() * results.length)];
@@ -273,8 +257,7 @@ $(document).ready(function() {
     });
 
     $('input[name="mediaType"]').on('change', function() {
-        const type = $(this).val();
-        if (type === 'top_rated') {
+        if ($(this).val() === 'top_rated') {
             fetchTopRatedMedia();
         }
     });

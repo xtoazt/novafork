@@ -140,17 +140,41 @@
         <div class="mb-8">
             <h2 class="text-sm font-semibold text-white mb-2">Filter Settings</h2>
             <div class="flex flex-wrap items-center gap-2">
+                <!-- Category Select -->
                 <select id="categorySelect"
                         class="p-3 glassmorphism rounded-full text-white text-sm focus:ring-2 focus:ring-purple-500 focus:outline-none transition duration-300 ease-in-out custom-select">
                     <!-- Options dynamically go here -->
                 </select>
+                <!-- Type Select -->
                 <select id="typeSelect"
                         class="p-3 glassmorphism rounded-full text-white text-sm focus:ring-2 focus:ring-purple-500 focus:outline-none transition duration-300 ease-in-out custom-select">
                 </select>
-                <input id="actorSearchInput" type="text" placeholder="Search by Actor"
-                       class="p-3 glassmorphism rounded-full text-white text-sm w-64 focus:ring-2 focus:ring-purple-500 focus:outline-none transition duration-300 ease-in-out" />
+                <!-- Toggle Button for Additional Filters -->
+                <button id="toggleFiltersButton" class="p-3 glassmorphism rounded-full text-white text-sm flex items-center focus:ring-2 focus:ring-purple-500 focus:outline-none transition duration-300 ease-in-out">
+    <span id="toggleIcon" class="transform transition-transform duration-300 ease-in-out mr-2">
+        <!-- Down Arrow Icon -->
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path id="toggleIconPath" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+        </svg>
+    </span>
+                    Advanced Filters
+                </button>
             </div>
+            <!-- The closing div tag above corresponds to an earlier div in your code -->
+
+            <!-- Collapsible Section for Additional Filters -->
+            <div id="additionalFilters" class="mt-4 hidden">
+                <div class="flex flex-wrap items-center gap-2">
+                    <input id="actorSearchInput" type="text" placeholder="Search by Actor"
+                           class="p-3 glassmorphism rounded-full text-white text-sm w-64 focus:ring-2 focus:ring-purple-500 focus:outline-none transition duration-300 ease-in-out" />
+                    <input id="companySearchInput" type="text" placeholder="Search by Company"
+                           class="p-3 glassmorphism rounded-full text-white text-sm w-64 focus:ring-2 focus:ring-purple-500 focus:outline-none transition duration-300 ease-in-out" />
+                </div>
+            </div>
+
         </div>
+
+
 
         <!-- Selected Media Section -->
         <section id="selectedMediaSection" class="mb-12 hidden">
@@ -162,12 +186,13 @@
             </div>
         </section>
 
-        <!-- Trending Media Section -->
         <section class="mb-12">
             <div class="flex justify-between items-center mb-4">
-                <h2 class="text-2xl font-bold text-white">Trending Media</h2>
+                <!-- Adjust the heading text size -->
+                <h2 class="text-lg md:text-2xl font-bold text-white">Trending Media</h2>
+                <!-- Adjust the button text size -->
                 <button id="togglePopularMedia"
-                        class="glassmorphism text-white font-bold py-2 px-6 rounded-full hover:bg-purple-700 transition duration-300 ease-in-out text-lg sm:text-base md:text-sm">
+                        class="glassmorphism text-white font-bold py-2 px-6 rounded-full hover:bg-purple-700 transition duration-300 ease-in-out text-sm md:text-lg">
                     Hide Trending Media
                 </button>
             </div>
@@ -261,13 +286,14 @@
 
 <!-- Scripts with versioning added -->
 <script src="media/mediaplayer/mediaplayer.js?v=1.2.4.41"></script>
-<script src="search/searchResults.js?v=1.1.1"></script>
-<script type="module" src="index.js?v=1.1.9"></script>
+<script src="search/searchResults.js?v=1.1.2"></script>
+<script type="module" src="index.js?v=1.1.10"></script>
 <script src="media/mediahider/mediahider.js?v=1.1"></script>
 <script src="media/mediashare/shareModal.js?v=1.1"></script>
 <script src="media/donatepopup/donatepopup.js?v=1.1"></script>
 <script src="media/donatepopup/bitcoinPopup.js?v=1.1"></script>
 <script src="media/mediaTemplate.html?v=1.12"></script>
+<script src="advancedfilter/advanced-filters.js?v=1."></script>
 <script>
     document.getElementById('logo').addEventListener('click', function () {
         window.location.href = window.location.origin;
