@@ -25,6 +25,7 @@ async function fetchGenres(apiKey, mediaType) {
         return [];
     }
 }
+
 $(document).ready(async function () {
     const $homePage = $('#homePage');
     const $welcomeBanner = $('#welcomeBanner');
@@ -303,16 +304,14 @@ $(document).ready(async function () {
         }
     });
 
-    // Function to fetch media by franchise keyword
     async function fetchMediaByFranchise(keywordId) {
         currentMediaType = 'franchise';
         const selectedType = $typeSelect.val();
-        let page = 1;
         let allResults = [];
-        let total_pages = 1;
+        let page = 1;
+        let totalPages = 1;
 
         try {
-            // Fetch all pages of results
             do {
                 const url = `https://api.themoviedb.org/3/discover/${selectedType}?api_key=${API_KEY}&with_keywords=${keywordId}&language=en-US&page=${page}`;
                 const response = await $.getJSON(url);
@@ -326,16 +325,21 @@ $(document).ready(async function () {
                 }
 
                 allResults = allResults.concat(response.results);
-                total_pages = response.total_pages;
+                totalPages = response.total_pages;
                 page++;
-            } while (page <= total_pages);
 
-            // Sort the results by release date or first air date
-            allResults.sort((a, b) => new Date(a.release_date || a.first_air_date) - new Date(b.release_date || b.first_air_date));
+            } while (page <= totalPages);
 
-            // Display the results
-            displayPopularMedia(allResults);
-            totalPages = 1;
+            allResults.sort((a, b) => {
+                const dateA = new Date(a.release_date || a.first_air_date);
+                const dateB = new Date(b.release_date || b.first_air_date);
+                return dateA - dateB;
+            });
+
+            totalPages = Math.ceil(allResults.length / 12);
+            const paginatedResults = allResults.slice((currentPage - 1) * 12, currentPage * 12);
+
+            displayPopularMedia(paginatedResults);
             updatePaginationControls(currentPage, totalPages);
         } catch (error) {
             handleError('An error occurred while fetching media for the franchise.', error);
@@ -508,8 +512,8 @@ $(document).ready(async function () {
                 return;
             }
 
-            // Assume the 'parts' array is in the correct order
-            const movies = response.parts;
+            // Sort the movies by release date to get the timeline order
+            const movies = response.parts.sort((a, b) => new Date(a.release_date) - new Date(b.release_date));
             totalPages = 1; // Since all movies are loaded at once
             displayPopularMedia(movies);
             updatePaginationControls(currentPage, totalPages);
@@ -522,7 +526,7 @@ $(document).ready(async function () {
         $popularMedia.html('<p>Loading...</p>');
 
         if (currentMediaType === 'franchise' && currentFranchiseKeywordId) {
-            await fetchMediaByFranchise(currentFranchiseKeywordId);
+            await fetchMediaByFranchise(currentFranchiseKeywordId, currentPage);
         } else if (currentMediaType === 'collection' && currentCollectionId) {
             await fetchMoviesInCollection(currentCollectionId);
         } else if (currentMediaType === 'company' && currentCompanyId) {
@@ -542,6 +546,7 @@ $(document).ready(async function () {
         }
     }
 
+    // Call fetchPopularMedia on initial load
     await fetchPopularMedia(currentPage);
 
     // Debounce function
