@@ -23,7 +23,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css?v=1.1">
 
     <!-- Consolidated in one Css file with versioning -->
-    <link rel="stylesheet" href="themes/themes.css?v=1.4.47">
+    <link rel="stylesheet" href="themes/themes.css?v=1.4.48">
 
     <!-- jQuery with versioning -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js?v=1.1"
@@ -165,14 +165,20 @@
             <!-- Collapsible Section for Additional Filters -->
             <div id="additionalFilters" class="mt-4 hidden">
                 <div class="flex flex-wrap items-center gap-2">
+                    <!-- Actor Search Input -->
                     <input id="actorSearchInput" type="text" placeholder="Search by Actor"
                            class="p-3 glassmorphism rounded-full text-white text-sm w-64 focus:ring-2 focus:ring-purple-500 focus:outline-none transition duration-300 ease-in-out" />
-                    <input id="companySearchInput" type="text" placeholder="Search by Company"
-                           class="p-3 glassmorphism rounded-full text-white text-sm w-64 focus:ring-2 focus:ring-purple-500 focus:outline-none transition duration-300 ease-in-out" />
+
+                    <!-- Company Search Input and Suggestions -->
+                    <div class="relative">
+                        <!-- Company Search Input -->
+                        <input id="companySearchInput" type="text" placeholder="Search by Company"
+                               class="p-3 glassmorphism rounded-full text-white text-sm w-64 focus:ring-2 focus:ring-purple-500 focus:outline-none transition duration-300 ease-in-out" />
+                        <div id="companySuggestions" class="absolute z-10 w-64 bg-gray-800 text-white rounded-md shadow-lg overflow-hidden hidden">
+                        </div>
+                    </div>
                 </div>
             </div>
-
-        </div>
 
 
 
@@ -245,9 +251,10 @@
                 <div class="mt-4 text-center">
                     <p>This is a fork of the original project by <a href="https://github.com/ambr0sial/nova" target="_blank"
                                                                     class="text-purple-400 hover:underline">Ambrosial</a>.</p>
-                </div>
-            </footer>
-        </div>
+                     </div>
+                 </footer>
+             </div>
+         </div>
     </div>
 </main>
 
@@ -283,7 +290,7 @@
 <!-- Scripts with versioning added -->
 <script src="media/mediaplayer/mediaplayer.js?v=1.2.4.42"></script>
 <script src="search/searchResults.js?v=1.1.2"></script>
-<script type="module" src="index.js?v=1.1.10"></script>
+<script type="module" src="index.js?v=1.1.11"></script>
 <script src="media/mediahider/mediahider.js?v=1.1"></script>
 <script src="media/mediashare/shareModal.js?v=1.1"></script>
 <script src="media/donatepopup/donatepopup.js?v=1.1"></script>

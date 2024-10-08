@@ -38,7 +38,8 @@ $(document).ready(async function () {
     const $posterImage = $('#posterImage');
     const $searchInput = $('#searchInput');
     const $actorSearchInput = $('#actorSearchInput');
-    const $companySearchInput = $('#companySearchInput'); // New variable for company search
+    const $companySearchInput = $('#companySearchInput'); // Company search input
+    const $companySuggestions = $('#companySuggestions'); // Suggestions container for company search
     const $searchSuggestions = $('#searchSuggestions');
     const $randomButton = $('#randomButton');
 
@@ -46,7 +47,7 @@ $(document).ready(async function () {
     let currentPage = 1;
     let totalPages = 1;
     let currentActorId = null;
-    let currentCompanyId = null; // New variable for company ID
+    let currentCompanyId = null; // Company ID
 
     if ($closeBanner.length) {
         $closeBanner.on('click', () => {
@@ -71,7 +72,7 @@ $(document).ready(async function () {
 
         if ($categorySelect.length) {
             $categorySelect.html('<option value="">Select Genre</option>');
-            $.each(genreMap, function(id, name) {
+            $.each(genreMap, function (id, name) {
                 $categorySelect.append(new Option(name, id));
             });
         }
@@ -106,6 +107,7 @@ $(document).ready(async function () {
                     if (response.results.length > 0) {
                         const actorId = response.results[0].id; // First actor result
                         currentActorId = actorId;
+                        currentCompanyId = null; // Reset company ID
                         currentMediaType = 'actor';
                         currentPage = 1;
                         await fetchMoviesAndShowsByActor(actorId, currentPage);
@@ -117,6 +119,7 @@ $(document).ready(async function () {
                     }
                 } else {
                     // Input is too short; reset to popular media
+                    currentActorId = null;
                     currentMediaType = 'popular';
                     currentPage = 1;
                     await fetchPopularMedia(currentPage);
@@ -125,37 +128,57 @@ $(document).ready(async function () {
         );
     }
 
-    // Event listener for companySearchInput
+    // Event listener for companySearchInput with suggestions
     if ($companySearchInput.length) {
         $companySearchInput.on(
             'input',
             debounce(async function () {
                 const companyName = $companySearchInput.val().trim();
-                if (companyName.length > 2) {
+                if (companyName.length > 0) {
                     const response = await $.getJSON(
                         `https://api.themoviedb.org/3/search/company?api_key=${API_KEY}&query=${encodeURIComponent(companyName)}`
                     );
                     if (response.results.length > 0) {
-                        const companyId = response.results[0].id; // First company result
-                        currentCompanyId = companyId;
-                        currentMediaType = 'company';
-                        currentPage = 1;
-                        await fetchMoviesAndShowsByCompany(companyId, currentPage);
+                        displayCompanySuggestions(response.results);
                     } else {
-                        handleError('No company found with that name.');
-                        clearMediaDisplay();
-                        totalPages = 1;
-                        updatePaginationControls(currentPage, totalPages);
+                        $companySuggestions.empty().addClass('hidden');
                     }
                 } else {
-                    // Input is too short; reset to popular media
+                    // Input is empty; hide suggestions and reset to popular media
+                    $companySuggestions.empty().addClass('hidden');
+                    currentCompanyId = null;
                     currentMediaType = 'popular';
                     currentPage = 1;
                     await fetchPopularMedia(currentPage);
                 }
-            }, 500)
+            }, 300)
         );
     }
+
+    // Function to display company suggestions
+    function displayCompanySuggestions(companies) {
+        $companySuggestions.empty().removeClass('hidden');
+        companies.slice(0, 5).forEach(company => {
+            const $suggestion = $('<div class="p-2 hover:bg-gray-100 cursor-pointer"></div>').text(company.name);
+            $suggestion.on('click', async function () {
+                $companySearchInput.val(company.name);
+                $companySuggestions.empty().addClass('hidden');
+                currentCompanyId = company.id;
+                currentActorId = null; // Reset actor ID
+                currentMediaType = 'company';
+                currentPage = 1;
+                await fetchMoviesAndShowsByCompany(company.id, currentPage);
+            });
+            $companySuggestions.append($suggestion);
+        });
+    }
+
+    // Hide company suggestions when clicking outside
+    $(document).on('click', function (event) {
+        if (!$(event.target).closest('#companySearchInput, #companySuggestions').length) {
+            $companySuggestions.empty().addClass('hidden');
+        }
+    });
 
     // Pagination Controls
     const $prevPageButton = $('#prevPage');
@@ -328,8 +351,10 @@ $(document).ready(async function () {
         }
     }
 
+    // Call fetchPopularMedia on initial load
     await fetchPopularMedia(currentPage);
 
+    // Debounce function
     function debounce(func, delay) {
         let timeout;
         return function (...args) {
@@ -337,7 +362,6 @@ $(document).ready(async function () {
             timeout = setTimeout(() => func.apply(this, args), delay);
         };
     }
-;
 
     async function fetchSelectedMedia(mediaId, mediaType) {
         try {
