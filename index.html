@@ -23,7 +23,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css?v=1.1">
 
     <!-- Consolidated in one Css file with versioning -->
-    <link rel="stylesheet" href="themes/themes.css?v=1.4.49">
+    <link rel="stylesheet" href="themes/themes.css?v=1.4.50">
 
     <!-- jQuery with versioning -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js?v=1.1"
@@ -176,12 +176,26 @@
                         <div id="companySuggestions" class="absolute z-10 w-64 bg-gray-800 text-white rounded-md shadow-lg overflow-hidden hidden">
                         </div>
                     </div>
+
+                    <div class="relative">
+                        <input id="collectionSearchInput" type="text" placeholder="Search by Collection"
+                               class="p-3 glassmorphism rounded-full text-white text-sm w-64 focus:ring-2 focus:ring-purple-500 focus:outline-none transition duration-300 ease-in-out" />
+                        <div id="collectionSuggestions" class="absolute z-10 w-64 bg-gray-800 text-white rounded-md shadow-lg overflow-hidden hidden">
+                        </div>
+                    </div>
+
+                    <div class="relative">
+                        <input id="franchiseSearchInput" type="text" placeholder="Search by Franchise"
+                               class="p-3 glassmorphism rounded-full text-white text-sm w-64 focus:ring-2 focus:ring-purple-500 focus:outline-none transition duration-300 ease-in-out" />
+                        <div id="franchiseSuggestions" class="absolute z-10 w-64 bg-gray-800 text-white rounded-md shadow-lg overflow-hidden hidden">
+                        </div>
+                    </div>
                 </div>
             </div>
-        </div>
 
 
-        <!-- Selected Media Section -->
+
+            <!-- Selected Media Section -->
         <section id="selectedMediaSection" class="mb-12 mt-12 hidden">
             <h2 class="text-2xl font-bold mb-4 text-white">Selected Media</h2>
             <div id="selectedMovie" class="p-6 rounded-lg flex glassmorphism glow">
@@ -289,7 +303,7 @@
 <!-- Scripts with versioning added -->
 <script src="media/mediaplayer/mediaplayer.js?v=1.2.4.42"></script>
 <script src="search/searchResults.js?v=1.1.2"></script>
-<script type="module" src="index.js?v=1.1.11"></script>
+<script type="module" src="index.js?v=1.1.13"></script>
 <script src="media/mediahider/mediahider.js?v=1.1"></script>
 <script src="media/mediashare/shareModal.js?v=1.1"></script>
 <script src="media/donatepopup/donatepopup.js?v=1.1"></script>

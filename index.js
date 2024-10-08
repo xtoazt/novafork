@@ -25,7 +25,6 @@ async function fetchGenres(apiKey, mediaType) {
         return [];
     }
 }
-
 $(document).ready(async function () {
     const $homePage = $('#homePage');
     const $welcomeBanner = $('#welcomeBanner');
@@ -40,6 +39,10 @@ $(document).ready(async function () {
     const $actorSearchInput = $('#actorSearchInput');
     const $companySearchInput = $('#companySearchInput'); // Company search input
     const $companySuggestions = $('#companySuggestions'); // Suggestions container for company search
+    const $collectionSearchInput = $('#collectionSearchInput'); // Collection search input
+    const $collectionSuggestions = $('#collectionSuggestions'); // Suggestions container for collection search
+    const $franchiseSearchInput = $('#franchiseSearchInput'); // Franchise search input
+    const $franchiseSuggestions = $('#franchiseSuggestions'); // Suggestions container for franchise search
     const $searchSuggestions = $('#searchSuggestions');
     const $randomButton = $('#randomButton');
 
@@ -48,6 +51,8 @@ $(document).ready(async function () {
     let totalPages = 1;
     let currentActorId = null;
     let currentCompanyId = null; // Company ID
+    let currentCollectionId = null; // Collection ID
+    let currentFranchiseKeywordId = null; // Franchise Keyword ID
 
     if ($closeBanner.length) {
         $closeBanner.on('click', () => {
@@ -108,6 +113,8 @@ $(document).ready(async function () {
                         const actorId = response.results[0].id; // First actor result
                         currentActorId = actorId;
                         currentCompanyId = null; // Reset company ID
+                        currentCollectionId = null; // Reset collection ID
+                        currentFranchiseKeywordId = null; // Reset franchise keyword ID
                         currentMediaType = 'actor';
                         currentPage = 1;
                         await fetchMoviesAndShowsByActor(actorId, currentPage);
@@ -159,12 +166,16 @@ $(document).ready(async function () {
     function displayCompanySuggestions(companies) {
         $companySuggestions.empty().removeClass('hidden');
         companies.slice(0, 5).forEach(company => {
-            const $suggestion = $('<div class="p-2 hover:bg-gray-100 cursor-pointer"></div>').text(company.name);
+            const $suggestion = $('<div></div>')
+                .text(company.name)
+                .addClass('p-2 hover:bg-gray-700 cursor-pointer');
             $suggestion.on('click', async function () {
                 $companySearchInput.val(company.name);
                 $companySuggestions.empty().addClass('hidden');
                 currentCompanyId = company.id;
                 currentActorId = null; // Reset actor ID
+                currentCollectionId = null; // Reset collection ID
+                currentFranchiseKeywordId = null; // Reset franchise keyword ID
                 currentMediaType = 'company';
                 currentPage = 1;
                 await fetchMoviesAndShowsByCompany(company.id, currentPage);
@@ -179,6 +190,157 @@ $(document).ready(async function () {
             $companySuggestions.empty().addClass('hidden');
         }
     });
+
+    // Event listener for collectionSearchInput with suggestions
+    if ($collectionSearchInput.length) {
+        $collectionSearchInput.on(
+            'input',
+            debounce(async function () {
+                const collectionName = $collectionSearchInput.val().trim();
+                if (collectionName.length > 0) {
+                    const response = await $.getJSON(
+                        `https://api.themoviedb.org/3/search/collection?api_key=${API_KEY}&query=${encodeURIComponent(collectionName)}`
+                    );
+                    if (response.results.length > 0) {
+                        displayCollectionSuggestions(response.results);
+                    } else {
+                        $collectionSuggestions.empty().addClass('hidden');
+                    }
+                } else {
+                    // Input is empty; hide suggestions and reset to popular media
+                    $collectionSuggestions.empty().addClass('hidden');
+                    currentCollectionId = null;
+                    currentMediaType = 'popular';
+                    currentPage = 1;
+                    await fetchPopularMedia(currentPage);
+                }
+            }, 300)
+        );
+    }
+
+    // Function to display collection suggestions
+    function displayCollectionSuggestions(collections) {
+        $collectionSuggestions.empty().removeClass('hidden');
+        collections.slice(0, 5).forEach(collection => {
+            const $suggestion = $('<div></div>')
+                .text(collection.name)
+                .addClass('p-2 hover:bg-gray-700 cursor-pointer');
+            $suggestion.on('click', async function () {
+                $collectionSearchInput.val(collection.name);
+                $collectionSuggestions.empty().addClass('hidden');
+                currentCollectionId = collection.id;
+                currentActorId = null; // Reset actor ID
+                currentCompanyId = null; // Reset company ID
+                currentFranchiseKeywordId = null; // Reset franchise keyword ID
+                currentMediaType = 'collection';
+                currentPage = 1;
+                await fetchMoviesInCollection(collection.id);
+            });
+            $collectionSuggestions.append($suggestion);
+        });
+    }
+
+    // Hide collection suggestions when clicking outside
+    $(document).on('click', function (event) {
+        if (!$(event.target).closest('#collectionSearchInput, #collectionSuggestions').length) {
+            $collectionSuggestions.empty().addClass('hidden');
+        }
+    });
+
+    // Event listener for franchiseSearchInput with suggestions
+    if ($franchiseSearchInput.length) {
+        $franchiseSearchInput.on(
+            'input',
+            debounce(async function () {
+                const franchiseName = $franchiseSearchInput.val().trim();
+                if (franchiseName.length > 0) {
+                    const response = await $.getJSON(
+                        `https://api.themoviedb.org/3/search/keyword?api_key=${API_KEY}&query=${encodeURIComponent(franchiseName)}`
+                    );
+                    if (response.results.length > 0) {
+                        displayFranchiseSuggestions(response.results);
+                    } else {
+                        $franchiseSuggestions.empty().addClass('hidden');
+                    }
+                } else {
+                    // Input is empty; hide suggestions and reset to popular media
+                    $franchiseSuggestions.empty().addClass('hidden');
+                    currentFranchiseKeywordId = null;
+                    currentMediaType = 'popular';
+                    currentPage = 1;
+                    await fetchPopularMedia(currentPage);
+                }
+            }, 300)
+        );
+    }
+
+    // Function to display franchise suggestions
+    function displayFranchiseSuggestions(keywords) {
+        $franchiseSuggestions.empty().removeClass('hidden');
+        keywords.slice(0, 5).forEach(keyword => {
+            const $suggestion = $('<div></div>')
+                .text(keyword.name)
+                .addClass('p-2 hover:bg-gray-700 cursor-pointer');
+            $suggestion.on('click', async function () {
+                $franchiseSearchInput.val(keyword.name);
+                $franchiseSuggestions.empty().addClass('hidden');
+                currentFranchiseKeywordId = keyword.id;
+                currentActorId = null; // Reset actor ID
+                currentCompanyId = null; // Reset company ID
+                currentCollectionId = null; // Reset collection ID
+                currentMediaType = 'franchise';
+                currentPage = 1;
+                await fetchMediaByFranchise(keyword.id);
+            });
+            $franchiseSuggestions.append($suggestion);
+        });
+    }
+
+    // Hide franchise suggestions when clicking outside
+    $(document).on('click', function (event) {
+        if (!$(event.target).closest('#franchiseSearchInput, #franchiseSuggestions').length) {
+            $franchiseSuggestions.empty().addClass('hidden');
+        }
+    });
+
+    // Function to fetch media by franchise keyword
+    async function fetchMediaByFranchise(keywordId) {
+        currentMediaType = 'franchise';
+        const selectedType = $typeSelect.val();
+        let page = 1;
+        let allResults = [];
+        let total_pages = 1;
+
+        try {
+            // Fetch all pages of results
+            do {
+                const url = `https://api.themoviedb.org/3/discover/${selectedType}?api_key=${API_KEY}&with_keywords=${keywordId}&language=en-US&page=${page}`;
+                const response = await $.getJSON(url);
+
+                if (response.total_results === 0) {
+                    clearMediaDisplay();
+                    handleError('No media found for this franchise.');
+                    totalPages = 1;
+                    updatePaginationControls(currentPage, totalPages);
+                    return;
+                }
+
+                allResults = allResults.concat(response.results);
+                total_pages = response.total_pages;
+                page++;
+            } while (page <= total_pages);
+
+            // Sort the results by release date or first air date
+            allResults.sort((a, b) => new Date(a.release_date || a.first_air_date) - new Date(b.release_date || b.first_air_date));
+
+            // Display the results
+            displayPopularMedia(allResults);
+            totalPages = 1;
+            updatePaginationControls(currentPage, totalPages);
+        } catch (error) {
+            handleError('An error occurred while fetching media for the franchise.', error);
+        }
+    }
 
     // Pagination Controls
     const $prevPageButton = $('#prevPage');
@@ -331,10 +493,39 @@ $(document).ready(async function () {
         }
     }
 
+    // Function to fetch movies in a collection
+    async function fetchMoviesInCollection(collectionId) {
+        currentMediaType = 'collection';
+        const url = `https://api.themoviedb.org/3/collection/${collectionId}?api_key=${API_KEY}&language=en-US`;
+
+        try {
+            const response = await $.getJSON(url);
+            if (!response.parts || response.parts.length === 0) {
+                clearMediaDisplay();
+                handleError('No movies found in this collection.');
+                totalPages = 1;
+                updatePaginationControls(currentPage, totalPages);
+                return;
+            }
+
+            // Assume the 'parts' array is in the correct order
+            const movies = response.parts;
+            totalPages = 1; // Since all movies are loaded at once
+            displayPopularMedia(movies);
+            updatePaginationControls(currentPage, totalPages);
+        } catch (error) {
+            handleError('An error occurred while fetching movies in the collection.', error);
+        }
+    }
+
     async function updateMediaDisplay() {
         $popularMedia.html('<p>Loading...</p>');
 
-        if (currentMediaType === 'company' && currentCompanyId) {
+        if (currentMediaType === 'franchise' && currentFranchiseKeywordId) {
+            await fetchMediaByFranchise(currentFranchiseKeywordId);
+        } else if (currentMediaType === 'collection' && currentCollectionId) {
+            await fetchMoviesInCollection(currentCollectionId);
+        } else if (currentMediaType === 'company' && currentCompanyId) {
             await fetchMoviesAndShowsByCompany(currentCompanyId, currentPage);
         } else if (currentMediaType === 'actor' && currentActorId) {
             await fetchMoviesAndShowsByActor(currentActorId, currentPage);
@@ -351,7 +542,6 @@ $(document).ready(async function () {
         }
     }
 
-    // Call fetchPopularMedia on initial load
     await fetchPopularMedia(currentPage);
 
     // Debounce function
