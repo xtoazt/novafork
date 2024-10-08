@@ -23,7 +23,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css?v=1.1">
 
     <!-- Consolidated in one Css file with versioning -->
-    <link rel="stylesheet" href="themes/themes.css?v=1.4.48">
+    <link rel="stylesheet" href="themes/themes.css?v=1.4.49">
 
     <!-- jQuery with versioning -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js?v=1.1"
@@ -137,9 +137,9 @@
         </div>
 
         <!-- Filter Settings -->
-        <div class="mb-8">
-            <h2 class="text-sm font-semibold text-white mb-2">Filter Settings</h2>
-            <div class="flex flex-wrap items-center gap-2">
+        <div class="mb-12">
+            <h2 class="text-sm font-semibold text-white mb-4">Filter Settings</h2>
+            <div class="flex flex-wrap items-center gap-4 mb-4">
                 <!-- Category Select -->
                 <select id="categorySelect"
                         class="p-3 glassmorphism rounded-full text-white text-sm focus:ring-2 focus:ring-purple-500 focus:outline-none transition duration-300 ease-in-out custom-select">
@@ -151,20 +151,19 @@
                 </select>
                 <!-- Toggle Button for Additional Filters -->
                 <button id="toggleFiltersButton" class="p-3 glassmorphism rounded-full text-white text-sm flex items-center focus:ring-2 focus:ring-purple-500 focus:outline-none transition duration-300 ease-in-out">
-    <span id="toggleIcon" class="transform transition-transform duration-300 ease-in-out mr-2">
-        <!-- Down Arrow Icon -->
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path id="toggleIconPath" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-        </svg>
-    </span>
+            <span id="toggleIcon" class="transform transition-transform duration-300 ease-in-out mr-2">
+                <!-- Down Arrow Icon -->
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path id="toggleIconPath" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                </svg>
+            </span>
                     Advanced Filters
                 </button>
             </div>
 
-
             <!-- Collapsible Section for Additional Filters -->
             <div id="additionalFilters" class="mt-4 hidden">
-                <div class="flex flex-wrap items-center gap-2">
+                <div class="flex flex-wrap items-center gap-4">
                     <!-- Actor Search Input -->
                     <input id="actorSearchInput" type="text" placeholder="Search by Actor"
                            class="p-3 glassmorphism rounded-full text-white text-sm w-64 focus:ring-2 focus:ring-purple-500 focus:outline-none transition duration-300 ease-in-out" />
@@ -179,11 +178,11 @@
                     </div>
                 </div>
             </div>
-
+        </div>
 
 
         <!-- Selected Media Section -->
-        <section id="selectedMediaSection" class="mb-12 hidden">
+        <section id="selectedMediaSection" class="mb-12 mt-12 hidden">
             <h2 class="text-2xl font-bold mb-4 text-white">Selected Media</h2>
             <div id="selectedMovie" class="p-6 rounded-lg flex glassmorphism glow">
                 <div id="videoPlayer" class="w-full max-w-xs h-40 overflow-hidden bg-gray-900 rounded-lg">
