@@ -75,47 +75,44 @@ async function getMovieEmbedUrl(mediaId, provider, apiKey) {
         case 'vidsrcicu':
             return `https://vidsrc.icu/embed/movie/${mediaId}`;
             case 'cinescrape':
-    try {
-        showLoadingScreen(); 
-        const response = await fetch(`https://cinescrape.com/${mediaId}`);
-        if (!response.ok) throw new Error('Network response was not ok');
-        const data = await response.json();
-
-        const videoSources = data.videoSources || [];
-        let selectedSource = null;
-
-        // Find the first 4K source available, ignoring ORG
-        selectedSource = videoSources.find(source => source.label === '4K');
-
-        // If no 4K source is found, fallback to highest quality available (excluding ORG)
-        if (!selectedSource) {
-            const labelOrder = ['1080P', '720P', '360P'];
-            for (let label of labelOrder) {
-                selectedSource = videoSources.find(source => source.label === label);
-                if (selectedSource) break;
-            }
-        }
-
-        // If still not found, take the first available source
-        if (!selectedSource) selectedSource = videoSources[1];
-
-        if (!selectedSource) throw new Error('No video source available');
-
-        // Modify the URL
-        let videoUrl = selectedSource.file;
-        // Replace '.mkv' with '.mp4'
-        videoUrl = videoUrl.replace('.mkv', '.mp4');
-        // Replace the domain with 'https://mp4.febbox.net'
-        const urlObj = new URL(videoUrl);
-        urlObj.protocol = 'https:';
-        urlObj.hostname = 'mp4.febbox.net';
-        videoUrl = urlObj.toString();
-
-        return videoUrl;
-    } catch (error) {
-        console.error('Error fetching video from Cinescrape:', error);
-        throw error;
-    }          
+                try {
+                    showLoadingScreen(); 
+                    const response = await fetch(`https://cinescrape.com/${mediaId}`);
+                    if (!response.ok) throw new Error('Network response was not ok');
+                    const data = await response.json();
+            
+                    const videoData = data.data[0] || null;
+            
+                    if (!videoData || !videoData.quality_list) throw new Error('No video data available');
+            
+                    // Find the "ORG" quality source
+                    let selectedSource = videoData.quality_list.find(source => source.quality === 'ORG');
+            
+                    // If no ORG source is found, fallback to highest quality available
+                    if (!selectedSource) {
+                        const qualityOrder = ['4K', '1080P', '720P', '360P'];
+                        for (let quality of qualityOrder) {
+                            selectedSource = videoData.quality_list.find(source => source.quality === quality);
+                            if (selectedSource) break;
+                        }
+                    }
+            
+                    if (!selectedSource) throw new Error('No suitable video source found');
+            
+                    // Modify the URL to ensure compatibility for client-side rendering
+                    let videoUrl = selectedSource.download_url;
+                    // Replace the domain with 'https://mp4.febbox.net'
+                    const urlObj = new URL(videoUrl);
+                    urlObj.protocol = 'https:';
+                    urlObj.hostname = 'mp4.febbox.net';
+                    videoUrl = urlObj.toString();
+            
+                    return videoUrl;
+                } catch (error) {
+                    console.error('Error fetching video from Cinescrape:', error);
+                    throw error;
+                }
+                     
         default:
             throw new Error('Provider not recognized.');
     }
