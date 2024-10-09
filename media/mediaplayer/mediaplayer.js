@@ -86,7 +86,7 @@ async function getMovieEmbedUrl(mediaId, provider, apiKey) {
                     if (!videoData || !videoData.quality_list) throw new Error('No video data available');
             
                     // Find the "ORG" quality source
-                    let selectedSource = videoData.quality_list.find(source => source.quality === 'ORG');
+                    let selectedSource = videoData.quality_list.find(source => source.quality === '4K');
             
                     // If no ORG source is found, fallback to highest quality available
                     if (!selectedSource) {
