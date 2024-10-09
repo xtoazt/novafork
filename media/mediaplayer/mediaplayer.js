@@ -77,7 +77,7 @@ async function getMovieEmbedUrl(mediaId, provider, apiKey) {
             case 'cinescrape':
                 try {
                     showLoadingScreen(); 
-                    const response = await fetch(`https://cinescrape.com/${mediaId}`);
+                    const response = await fetch(`https://cinescrape.com/movie/${mediaId}`);
                     if (!response.ok) throw new Error('Network response was not ok');
                     const data = await response.json();
             
