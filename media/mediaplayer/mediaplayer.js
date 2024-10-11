@@ -74,45 +74,41 @@ async function getMovieEmbedUrl(mediaId, provider, apiKey) {
             return `https://multiembed.mov/directstream.php?video_id=${mediaId}&tmdb=1`;
         case 'vidsrcicu':
             return `https://vidsrc.icu/embed/movie/${mediaId}`;
-            case 'cinescrape':
-                try {
-                    showLoadingScreen(); 
-                    const response = await fetch(`https://cinescrape.com/movie/${mediaId}`);
-                    if (!response.ok) throw new Error('Network response was not ok');
-                    const data = await response.json();
-            
-                    const videoData = data.data[0] || null;
-            
-                    if (!videoData || !videoData.quality_list) throw new Error('No video data available');
-            
-                    // Find the "ORG" quality source
-                    let selectedSource = videoData.quality_list.find(source => source.quality === '4K');
-            
-                    // If no ORG source is found, fallback to highest quality available
-                    if (!selectedSource) {
-                        const qualityOrder = ['4K', '1080P', '720P', '360P'];
-                        for (let quality of qualityOrder) {
-                            selectedSource = videoData.quality_list.find(source => source.quality === quality);
-                            if (selectedSource) break;
-                        }
+        case 'cinescrape':
+            try {
+                showLoadingScreen();
+                const response = await fetch(`https://cinescrape.com/movie/${mediaId}`);
+                if (!response.ok) throw new Error('Network response was not ok');
+                const data = await response.json();
+
+                const videoData = data.data[0] || null;
+
+                if (!videoData || !videoData.quality_list) throw new Error('No video data available');
+                const qualityOrder = ['4K', '1080P', '720P', '360P'];
+                let selectedSource = null;
+
+                for (let quality of qualityOrder) {
+                    for (let video of data.data) {
+                        selectedSource = video.quality_list.find(source => source.quality === quality);
+                        if (selectedSource) break;
                     }
-            
-                    if (!selectedSource) throw new Error('No suitable video source found');
-            
-                    // Modify the URL to ensure compatibility for client-side rendering
-                    let videoUrl = selectedSource.download_url;
-                    // Replace the domain with 'https://mp4.febbox.net'
-                    const urlObj = new URL(videoUrl);
-                    urlObj.protocol = 'https:';
-                    urlObj.hostname = 'mp4.febbox.net';
-                    videoUrl = urlObj.toString();
-            
-                    return videoUrl;
-                } catch (error) {
-                    console.error('Error fetching video from Cinescrape:', error);
-                    throw error;
+                    if (selectedSource) break;
                 }
-                     
+
+                if (!selectedSource) throw new Error('No suitable video source found');
+
+                let videoUrl = selectedSource.download_url;
+                const urlObj = new URL(videoUrl);
+                urlObj.protocol = 'https:';
+                urlObj.hostname = 'mp4.febbox.net';
+                videoUrl = urlObj.toString();
+
+                return videoUrl;
+            } catch (error) {
+                console.error('Error fetching video from Cinescrape:', error);
+                throw error;
+            }
+
         default:
             throw new Error('Provider not recognized.');
     }
@@ -134,31 +130,31 @@ function showLoadingScreen() {
     const loadingScreen = document.getElementById('loadingScreen');
     const progressBar = document.getElementById('progressBar');
     const loadingMessage = document.getElementById('loadingMessage');
-  
+
     // Messages to display during loading
     const messages = [
-      "Contacting server...",
-      "Fetching Data...",
-      "URL received...",
-      "Parsing...",
-      "Displaying 4K HDR!"
+        "Contacting server...",
+        "Fetching Data...",
+        "URL received...",
+        "Parsing...",
+        "Displaying 4K HDR!"
     ];
-  
+
     let currentProgress = 0;
     loadingScreen.classList.remove('hidden'); // Show loading screen
-  
+
     // Interval to simulate loading progress and change messages
     const interval = setInterval(() => {
-      if (currentProgress >= 100) {
-        clearInterval(interval);
-        loadingScreen.classList.add('hidden'); // Hide loading screen when done
-      } else {
-        currentProgress += 20; // Increase progress (adjust for a smooth transition)
-        progressBar.style.width = `${currentProgress}%`;
-        loadingMessage.textContent = messages[Math.floor(currentProgress / 20)]; // Update message
-      }
+        if (currentProgress >= 100) {
+            clearInterval(interval);
+            loadingScreen.classList.add('hidden'); // Hide loading screen when done
+        } else {
+            currentProgress += 20; // Increase progress (adjust for a smooth transition)
+            progressBar.style.width = `${currentProgress}%`;
+            loadingMessage.textContent = messages[Math.floor(currentProgress / 20)]; // Update message
+        }
     }, 3000); // Change message every 3 seconds
-  }
+}
 
 // Function to hide loading screen
 function hideLoadingScreen() {
@@ -228,34 +224,27 @@ async function getTvEmbedUrl(mediaId, seasonId, episodeId, provider, apiKey) {
                 if (!response.ok) throw new Error('Network response was not ok');
                 const data = await response.json();
 
-                const videoData = data.data?.[0];
+                const videoData = data.data[0] || null;
 
-                if (!videoData?.quality_list) throw new Error('No video data available');
-
-                // Find the source with the highest quality and bitrate
+                if (!videoData || !videoData.quality_list) throw new Error('No video data available');
                 const qualityOrder = ['4K', '1080P', '720P', '360P'];
                 let selectedSource = null;
 
                 for (let quality of qualityOrder) {
-                    // Filter sources by the current quality level
-                    const sources = videoData.quality_list.filter(source => source.quality === quality);
-
-                    // Select the source with the highest bitrate if available
-                    if (sources.length > 0) {
-                        selectedSource = sources.reduce((highestBitrateSource, currentSource) =>
-                            currentSource.bitrate > highestBitrateSource.bitrate ? currentSource : highestBitrateSource
-                        );
-                        break;
+                    for (let video of data.data) {
+                        selectedSource = video.quality_list.find(source => source.quality === quality);
+                        if (selectedSource) break;
                     }
+                    if (selectedSource) break;
                 }
 
                 if (!selectedSource) throw new Error('No suitable video source found');
 
-                // Modify the URL to ensure compatibility for client-side rendering
-                const urlObj = new URL(selectedSource.download_url);
+                let videoUrl = selectedSource.download_url;
+                const urlObj = new URL(videoUrl);
                 urlObj.protocol = 'https:';
                 urlObj.hostname = 'mp4.febbox.net';
-                const videoUrl = urlObj.toString();
+                videoUrl = urlObj.toString();
 
                 return videoUrl;
             } catch (error) {
@@ -266,6 +255,7 @@ async function getTvEmbedUrl(mediaId, seasonId, episodeId, provider, apiKey) {
         default:
             throw new Error('Provider not recognized.');
     }
+
 }
 
 
@@ -401,11 +391,11 @@ async function displaySelectedMedia(media, mediaType) {
         });
 
         async function updateVideo() {
-            
+
             try {
                 const provider = $providerSelect.length ? $providerSelect.val() : selectedProvider;
                 let endpoint;
-        
+
                 // Determine whether we are embedding a movie or TV show
                 if (mediaType === 'tv') {
                     if (!selectedSeason || !selectedEpisode) {
@@ -416,7 +406,7 @@ async function displaySelectedMedia(media, mediaType) {
                 } else {
                     endpoint = await getMovieEmbedUrl(media.id, provider, apiKey);
                 }
-        
+
                 let playerHtml;
                 if (provider === 'cinescrape') {
                     const videoHtml = `
@@ -440,14 +430,14 @@ async function displaySelectedMedia(media, mediaType) {
                             ${referrerPolicy}>
                         </iframe>
                     `;
-        
+
                     $videoPlayer.html(iframeHtml).removeClass('hidden');
                     $movieInfo.children().not($videoPlayer).addClass('hidden');
                     $closePlayerButton.removeClass('hidden');
 
                     $('iframe').one('load', function () {
                         const iframeWindow = this.contentWindow;
-            
+
                         if (iframeWindow) {
                             try {
                                 // Disable all click events inside the iframe on A and BUTTON tags
@@ -458,12 +448,12 @@ async function displaySelectedMedia(media, mediaType) {
                                         console.log('Blocked click on:', target);
                                     }
                                 });
-            
+
                                 iframeWindow.open = function () {
                                     console.log('Blocked pop-up attempt');
                                     return null;
                                 };
-            
+
                                 iframeWindow.eval(`(function() {
                                     const originalOpen = window.open;
                                     window.open = function(...args) {
@@ -471,7 +461,7 @@ async function displaySelectedMedia(media, mediaType) {
                                         return null;
                                     };
                                 })();`);
-            
+
                                 // Prevent page unload, submit, etc., inside the iframe
                                 ['beforeunload', 'unload', 'submit'].forEach(eventType => {
                                     iframeWindow.document.addEventListener(eventType, event => event.preventDefault());
@@ -481,14 +471,14 @@ async function displaySelectedMedia(media, mediaType) {
                             }
                         }
                     });
-        
-                // Event listener for iframe load event
+
+                    // Event listener for iframe load event
                 }
             } catch (error) {
                 console.error('Error updating video:', error);
             }
         }
-           
+
 
         async function closeVideoPlayer() {
             $videoPlayer.html('').addClass('hidden');
