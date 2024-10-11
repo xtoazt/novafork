@@ -388,35 +388,35 @@ async function displaySelectedMedia(media, mediaType) {
             }
         });
 
-        // let devToolsBlocked = true; // Toggle this to true or false
+        // // let devToolsBlocked = true; // Toggle this to true or false
 
-        function preventDevTools() {
-            if (devToolsBlocked) {
-                const threshold = 160;
+        // function preventDevTools() {
+        //     if (devToolsBlocked) {
+        //         const threshold = 160;
 
-                function devToolsOpen() {
-                    return window.outerHeight - window.innerHeight > threshold || window.outerWidth - window.innerWidth > threshold;
-                }
+        //         function devToolsOpen() {
+        //             return window.outerHeight - window.innerHeight > threshold || window.outerWidth - window.innerWidth > threshold;
+        //         }
 
-                setInterval(() => {
-                    if (devToolsOpen()) {
-                        window.location.reload();
-                    }
-                }, 1000);
+        //         setInterval(() => {
+        //             if (devToolsOpen()) {
+        //                 window.location.reload();
+        //             }
+        //         }, 1000);
 
-                document.addEventListener("keydown", function (event) {
-                    if (event.key === "F12" || (event.ctrlKey && event.shiftKey && event.key === "I")) {
-                        event.preventDefault();
-                        window.location.reload();
-                    }
-                });
+        //         document.addEventListener("keydown", function (event) {
+        //             if (event.key === "F12" || (event.ctrlKey && event.shiftKey && event.key === "I")) {
+        //                 event.preventDefault();
+        //                 window.location.reload();
+        //             }
+        //         });
 
-                document.addEventListener("contextmenu", function (event) {
-                    event.preventDefault();
-                });
-            }
-        }
-        preventDevTools();
+        //         document.addEventListener("contextmenu", function (event) {
+        //             event.preventDefault();
+        //         });
+        //     }
+        // }
+        // preventDevTools();
 
         async function updateVideo() {
             try {
