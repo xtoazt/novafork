@@ -228,31 +228,34 @@ async function getTvEmbedUrl(mediaId, seasonId, episodeId, provider, apiKey) {
                 if (!response.ok) throw new Error('Network response was not ok');
                 const data = await response.json();
 
-                const videoData = data.data[0] || null;
+                const videoData = data.data?.[0];
 
-                if (!videoData || !videoData.quality_list) throw new Error('No video data available');
+                if (!videoData?.quality_list) throw new Error('No video data available');
 
-                // Find the "ORG" quality source
-                let selectedSource = videoData.quality_list.find(source => source.quality === '4K');
+                // Find the source with the highest quality and bitrate
+                const qualityOrder = ['4K', '1080P', '720P', '360P'];
+                let selectedSource = null;
 
-                // If no ORG source is found, fallback to highest quality available
-                if (!selectedSource) {
-                    const qualityOrder = ['4K', '1080P', '720P', '360P'];
-                    for (let quality of qualityOrder) {
-                        selectedSource = videoData.quality_list.find(source => source.quality === quality);
-                        if (selectedSource) break;
+                for (let quality of qualityOrder) {
+                    // Filter sources by the current quality level
+                    const sources = videoData.quality_list.filter(source => source.quality === quality);
+
+                    // Select the source with the highest bitrate if available
+                    if (sources.length > 0) {
+                        selectedSource = sources.reduce((highestBitrateSource, currentSource) =>
+                            currentSource.bitrate > highestBitrateSource.bitrate ? currentSource : highestBitrateSource
+                        );
+                        break;
                     }
                 }
 
                 if (!selectedSource) throw new Error('No suitable video source found');
 
                 // Modify the URL to ensure compatibility for client-side rendering
-                let videoUrl = selectedSource.download_url;
-                // Replace the domain with 'https://mp4.febbox.net'
-                const urlObj = new URL(videoUrl);
+                const urlObj = new URL(selectedSource.download_url);
                 urlObj.protocol = 'https:';
                 urlObj.hostname = 'mp4.febbox.net';
-                videoUrl = urlObj.toString();
+                const videoUrl = urlObj.toString();
 
                 return videoUrl;
             } catch (error) {
