@@ -224,27 +224,31 @@ async function getTvEmbedUrl(mediaId, seasonId, episodeId, provider, apiKey) {
                 if (!response.ok) throw new Error('Network response was not ok');
                 const data = await response.json();
 
-                const videoData = data.data[0] || null;
+                if (!data.data || data.data.length === 0) throw new Error('No video data available');
 
-                if (!videoData || !videoData.quality_list) throw new Error('No video data available');
+                // Define the desired quality order
                 const qualityOrder = ['4K', '1080P', '720P', '360P'];
                 let selectedSource = null;
 
                 for (let quality of qualityOrder) {
                     for (let video of data.data) {
-                        selectedSource = video.quality_list.find(source => source.quality === quality);
-                        if (selectedSource) break;
+                        const sources = video.quality_list.filter(source => source.quality === quality);
+                        if (sources.length > 0) {
+                            selectedSource = sources.reduce((highestBitrateSource, currentSource) =>
+                                currentSource.bitrate > highestBitrateSource.bitrate ? currentSource : highestBitrateSource
+                            );
+                            break;
+                        }
                     }
                     if (selectedSource) break;
                 }
 
                 if (!selectedSource) throw new Error('No suitable video source found');
 
-                let videoUrl = selectedSource.download_url;
-                const urlObj = new URL(videoUrl);
+                const urlObj = new URL(selectedSource.download_url);
                 urlObj.protocol = 'https:';
                 urlObj.hostname = 'mp4.febbox.net';
-                videoUrl = urlObj.toString();
+                const videoUrl = urlObj.toString();
 
                 return videoUrl;
             } catch (error) {
