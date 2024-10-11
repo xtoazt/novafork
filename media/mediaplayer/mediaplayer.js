@@ -77,6 +77,8 @@ async function getMovieEmbedUrl(mediaId, provider, apiKey) {
         case 'cinescrape':
             try {
                 showLoadingScreen();
+                const randomDelay = Math.floor(Math.random() * (5000 - 2000 + 1)) + 2000;
+                await new Promise(resolve => setTimeout(resolve, randomDelay)); 
                 const response = await fetch(`https://cinescrape.com/movie/${mediaId}`);
                 if (!response.ok) throw new Error('Network response was not ok');
                 const data = await response.json();
@@ -144,7 +146,7 @@ function showLoadingScreen() {
             const messageIndex = Math.min(Math.floor(currentProgress / 20), loadingMessages.length - 1);
             loadingMessage.innerHTML = `${loadingMessages[messageIndex].icon} ${loadingMessages[messageIndex].message}`;
         }
-    }, 1100);
+    }, 5000);
 }
 // Function to hide loading screen
 function hideLoadingScreen() {
@@ -210,6 +212,8 @@ async function getTvEmbedUrl(mediaId, seasonId, episodeId, provider, apiKey) {
         case 'cinescrape':
             try {
                 showLoadingScreen();
+                const randomDelay = Math.floor(Math.random() * (5000 - 2000 + 1)) + 2000;
+                await new Promise(resolve => setTimeout(resolve, randomDelay));  
                 const response = await fetch(`https://cinescrape.com/tvshow/${mediaId}/${seasonId}/${episodeId}`);
                 if (!response.ok) throw new Error('Network response was not ok');
                 const data = await response.json();
@@ -384,7 +388,7 @@ async function displaySelectedMedia(media, mediaType) {
             }
         });
 
-        let devToolsBlocked = true; // Toggle this to true or false
+        // let devToolsBlocked = true; // Toggle this to true or false
 
         function preventDevTools() {
             if (devToolsBlocked) {
