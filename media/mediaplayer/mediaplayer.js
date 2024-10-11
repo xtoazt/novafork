@@ -114,15 +114,14 @@ async function getMovieEmbedUrl(mediaId, provider, apiKey) {
     }
 }
 
-
 // Define loading messages
 const loadingMessages = [
-    "Contacting server...",
-    "Fetching data...",
-    "URL received...",
-    "Parsing data...",
-    "Streaming in 4K HDR...",
-    "Almost ready..."
+    { message: "Contacting server...", icon: "<i class='fas fa-satellite'></i>" },
+    { message: "Fetching data...", icon: "<i class='fas fa-download'></i>" },
+    { message: "URL received...", icon: "<i class='fas fa-link'></i>" },
+    { message: "Parsing data...", icon: "<i class='fas fa-search'></i>" },
+    { message: "Streaming in 4K HDR...", icon: "<i class='fas fa-tv'></i>" },
+    { message: "Almost ready...", icon: "<i class='fas fa-hourglass-half'></i>" }
 ];
 
 // Function to show loading screen and initiate progress
@@ -131,31 +130,22 @@ function showLoadingScreen() {
     const progressBar = document.getElementById('progressBar');
     const loadingMessage = document.getElementById('loadingMessage');
 
-    // Messages to display during loading
-    const messages = [
-        "Contacting server...",
-        "Fetching Data...",
-        "URL received...",
-        "Parsing...",
-        "Displaying 4K HDR!"
-    ];
-
     let currentProgress = 0;
-    loadingScreen.classList.remove('hidden'); // Show loading screen
+    loadingScreen.classList.remove('hidden');
 
     // Interval to simulate loading progress and change messages
     const interval = setInterval(() => {
         if (currentProgress >= 100) {
             clearInterval(interval);
-            loadingScreen.classList.add('hidden'); // Hide loading screen when done
+            loadingScreen.classList.add('hidden');
         } else {
-            currentProgress += 20; // Increase progress (adjust for a smooth transition)
+            currentProgress += Math.floor(Math.random() * 15) + 5;
             progressBar.style.width = `${currentProgress}%`;
-            loadingMessage.textContent = messages[Math.floor(currentProgress / 20)]; // Update message
+            const messageIndex = Math.min(Math.floor(currentProgress / 20), loadingMessages.length - 1);
+            loadingMessage.innerHTML = `${loadingMessages[messageIndex].icon} ${loadingMessages[messageIndex].message}`;
         }
-    }, 3000); // Change message every 3 seconds
+    }, 1100);
 }
-
 // Function to hide loading screen
 function hideLoadingScreen() {
     const loadingScreen = document.getElementById("loadingScreen");
@@ -395,30 +385,30 @@ async function displaySelectedMedia(media, mediaType) {
         });
 
         async function updateVideo() {
-
             try {
                 const provider = $providerSelect.length ? $providerSelect.val() : selectedProvider;
                 let endpoint;
 
-                // Determine whether we are embedding a movie or TV show
                 if (mediaType === 'tv') {
                     if (!selectedSeason || !selectedEpisode) {
                         alert('Please select a season and an episode.');
                         return;
                     }
+                    if (provider === 'cinescrape') showLoadingScreen();
                     endpoint = await getTvEmbedUrl(media.id, selectedSeason, selectedEpisode, provider, apiKey);
                 } else {
+                    if (provider === 'cinescrape') showLoadingScreen();
                     endpoint = await getMovieEmbedUrl(media.id, provider, apiKey);
                 }
 
                 let playerHtml;
                 if (provider === 'cinescrape') {
                     const videoHtml = `
-                         <video controls autoplay style="height: 600px; width: 100%;" class="video-element">
-                            <source src="${endpoint}" type="video/mp4">
-                            Your browser does not support the video tag.
-                        </video>
-                    `;
+                 <video controls autoplay style="height: 1000px; width: 100%;" class="video-element">
+                    <source src="${endpoint}" type="video/mp4">
+                    Your browser does not support the video tag.
+                </video>
+            `;
                     $videoPlayer.html(videoHtml).removeClass('hidden');
                     $movieInfo.children().not($videoPlayer).addClass('hidden');
                     $closePlayerButton.removeClass('hidden');
@@ -426,14 +416,14 @@ async function displaySelectedMedia(media, mediaType) {
                     const sandboxAttribute = provider === 'vidlink' ? 'sandbox="allow-same-origin allow-scripts allow-forms"' : '';
                     const referrerPolicy = provider === 'vidbinge' ? 'referrerpolicy="origin-when-cross-origin"' : '';
                     const iframeHtml = `
-                        <iframe 
-                            src="${endpoint}" 
-                            class="video-iframe" 
-                            allowfullscreen 
-                            ${sandboxAttribute} 
-                            ${referrerPolicy}>
-                        </iframe>
-                    `;
+                <iframe 
+                    src="${endpoint}" 
+                    class="video-iframe" 
+                    allowfullscreen 
+                    ${sandboxAttribute} 
+                    ${referrerPolicy}>
+                </iframe>
+            `;
 
                     $videoPlayer.html(iframeHtml).removeClass('hidden');
                     $movieInfo.children().not($videoPlayer).addClass('hidden');
@@ -459,12 +449,12 @@ async function displaySelectedMedia(media, mediaType) {
                                 };
 
                                 iframeWindow.eval(`(function() {
-                                    const originalOpen = window.open;
-                                    window.open = function(...args) {
-                                        console.log('Blocked window.open call with args:', args);
-                                        return null;
-                                    };
-                                })();`);
+                            const originalOpen = window.open;
+                            window.open = function(...args) {
+                                console.log('Blocked window.open call with args:', args);
+                                return null;
+                            };
+                        })();`);
 
                                 // Prevent page unload, submit, etc., inside the iframe
                                 ['beforeunload', 'unload', 'submit'].forEach(eventType => {
@@ -475,13 +465,12 @@ async function displaySelectedMedia(media, mediaType) {
                             }
                         }
                     });
-
-                    // Event listener for iframe load event
                 }
             } catch (error) {
                 console.error('Error updating video:', error);
             }
         }
+
 
 
         async function closeVideoPlayer() {
@@ -800,7 +789,6 @@ async function displaySelectedMedia(media, mediaType) {
             } else {
                 $selectEpisodeButton.text(`Episode ${episodeNumber} Selected`);
             }
-            updateVideo();
 
             const storedData = JSON.parse(localStorage.getItem('vidLinkProgress') || '{}');
             const mediaId = media.id;
