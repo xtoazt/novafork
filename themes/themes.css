@@ -259,6 +259,7 @@ button:active {
     scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
 }
 
+
 #searchSuggestions::-webkit-scrollbar {
     width: 4px;
 }

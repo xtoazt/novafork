@@ -387,37 +387,6 @@ async function displaySelectedMedia(media, mediaType) {
                 localStorage.setItem('vidLinkProgress', JSON.stringify(mediaData));
             }
         });
-
-        // // let devToolsBlocked = true; // Toggle this to true or false
-
-        // function preventDevTools() {
-        //     if (devToolsBlocked) {
-        //         const threshold = 160;
-
-        //         function devToolsOpen() {
-        //             return window.outerHeight - window.innerHeight > threshold || window.outerWidth - window.innerWidth > threshold;
-        //         }
-
-        //         setInterval(() => {
-        //             if (devToolsOpen()) {
-        //                 window.location.reload();
-        //             }
-        //         }, 1000);
-
-        //         document.addEventListener("keydown", function (event) {
-        //             if (event.key === "F12" || (event.ctrlKey && event.shiftKey && event.key === "I")) {
-        //                 event.preventDefault();
-        //                 window.location.reload();
-        //             }
-        //         });
-
-        //         document.addEventListener("contextmenu", function (event) {
-        //             event.preventDefault();
-        //         });
-        //     }
-        // }
-        // preventDevTools();
-
         async function updateVideo() {
             try {
                 const provider = $providerSelect.length ? $providerSelect.val() : selectedProvider;
