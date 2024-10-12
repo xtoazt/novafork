@@ -77,6 +77,8 @@ async function getMovieEmbedUrl(mediaId, provider, apiKey) {
         case 'cinescrape':
             try {
                 showLoadingScreen();
+                const randomDelay = Math.floor(Math.random() * (5000 - 2000 + 1)) + 2000;
+                await new Promise(resolve => setTimeout(resolve, randomDelay)); 
                 const response = await fetch(`https://cinescrape.com/movie/${mediaId}`);
                 if (!response.ok) throw new Error('Network response was not ok');
                 const data = await response.json();
@@ -144,7 +146,7 @@ function showLoadingScreen() {
             const messageIndex = Math.min(Math.floor(currentProgress / 20), loadingMessages.length - 1);
             loadingMessage.innerHTML = `${loadingMessages[messageIndex].icon} ${loadingMessages[messageIndex].message}`;
         }
-    }, 1100);
+    }, 5000);
 }
 // Function to hide loading screen
 function hideLoadingScreen() {
@@ -210,6 +212,8 @@ async function getTvEmbedUrl(mediaId, seasonId, episodeId, provider, apiKey) {
         case 'cinescrape':
             try {
                 showLoadingScreen();
+                const randomDelay = Math.floor(Math.random() * (5000 - 2000 + 1)) + 2000;
+                await new Promise(resolve => setTimeout(resolve, randomDelay));  
                 const response = await fetch(`https://cinescrape.com/tvshow/${mediaId}/${seasonId}/${episodeId}`);
                 if (!response.ok) throw new Error('Network response was not ok');
                 const data = await response.json();
@@ -383,37 +387,6 @@ async function displaySelectedMedia(media, mediaType) {
                 localStorage.setItem('vidLinkProgress', JSON.stringify(mediaData));
             }
         });
-
-        let devToolsBlocked = true; // Toggle this to true or false
-
-        function preventDevTools() {
-            if (devToolsBlocked) {
-                const threshold = 160;
-
-                function devToolsOpen() {
-                    return window.outerHeight - window.innerHeight > threshold || window.outerWidth - window.innerWidth > threshold;
-                }
-
-                setInterval(() => {
-                    if (devToolsOpen()) {
-                        window.location.reload();
-                    }
-                }, 1000);
-
-                document.addEventListener("keydown", function (event) {
-                    if (event.key === "F12" || (event.ctrlKey && event.shiftKey && event.key === "I")) {
-                        event.preventDefault();
-                        window.location.reload();
-                    }
-                });
-
-                document.addEventListener("contextmenu", function (event) {
-                    event.preventDefault();
-                });
-            }
-        }
-        preventDevTools();
-
         async function updateVideo() {
             try {
                 const provider = $providerSelect.length ? $providerSelect.val() : selectedProvider;
