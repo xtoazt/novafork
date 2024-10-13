@@ -166,6 +166,15 @@ async function getMovieEmbedUrl(mediaId, provider, apiKey, language=null) {
                 console.error('Error fetching video from Cinescrape:', error);
                 throw error;
             }
+            case 'trailer':
+            try {
+                const trailerUrl = await fetchTrailer(mediaId, 'movie', apiKey);
+                if (!trailerUrl) throw new Error('Trailer not found');
+                return trailerUrl;
+            } catch (error) {
+                console.error('Error fetching trailer for movie:', error);
+                throw error;
+            }
 
         default:
             throw new Error('Provider not recognized.');
@@ -304,13 +313,20 @@ async function getTvEmbedUrl(mediaId, seasonId, episodeId, provider, apiKey) {
                 console.error('Error fetching video from Cinescrape:', error);
                 throw error;
             }
-
-        default:
-            throw new Error('Provider not recognized.');
+            case 'trailer':
+                try {
+                    const trailerUrl = await fetchTrailer(mediaId, 'tv', apiKey);
+                    if (!trailerUrl) throw new Error('Trailer not found');
+                    return trailerUrl;
+                } catch (error) {
+                    console.error('Error fetching trailer for TV show:', error);
+                    throw error;
+                }
+    
+            default:
+                throw new Error('Provider not recognized.');
+        }
     }
-
-}
-
 
 
 async function fetchMediaData(mediaId, mediaType, apiKey) {
@@ -326,6 +342,7 @@ async function fetchTrailer(mediaId, mediaType, apiKey) {
     const trailer = data.results.find(video => video.type === 'Trailer' && video.site === 'YouTube');
     return trailer ? `https://www.youtube.com/embed/${trailer.key}` : null;
 }
+
 
 async function displaySelectedMedia(media, mediaType) {
     const $selectedMovie = $('#selectedMovie');
