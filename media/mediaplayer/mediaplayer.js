@@ -486,7 +486,7 @@ async function displaySelectedMedia(media, mediaType) {
 
                 if (provider === 'cinescrape') {
                     const videoHtml = `
-                <video preload="auto" controls autoplay style="height: 1000px; width: 100%;" class="video-element">
+                <video preload="auto" crossorigin="anonymous" controls autoplay style="height: 1000px; width: 100%;" class="video-element">
                     <source src="${endpoint}" type="video/mp4">
                     Your browser does not support the video tag.
                 </video>
@@ -497,7 +497,7 @@ async function displaySelectedMedia(media, mediaType) {
                 } else if (provider === 'filmxy') {
                     // Render basic HLS video player using hls.js
                     playerHtml = `
-                        <video id="hlsVideoPlayer" preload="auto" controls style="width: 100%; height: auto;" class="video-element">
+                        <video id="hlsVideoPlayer" crossorigin="anonymous" preload="auto" controls style="width: 100%; height: auto;" class="video-element">
 
                         </video>
                     `;
@@ -509,9 +509,11 @@ async function displaySelectedMedia(media, mediaType) {
                     if (Hls.isSupported()) {
                         const video = document.getElementById('hlsVideoPlayer');
                         const hls = new Hls({
-                            maxBufferLength: 30, // Adjust as needed
-                            maxMaxBufferLength: 60, // Adjust as needed
-                            // Other configurations can be added here
+                            maxBufferLength: 30,
+                            maxMaxBufferLength: 60,
+                            startPosition: 0, // Start buffering from the beginning
+                            lowLatencyMode: true, // Enable for low-latency streams
+                            liveSyncDuration: 15, // For live HLS streaming
                         });
                         hls.loadSource(endpoint);
                         hls.attachMedia(video);
@@ -538,6 +540,7 @@ async function displaySelectedMedia(media, mediaType) {
                     class="video-iframe" 
                     allowfullscreen 
                     preload="auto"
+                    crossorigin="anonymous"
                     ${sandboxAttribute} 
                     ${referrerPolicy}>
                 </iframe>
