@@ -60,7 +60,7 @@ function promptUserForLanguage(languages) {
 }
 
 
-async function getMovieEmbedUrl(mediaId, provider, apiKey) {
+async function getMovieEmbedUrl(mediaId, provider, apiKey, language=null) {
     const primaryColor = '#FFFFFF';
     const secondaryColor = '#FFFFFF';
     const iconColor = '#FFFFFF';
@@ -77,20 +77,12 @@ async function getMovieEmbedUrl(mediaId, provider, apiKey) {
                 }
 
                 const languageCode = language.toLowerCase();
-
-                // Build the URL
                 const url = `https://cinescrape.com/global/${languageCode}/${mediaId}`;
-
-                // Fetch the data
                 const response = await fetch(url);
                 if (!response.ok) throw new Error('Network response was not ok');
                 const data = await response.json();
-
-                // Get the m3u8 link from the response
                 const m3u8Link = data.streamData.data.link;
                 if (!m3u8Link) throw new Error('No m3u8 link found');
-
-                // Return the m3u8 link
                 return m3u8Link;
             } catch (error) {
                 console.error('Error fetching video from filmxy:', error);
@@ -210,7 +202,7 @@ function showLoadingScreen() {
             const messageIndex = Math.min(Math.floor(currentProgress / 20), loadingMessages.length - 1);
             loadingMessage.innerHTML = `${loadingMessages[messageIndex].icon} ${loadingMessages[messageIndex].message}`;
         }
-    }, 1100);
+    }, 2000);
 }
 // Function to hide loading screen
 function hideLoadingScreen() {
