@@ -461,10 +461,27 @@ async function displaySelectedMedia(media, mediaType) {
         });
         async function updateVideo() {
             try {
+                // Determine the selected provider and ensure API key is present
                 const provider = $providerSelect.length ? $providerSelect.val() : selectedProvider;
+                const apiKey = await getApiKey();
+                if (!apiKey) return console.error('API key is not available.');
+                
                 let endpoint;
-
-                if (mediaType === 'tv') {
+        
+                // Check if the selected provider is for a trailer
+                if (provider === 'trailer') {
+                    // Trailer handling for movies and TV shows
+                    if (mediaType === 'movie') {
+                        endpoint = await getMovieEmbedUrl(media.id, provider, apiKey);
+                    } else if (mediaType === 'tv') {
+                        if (!selectedSeason || !selectedEpisode) {
+                            alert('Please select a season and an episode.');
+                            return;
+                        }
+                        endpoint = await getTvEmbedUrl(media.id, selectedSeason, selectedEpisode, provider, apiKey);
+                    }
+                } else if (mediaType === 'tv') {
+                    // Non-trailer TV show handling
                     if (!selectedSeason || !selectedEpisode) {
                         alert('Please select a season and an episode.');
                         return;
@@ -472,9 +489,9 @@ async function displaySelectedMedia(media, mediaType) {
                     if (provider === 'cinescrape') showLoadingScreen();
                     endpoint = await getTvEmbedUrl(media.id, selectedSeason, selectedEpisode, provider, apiKey);
                 } else {
-                    // Handle Movies
+                    // Non-trailer movie handling
                     if (provider === 'filmxy') {
-                        // Prompt the user to select a language
+                        // Prompt for language selection with filmxy provider
                         const languages = ['Hindi', 'English', 'Bengali', 'Tamil', 'Telugu'];
                         const selectedLanguage = await promptUserForLanguage(languages);
                         if (!selectedLanguage) {
@@ -490,13 +507,20 @@ async function displaySelectedMedia(media, mediaType) {
                         endpoint = await getMovieEmbedUrl(media.id, provider, apiKey);
                     }
                 }
-
-                let playerHtml;
-
-                if (provider === 'cinescrape') {
+        
+                // Display video based on provider
+                if (provider === 'trailer') {
+                    // Trailer display in an iframe
+                    const iframeHtml = `
+                        <iframe src="${endpoint}" class="video-iframe" allowfullscreen loading="lazy" style="width: 100%; height: 600px;"></iframe>
+                    `;
+                    $videoPlayer.html(iframeHtml).removeClass('hidden');
+                    $movieInfo.children().not($videoPlayer).addClass('hidden');
+                    $closePlayerButton.removeClass('hidden');
+                } else if (provider === 'cinescrape') {
+                    // Cinescrape specific video setup
                     const videoHtml = `
                         <video id="mp4VideoPlayer" loading="lazy" preload="metadata" crossorigin="anonymous" controls style="height: 1000px; width: 100%;" class="video-element">
-                            <!-- Do not set the src attribute yet -->
                             <source data-src="${endpoint}" type="video/mp4">
                             Your browser does not support the video tag.
                         </video>
@@ -504,11 +528,10 @@ async function displaySelectedMedia(media, mediaType) {
                     $videoPlayer.html(videoHtml).removeClass('hidden');
                     $movieInfo.children().not($videoPlayer).addClass('hidden');
                     $closePlayerButton.removeClass('hidden');
-                
-                    // Lazy load the video source when the video is in view
+        
+                    // Lazy load video source
                     const videoElement = document.getElementById('mp4VideoPlayer');
                     const sourceElement = videoElement.querySelector('source');
-                
                     if ('IntersectionObserver' in window) {
                         const observer = new IntersectionObserver((entries, observer) => {
                             entries.forEach(entry => {
@@ -521,111 +544,69 @@ async function displaySelectedMedia(media, mediaType) {
                         });
                         observer.observe(videoElement);
                     } else {
-                        // Fallback for browsers without IntersectionObserver
                         sourceElement.src = sourceElement.getAttribute('data-src');
                         videoElement.load();
                     }
-                }
-                else if (provider === 'filmxy') {
-                    // Render basic HLS video player using hls.js
-                    playerHtml = `
+                } else if (provider === 'filmxy') {
+                    // HLS setup for filmxy provider
+                    const playerHtml = `
                         <video id="hlsVideoPlayer" loading="lazy" crossorigin="anonymous" preload="metadata" controls style="width: 100%; height: auto;" class="video-element">
                         </video>
                     `;
                     $videoPlayer.html(playerHtml).removeClass('hidden');
                     $movieInfo.children().not($videoPlayer).addClass('hidden');
                     $closePlayerButton.removeClass('hidden');
-                
-                    // Lazy load the HLS stream when the video is in view
+        
                     const videoElement = document.getElementById('hlsVideoPlayer');
-                
                     if ('IntersectionObserver' in window && Hls.isSupported()) {
                         const observer = new IntersectionObserver((entries, observer) => {
                             entries.forEach(entry => {
                                 if (entry.isIntersecting) {
-                                    const hls = new Hls({
-                                        // Adjust buffer settings
-                                        maxBufferLength: 10,        // Maximum buffer size in seconds
-                                        maxMaxBufferLength: 30,     // Absolute maximum buffer size
-                                        initialLiveManifestSize: 1, // Number of segments to load initially
-                                        // Enable fast switching between quality levels
-                                        enableWorker: true,         // Use a web worker for demuxing
-                                        lowLatencyMode: true,       // For low-latency streams
-                                        backBufferLength: 90,       // Retain buffer for seeking backward
-                                        // Other configurations
-                                    });
-                                    
+                                    const hls = new Hls({ lowLatencyMode: true, backBufferLength: 90 });
                                     hls.loadSource(endpoint);
                                     hls.attachMedia(videoElement);
-                                    hls.on(Hls.Events.MANIFEST_PARSED, function () {
-                                        videoElement.play();
-                                    });
-                                    hls.on(Hls.Events.ERROR, function (event, data) {
-                                        console.error('HLS.js error:', data);
-                                    });
+                                    hls.on(Hls.Events.MANIFEST_PARSED, () => videoElement.play());
                                     observer.unobserve(videoElement);
                                 }
                             });
                         });
                         observer.observe(videoElement);
                     } else if (videoElement.canPlayType('application/vnd.apple.mpegurl')) {
-                        // Native HLS support (e.g., Safari)
                         videoElement.src = endpoint;
-                        videoElement.addEventListener('loadedmetadata', function () {
-                            videoElement.play();
-                        });
+                        videoElement.addEventListener('loadedmetadata', () => videoElement.play());
                     } else {
                         alert('Your browser does not support HLS playback.');
                     }
-                }
-                 else {
+                } else {
+                    // Generic iframe display for other providers
                     const sandboxAttribute = provider === 'vidlink' ? 'sandbox="allow-same-origin allow-scripts allow-forms"' : '';
                     const referrerPolicy = provider === 'vidbinge' ? 'referrerpolicy="origin-when-cross-origin"' : '';
                     const iframeHtml = `
-                <iframe 
-                    src="${endpoint}" 
-                    class="video-iframe" 
-                    allowfullscreen 
-                    preload="auto"
-                    loading="lazy"
-                    crossorigin="anonymous"
-                    ${sandboxAttribute} 
-                    ${referrerPolicy}>
-                </iframe>
-            `;
-
+                        <iframe 
+                            src="${endpoint}" 
+                            class="video-iframe" 
+                            allowfullscreen 
+                            preload="auto"
+                            loading="lazy"
+                            crossorigin="anonymous"
+                            ${sandboxAttribute} 
+                            ${referrerPolicy}>
+                        </iframe>
+                    `;
                     $videoPlayer.html(iframeHtml).removeClass('hidden');
                     $movieInfo.children().not($videoPlayer).addClass('hidden');
                     $closePlayerButton.removeClass('hidden');
-
+        
                     $('iframe').one('load', function () {
                         const iframeWindow = this.contentWindow;
-
                         if (iframeWindow) {
                             try {
-                                // Disable all click events inside the iframe on A and BUTTON tags
-                                iframeWindow.document.addEventListener('click', function (event) {
+                                iframeWindow.document.addEventListener('click', (event) => {
                                     const target = event.target.tagName;
-                                    if (target === 'A' || target === 'BUTTON') {
-                                        event.preventDefault();
-                                        console.log('Blocked click on:', target);
-                                    }
+                                    if (target === 'A' || target === 'BUTTON') event.preventDefault();
                                 });
-
-                                iframeWindow.open = function () {
-                                    console.log('Blocked pop-up attempt');
-                                    return null;
-                                };
-
-                                iframeWindow.eval(`(function() {
-                            const originalOpen = window.open;
-                            window.open = function(...args) {
-                                console.log('Blocked window.open call with args:', args);
-                                return null;
-                            };
-                        })();`);
-
-                                // Prevent page unload, submit, etc., inside the iframe
+                                iframeWindow.open = () => null;
+                                iframeWindow.eval(`(function() { window.open = () => null; })();`);
                                 ['beforeunload', 'unload', 'submit'].forEach(eventType => {
                                     iframeWindow.document.addEventListener(eventType, event => event.preventDefault());
                                 });
@@ -639,6 +620,7 @@ async function displaySelectedMedia(media, mediaType) {
                 console.error('Error updating video:', error);
             }
         }
+        
 
 
         async function closeVideoPlayer() {
