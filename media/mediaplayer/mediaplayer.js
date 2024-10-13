@@ -329,7 +329,40 @@ async function getTvEmbedUrl(mediaId, seasonId, episodeId, provider, apiKey) {
     }
 
 
-    // Retrieve stored orientation lock preference
+// Define the functions first
+function enableOrientationLock() {
+    const element = document.documentElement; // Lock the orientation for the whole page
+    if (screen.orientation && screen.orientation.lock) {
+        screen.orientation.lock('landscape').catch(err => {
+            console.warn('Orientation lock failed:', err);
+        });
+    } else {
+        console.warn('Orientation lock not supported on this device.');
+    }
+    // Optionally, make element fullscreen
+    if (element.requestFullscreen) {
+        element.requestFullscreen().catch(err => {
+            console.warn('Fullscreen request failed:', err);
+        });
+    }
+}
+
+
+function disableOrientationLock() {
+    if (screen.orientation && screen.orientation.unlock) {
+        screen.orientation.unlock().catch(err => {
+            console.warn('Orientation unlock failed:', err);
+        });
+    }
+    // Exit fullscreen mode
+    if (document.exitFullscreen) {
+        document.exitFullscreen().catch(err => {
+            console.warn('Exiting fullscreen failed:', err);
+        });
+    }
+}
+
+// Now add the DOMContentLoaded event listener
 document.addEventListener('DOMContentLoaded', () => {
     const orientationLockToggle = document.getElementById('orientationLockToggle');
     const orientationLockEnabled = JSON.parse(localStorage.getItem('orientationLock')) || false;
@@ -353,34 +386,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 });
 
-function enableOrientationLock() {
-    const element = document.documentElement; // Lock the orientation for the whole page
-    if (screen.orientation && screen.orientation.lock) {
-        screen.orientation.lock('landscape').catch(err => {
-            console.warn('Orientation lock failed:', err);
-        });
-    }
-    // Optionally, make element fullscreen
-    if (element.requestFullscreen) {
-        element.requestFullscreen().catch(err => {
-            console.warn('Fullscreen request failed:', err);
-        });
-    }
-}
-
-function disableOrientationLock() {
-    if (screen.orientation && screen.orientation.unlock) {
-        screen.orientation.unlock().catch(err => {
-            console.warn('Orientation unlock failed:', err);
-        });
-    }
-    // Exit fullscreen mode
-    if (document.exitFullscreen) {
-        document.exitFullscreen().catch(err => {
-            console.warn('Exiting fullscreen failed:', err);
-        });
-    }
-}
 
 
 
