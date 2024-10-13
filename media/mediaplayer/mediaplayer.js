@@ -486,52 +486,90 @@ async function displaySelectedMedia(media, mediaType) {
 
                 if (provider === 'cinescrape') {
                     const videoHtml = `
-                <video preload="auto" crossorigin="anonymous" controls autoplay style="height: 1000px; width: 100%;" class="video-element">
-                    <source src="${endpoint}" type="video/mp4">
-                    Your browser does not support the video tag.
-                </video>
-            `;
+                        <video id="mp4VideoPlayer" loading="lazy" preload="metadata" crossorigin="anonymous" controls style="height: 1000px; width: 100%;" class="video-element">
+                            <!-- Do not set the src attribute yet -->
+                            <source data-src="${endpoint}" type="video/mp4">
+                            Your browser does not support the video tag.
+                        </video>
+                    `;
                     $videoPlayer.html(videoHtml).removeClass('hidden');
                     $movieInfo.children().not($videoPlayer).addClass('hidden');
                     $closePlayerButton.removeClass('hidden');
-                } else if (provider === 'filmxy') {
+                
+                    // Lazy load the video source when the video is in view
+                    const videoElement = document.getElementById('mp4VideoPlayer');
+                    const sourceElement = videoElement.querySelector('source');
+                
+                    if ('IntersectionObserver' in window) {
+                        const observer = new IntersectionObserver((entries, observer) => {
+                            entries.forEach(entry => {
+                                if (entry.isIntersecting) {
+                                    sourceElement.src = sourceElement.getAttribute('data-src');
+                                    videoElement.load();
+                                    observer.unobserve(videoElement);
+                                }
+                            });
+                        });
+                        observer.observe(videoElement);
+                    } else {
+                        // Fallback for browsers without IntersectionObserver
+                        sourceElement.src = sourceElement.getAttribute('data-src');
+                        videoElement.load();
+                    }
+                }
+                else if (provider === 'filmxy') {
                     // Render basic HLS video player using hls.js
                     playerHtml = `
-                        <video id="hlsVideoPlayer" crossorigin="anonymous" preload="auto" controls style="width: 100%; height: auto;" class="video-element">
-
+                        <video id="hlsVideoPlayer" loading="lazy" crossorigin="anonymous" preload="metadata" controls style="width: 100%; height: auto;" class="video-element">
                         </video>
                     `;
                     $videoPlayer.html(playerHtml).removeClass('hidden');
                     $movieInfo.children().not($videoPlayer).addClass('hidden');
                     $closePlayerButton.removeClass('hidden');
-        
-                    // Initialize hls.js
-                    if (Hls.isSupported()) {
-                        const video = document.getElementById('hlsVideoPlayer');
-                        const hls = new Hls({
-                            maxBufferLength: 30,
-                            maxMaxBufferLength: 60,
-                            startPosition: 0, // Start buffering from the beginning
-                            lowLatencyMode: true, // Enable for low-latency streams
-                            liveSyncDuration: 15, // For live HLS streaming
+                
+                    // Lazy load the HLS stream when the video is in view
+                    const videoElement = document.getElementById('hlsVideoPlayer');
+                
+                    if ('IntersectionObserver' in window && Hls.isSupported()) {
+                        const observer = new IntersectionObserver((entries, observer) => {
+                            entries.forEach(entry => {
+                                if (entry.isIntersecting) {
+                                    const hls = new Hls({
+                                        // Adjust buffer settings
+                                        maxBufferLength: 10,        // Maximum buffer size in seconds
+                                        maxMaxBufferLength: 30,     // Absolute maximum buffer size
+                                        initialLiveManifestSize: 1, // Number of segments to load initially
+                                        // Enable fast switching between quality levels
+                                        enableWorker: true,         // Use a web worker for demuxing
+                                        lowLatencyMode: true,       // For low-latency streams
+                                        backBufferLength: 90,       // Retain buffer for seeking backward
+                                        // Other configurations
+                                    });
+                                    
+                                    hls.loadSource(endpoint);
+                                    hls.attachMedia(videoElement);
+                                    hls.on(Hls.Events.MANIFEST_PARSED, function () {
+                                        videoElement.play();
+                                    });
+                                    hls.on(Hls.Events.ERROR, function (event, data) {
+                                        console.error('HLS.js error:', data);
+                                    });
+                                    observer.unobserve(videoElement);
+                                }
+                            });
                         });
-                        hls.loadSource(endpoint);
-                        hls.attachMedia(video);
-                        hls.on(Hls.Events.MANIFEST_PARSED, function () {
-                            video.play();
-                        });
-                        hls.on(Hls.Events.ERROR, function (event, data) {
-                            console.error('HLS.js error:', data);
-                        });
-                    } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+                        observer.observe(videoElement);
+                    } else if (videoElement.canPlayType('application/vnd.apple.mpegurl')) {
                         // Native HLS support (e.g., Safari)
-                        const video = document.getElementById('hlsVideoPlayer');
-                        video.src = endpoint;
-                        video.addEventListener('loadedmetadata', function () {
-                            video.play();
+                        videoElement.src = endpoint;
+                        videoElement.addEventListener('loadedmetadata', function () {
+                            videoElement.play();
                         });
-                    } 
-                } else {
+                    } else {
+                        alert('Your browser does not support HLS playback.');
+                    }
+                }
+                 else {
                     const sandboxAttribute = provider === 'vidlink' ? 'sandbox="allow-same-origin allow-scripts allow-forms"' : '';
                     const referrerPolicy = provider === 'vidbinge' ? 'referrerpolicy="origin-when-cross-origin"' : '';
                     const iframeHtml = `
@@ -540,6 +578,7 @@ async function displaySelectedMedia(media, mediaType) {
                     class="video-iframe" 
                     allowfullscreen 
                     preload="auto"
+                    loading="lazy"
                     crossorigin="anonymous"
                     ${sandboxAttribute} 
                     ${referrerPolicy}>
