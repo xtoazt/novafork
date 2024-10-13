@@ -23,6 +23,43 @@ async function fetchJson(url) {
 }
 
 
+function promptUserForLanguage(languages) {
+    return new Promise((resolve, reject) => {
+        // Create modal elements
+        const modalOverlay = document.createElement('div');
+        modalOverlay.className = 'modal-overlay fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50';
+
+        const modalContent = document.createElement('div');
+        modalContent.className = 'modal-content bg-gray-900 rounded-lg p-6';
+
+        const modalTitle = document.createElement('h2');
+        modalTitle.className = 'text-xl font-bold mb-4 text-white';
+        modalTitle.innerText = 'Select a Language';
+
+        const languageList = document.createElement('ul');
+        languageList.className = 'language-list';
+
+        languages.forEach(language => {
+            const listItem = document.createElement('li');
+            listItem.className = 'language-item cursor-pointer hover:bg-gray-700 p-2 rounded text-white';
+            listItem.innerText = language;
+            listItem.addEventListener('click', () => {
+                // Remove modal
+                document.body.removeChild(modalOverlay);
+                resolve(language);
+            });
+            languageList.appendChild(listItem);
+        });
+
+        // Append elements
+        modalContent.appendChild(modalTitle);
+        modalContent.appendChild(languageList);
+        modalOverlay.appendChild(modalContent);
+        document.body.appendChild(modalOverlay);
+    });
+}
+
+
 async function getMovieEmbedUrl(mediaId, provider, apiKey) {
     const primaryColor = '#FFFFFF';
     const secondaryColor = '#FFFFFF';
@@ -33,20 +70,33 @@ async function getMovieEmbedUrl(mediaId, provider, apiKey) {
             return `https://vidsrc.cc/v3/embed/movie/${mediaId}?autoPlay=true`;
         case 'vidsrc2':
             return `https://vidsrc2.to/embed/movie/${mediaId}`;
-            case 'vidlink2':
+            case 'filmxy':
             try {
-                const response = await fetch(`https://cinescrape.com/vidlink/movie/${mediaId}`);
+                if (!language) {
+                    throw new Error('Language is required for filmxy provider');
+                }
+
+                const languageCode = language.toLowerCase();
+
+                // Build the URL
+                const url = `https://cinescrape.com/global/${languageCode}/${mediaId}`;
+
+                // Fetch the data
+                const response = await fetch(url);
                 if (!response.ok) throw new Error('Network response was not ok');
                 const data = await response.json();
 
-                if (!data.stream || !data.stream.playlist) throw new Error('No playlist URL found');
+                // Get the m3u8 link from the response
+                const m3u8Link = data.streamData.data.link;
+                if (!m3u8Link) throw new Error('No m3u8 link found');
 
-                const hlsUrl = data.stream.playlist;
-                return hlsUrl; // Return the HLS URL directly
+                // Return the m3u8 link
+                return m3u8Link;
             } catch (error) {
-                console.error('Error fetching video from vidlink2:', error);
+                console.error('Error fetching video from filmxy:', error);
                 throw error;
             }
+
             
         case 'vidsrcxyz':
             return `https://vidsrc.xyz/embed/movie/${mediaId}`;
@@ -174,21 +224,6 @@ async function getTvEmbedUrl(mediaId, seasonId, episodeId, provider, apiKey) {
     const iconColor = '#ffffff';
 
     switch (provider) {
-        case 'vidlink2':
-            try {
-                const response = await fetch(`https://cinescrape.com/vidlink/tvshow/${mediaId}/${seasonId}/${episodeId}`);
-                if (!response.ok) throw new Error('Network response was not ok');
-                const data = await response.json();
-
-                if (!data.stream || !data.stream.playlist) throw new Error('No playlist URL found');
-
-                const hlsUrl = data.stream.playlist;
-                return hlsUrl; // Return the HLS URL directly
-            } catch (error) {
-                console.error('Error fetching video from vidlink2:', error);
-                throw error;
-            }
-
         case 'vidsrc':
             return `https://vidsrc.cc/v3/embed/tv/${mediaId}/${seasonId}/${episodeId}?autoPlay=true&autoNext=true`;
         case 'vidsrcpro':
@@ -428,11 +463,27 @@ async function displaySelectedMedia(media, mediaType) {
                     if (provider === 'cinescrape') showLoadingScreen();
                     endpoint = await getTvEmbedUrl(media.id, selectedSeason, selectedEpisode, provider, apiKey);
                 } else {
-                    if (provider === 'cinescrape') showLoadingScreen();
-                    endpoint = await getMovieEmbedUrl(media.id, provider, apiKey);
+                    // Handle Movies
+                    if (provider === 'filmxy') {
+                        // Prompt the user to select a language
+                        const languages = ['Hindi', 'English', 'Bengali', 'Tamil', 'Telugu'];
+                        const selectedLanguage = await promptUserForLanguage(languages);
+                        if (!selectedLanguage) {
+                            alert('No language selected.');
+                            return;
+                        }
+                        showLoadingScreen();
+                        endpoint = await getMovieEmbedUrl(media.id, provider, apiKey, selectedLanguage);
+                    } else if (provider === 'cinescrape') {
+                        showLoadingScreen();
+                        endpoint = await getMovieEmbedUrl(media.id, provider, apiKey);
+                    } else {
+                        endpoint = await getMovieEmbedUrl(media.id, provider, apiKey);
+                    }
                 }
 
                 let playerHtml;
+
                 if (provider === 'cinescrape') {
                     const videoHtml = `
                 <video controls autoplay style="height: 1000px; width: 100%;" class="video-element">
@@ -443,7 +494,7 @@ async function displaySelectedMedia(media, mediaType) {
                     $videoPlayer.html(videoHtml).removeClass('hidden');
                     $movieInfo.children().not($videoPlayer).addClass('hidden');
                     $closePlayerButton.removeClass('hidden');
-                } else if (provider === 'vidlink2') {
+                } else if (provider === 'filmxy') {
                     // Render basic HLS video player using hls.js
                     playerHtml = `
                         <video id="hlsVideoPlayer" controls style="width: 100%; height: auto;" class="video-element">
@@ -457,11 +508,18 @@ async function displaySelectedMedia(media, mediaType) {
                     // Initialize hls.js
                     if (Hls.isSupported()) {
                         const video = document.getElementById('hlsVideoPlayer');
-                        const hls = new Hls();
+                        const hls = new Hls({
+                            maxBufferLength: 30, // Adjust as needed
+                            maxMaxBufferLength: 60, // Adjust as needed
+                            // Other configurations can be added here
+                        });
                         hls.loadSource(endpoint);
                         hls.attachMedia(video);
                         hls.on(Hls.Events.MANIFEST_PARSED, function () {
                             video.play();
+                        });
+                        hls.on(Hls.Events.ERROR, function (event, data) {
+                            console.error('HLS.js error:', data);
                         });
                     } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
                         // Native HLS support (e.g., Safari)
