@@ -328,7 +328,30 @@ async function getTvEmbedUrl(mediaId, seasonId, episodeId, provider, apiKey) {
         }
     }
 
+    function attemptFullscreenAndLockOrientation(element) {
+        // Only proceed if the element exists
+        if (!element) return;
+    
+        // Request Fullscreen
+        if (element.requestFullscreen) {
+            element.requestFullscreen().catch(err => {
+                console.warn('Fullscreen request failed:', err);
+            });
+        } else if (element.webkitRequestFullscreen) { /* Safari */
+            element.webkitRequestFullscreen();
+        } else if (element.msRequestFullscreen) { /* IE11 */
+            element.msRequestFullscreen();
+        }
+    
+        // Lock Screen Orientation to Landscape
+        if (screen.orientation && screen.orientation.lock) {
+            screen.orientation.lock('landscape').catch(err => {
+                console.warn('Orientation lock failed:', err);
+            });
+        }
+    }
 
+    
 async function fetchMediaData(mediaId, mediaType, apiKey) {
     return fetchJson(`https://api.themoviedb.org/3/${mediaType}/${mediaId}?api_key=${apiKey}`);
 }
@@ -512,11 +535,14 @@ async function displaySelectedMedia(media, mediaType) {
                 if (provider === 'trailer') {
                     // Trailer display in an iframe
                     const iframeHtml = `
-                        <iframe src="${endpoint}" class="video-iframe" allowfullscreen loading="lazy" style="width: 100%; height: 600px;"></iframe>
+                        <iframe src="${endpoint}" id="videoIframe" class="video-iframe" allowfullscreen loading="lazy" style="width: 100%; height: 600px;"></iframe>
                     `;
                     $videoPlayer.html(iframeHtml).removeClass('hidden');
                     $movieInfo.children().not($videoPlayer).addClass('hidden');
                     $closePlayerButton.removeClass('hidden');
+        
+                    // Attempt to enter fullscreen and lock orientation
+                    attemptFullscreenAndLockOrientation(document.getElementById('videoIframe'));
                 } else if (provider === 'cinescrape') {
                     // Cinescrape specific video setup
                     const videoHtml = `
@@ -547,6 +573,11 @@ async function displaySelectedMedia(media, mediaType) {
                         sourceElement.src = sourceElement.getAttribute('data-src');
                         videoElement.load();
                     }
+        
+                    // Attempt to enter fullscreen and lock orientation when video is ready
+                    videoElement.addEventListener('loadedmetadata', () => {
+                        attemptFullscreenAndLockOrientation(videoElement);
+                    });
                 } else if (provider === 'filmxy') {
                     // HLS setup for filmxy provider
                     const playerHtml = `
@@ -565,7 +596,10 @@ async function displaySelectedMedia(media, mediaType) {
                                     const hls = new Hls({ lowLatencyMode: true, backBufferLength: 90 });
                                     hls.loadSource(endpoint);
                                     hls.attachMedia(videoElement);
-                                    hls.on(Hls.Events.MANIFEST_PARSED, () => videoElement.play());
+                                    hls.on(Hls.Events.MANIFEST_PARSED, () => {
+                                        videoElement.play();
+                                        attemptFullscreenAndLockOrientation(videoElement);
+                                    });
                                     observer.unobserve(videoElement);
                                 }
                             });
@@ -573,7 +607,10 @@ async function displaySelectedMedia(media, mediaType) {
                         observer.observe(videoElement);
                     } else if (videoElement.canPlayType('application/vnd.apple.mpegurl')) {
                         videoElement.src = endpoint;
-                        videoElement.addEventListener('loadedmetadata', () => videoElement.play());
+                        videoElement.addEventListener('loadedmetadata', () => {
+                            videoElement.play();
+                            attemptFullscreenAndLockOrientation(videoElement);
+                        });
                     } else {
                         alert('Your browser does not support HLS playback.');
                     }
@@ -584,6 +621,7 @@ async function displaySelectedMedia(media, mediaType) {
                     const iframeHtml = `
                         <iframe 
                             src="${endpoint}" 
+                            id="videoIframe"
                             class="video-iframe" 
                             allowfullscreen 
                             preload="auto"
@@ -615,11 +653,15 @@ async function displaySelectedMedia(media, mediaType) {
                             }
                         }
                     });
+        
+                    // Attempt to enter fullscreen and lock orientation
+                    attemptFullscreenAndLockOrientation(document.getElementById('videoIframe'));
                 }
             } catch (error) {
                 console.error('Error updating video:', error);
             }
         }
+        
         
 
 
