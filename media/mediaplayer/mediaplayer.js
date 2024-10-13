@@ -486,7 +486,7 @@ async function displaySelectedMedia(media, mediaType) {
 
                 if (provider === 'cinescrape') {
                     const videoHtml = `
-                <video controls autoplay style="height: 1000px; width: 100%;" class="video-element">
+                <video preload="auto" controls autoplay style="height: 1000px; width: 100%;" class="video-element">
                     <source src="${endpoint}" type="video/mp4">
                     Your browser does not support the video tag.
                 </video>
@@ -497,7 +497,7 @@ async function displaySelectedMedia(media, mediaType) {
                 } else if (provider === 'filmxy') {
                     // Render basic HLS video player using hls.js
                     playerHtml = `
-                        <video id="hlsVideoPlayer" controls style="width: 100%; height: auto;" class="video-element">
+                        <video id="hlsVideoPlayer" preload="auto" controls style="width: 100%; height: auto;" class="video-element">
 
                         </video>
                     `;
@@ -537,6 +537,7 @@ async function displaySelectedMedia(media, mediaType) {
                     src="${endpoint}" 
                     class="video-iframe" 
                     allowfullscreen 
+                    preload="auto"
                     ${sandboxAttribute} 
                     ${referrerPolicy}>
                 </iframe>
