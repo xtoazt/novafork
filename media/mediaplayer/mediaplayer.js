@@ -579,7 +579,6 @@ async function displaySelectedMedia(media, mediaType) {
                             alert('No language selected.');
                             return;
                         }
-                        showLoadingScreen();
                         endpoint = await getMovieEmbedUrl(media.id, provider, apiKey, selectedLanguage);
                     } else if (provider === 'cinescrape') {
                         showLoadingScreen();
@@ -593,7 +592,7 @@ async function displaySelectedMedia(media, mediaType) {
                 if (provider === 'trailer') {
                     // Trailer display in an iframe
                     const iframeHtml = `
-                        <iframe src="${endpoint}" id="videoIframe" class="video-iframe" allowfullscreen loading="lazy" style="width: 100%; height: 600px;"></iframe>
+                        <iframe data-src="${endpoint}" id="videoIframe" class="video-iframe" allowfullscreen" style="width: 100%; height: 600px;" loading="lazy"></iframe>
                     `;
                     $videoPlayer.html(iframeHtml).removeClass('hidden');
                     $movieInfo.children().not($videoPlayer).addClass('hidden');
