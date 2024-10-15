@@ -4,20 +4,66 @@
     let devToolsOpened = false;
     let consecutiveDetections = 0;
     const MAX_CONSECUTIVE_DETECTIONS = 3;
+    const DEBOUNCE_DELAY = 250;
 
-    // Only trigger detection on right-click (desktop only)
-    if (!isMobile) {
-        document.addEventListener('contextmenu', (event) => {
-            event.preventDefault();
-            console.log("Right-click detected");
+    // Always active detection for DevTools based on window size differences
+    const detectDevTools = () => {
+        const threshold = 200;  // Adjusted threshold
+        const widthDiff = window.outerWidth - window.innerWidth;
+        const heightDiff = window.outerHeight - window.innerHeight;
+
+        // Only trigger if there's a substantial size difference (and not on mobile)
+        if (!isMobile && (widthDiff > threshold || heightDiff > threshold)) {
             handleDetection();
-        });
-    }
+        }
+    };
 
-    // Redirect Function with confirmation (only for non-mobile users and only on right-click)
+    // Set interval for constant DevTools detection
+    setInterval(detectDevTools, 1000); // Check every 1 second
+
+    // Debugger Detection (also constantly active)
+    const detectDebugger = () => {
+        setInterval(() => {
+            const start = Date.now();
+            debugger; // Pauses script, triggers detection
+            if (Date.now() - start > 100) {
+                handleDetection();
+            }
+        }, 2000); // Check every 2 seconds
+    };
+    detectDebugger();
+
+    // Console Detection (also constantly active)
+    const detectConsole = () => {
+        if (isMobile) return;
+
+        const iframe = document.createElement('iframe');
+        iframe.style.display = 'none';
+        document.body.appendChild(iframe);
+
+        Object.defineProperty(iframe.contentWindow, 'console', {
+            get: () => {
+                handleDetection();
+                return {};
+            }
+        });
+
+        setInterval(() => {
+            try {
+                console.profile();
+                console.profileEnd();
+                if (console.clear) console.clear();
+            } catch (e) {
+                handleDetection();
+            }
+        }, 2000); // Check every 2 seconds
+    };
+    detectConsole();
+
+    // Redirect Function with confirmation (only for non-mobile users)
     const redirectToGoogle = () => {
         if (!isMobile) {
-            if (confirm("Right-clicking is not allowed. Redirect to Google?")) {
+            if (confirm("DevTools usage is not allowed. Redirect to Google?")) {
                 window.location.replace("https://www.google.com");
             } else {
                 devToolsOpened = false;
@@ -45,7 +91,10 @@
         }
     }
 
-    // Disable selection and drag-drop (optional, as it might affect user experience)
+    // Disable right-click
+    document.addEventListener('contextmenu', (e) => e.preventDefault());
+
+    // Disable text selection and drag-drop
     document.addEventListener('selectstart', (e) => e.preventDefault());
     document.addEventListener('dragstart', (e) => e.preventDefault());
 })();
