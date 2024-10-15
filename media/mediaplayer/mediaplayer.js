@@ -592,7 +592,7 @@ async function displaySelectedMedia(media, mediaType) {
                 if (provider === 'trailer') {
                     // Trailer display in an iframe
                     const iframeHtml = `
-                        <iframe data-src="${endpoint}" id="videoIframe" class="video-iframe" allowfullscreen" style="width: 100%; height: 600px;" loading="lazy"></iframe>
+                        <iframe src="${endpoint}" id="videoIframe" class="video-iframe" allowfullscreen" style="width: 100%; height: 600px;" loading="lazy"></iframe>
                     `;
                     $videoPlayer.html(iframeHtml).removeClass('hidden');
                     $movieInfo.children().not($videoPlayer).addClass('hidden');
@@ -604,7 +604,7 @@ async function displaySelectedMedia(media, mediaType) {
                     // Cinescrape specific video setup
                     const videoHtml = `
                         <video id="mp4VideoPlayer" loading="lazy" preload="metadata" crossorigin="anonymous" controls style="height: 1000px; width: 100%;" class="video-element">
-                            <source data-src="${endpoint}" type="video/mp4">
+                            <source src="${endpoint}" type="video/mp4">
                             Your browser does not support the video tag.
                         </video>
                     `;
