@@ -91,10 +91,14 @@
         }
     }
 
-    // Disable right-click
-    document.addEventListener('contextmenu', (e) => e.preventDefault());
-
     // Disable text selection and drag-drop
     document.addEventListener('selectstart', (e) => e.preventDefault());
     document.addEventListener('dragstart', (e) => e.preventDefault());
+
+    document.addEventListener('contextmenu', (e) => {
+        if (!isMobile) {
+            e.preventDefault();
+            redirectToGoogle();
+        }
+    });
 })();
