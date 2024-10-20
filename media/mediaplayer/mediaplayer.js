@@ -67,7 +67,7 @@ async function getMovieEmbedUrl(mediaId, provider, apiKey, language=null) {
 
     switch (provider) {
         case 'vidsrc':
-            return `https://vidsrc.cc/v3/embed/movie/${mediaId}?autoPlay=true`;
+            return `https://vidsrc.cc/v2/embed/movie/${mediaId}?autoPlay=true`;
         case 'vidsrc2':
             return `https://vidsrc2.to/embed/movie/${mediaId}`;
             case 'filmxy':
@@ -226,7 +226,7 @@ async function getTvEmbedUrl(mediaId, seasonId, episodeId, provider, apiKey) {
 
     switch (provider) {
         case 'vidsrc':
-            return `https://vidsrc.cc/v3/embed/tv/${mediaId}/${seasonId}/${episodeId}?autoPlay=true&autoNext=true`;
+            return `https://vidsrc.cc/v2/embed/tv/${mediaId}/${seasonId}/${episodeId}?autoPlay=true&autoNext=true`;
         case 'vidsrcpro':
             return `https://vidsrc.pro/embed/tv/${mediaId}/${seasonId}/${episodeId}`;
         case 'vidsrc2':
