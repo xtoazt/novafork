@@ -20,6 +20,8 @@
     <!-- Versioning added to normalize.css -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.min.css?v=1.9">
 
+    <script disable-devtool-auto src='https://cdn.jsdelivr.net/npm/disable-devtool@latest'></script>
+
     <!-- Include Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
 
@@ -28,8 +30,6 @@
 
     <!-- Consolidated in one Css file with versioning -->
     <link rel="stylesheet" href="themes/themes.css?v=1.4.57">
-
-
 
     <!-- jQuery with versioning -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js?v=1.8"
@@ -55,40 +55,40 @@
         </div>
 
         <!-- Social Links -->
-        <div class="flex flex-wrap gap-2 mb-6 justify-center">
+        <div class="flex flex-wrap gap-1 mb-6 justify-center">
             <a href="https://discord.gg/XbDBBmh5FY" target="_blank"
-               class="glassmorphism text-white py-2 px-4 rounded-full flex items-center space-x-2 hover:bg-purple-700 transition duration-300 ease-in-out">
-                <i class="fab fa-discord"></i>
-                <span class="text-sm sm:text-base">Join Discord</span>
+               class="glassmorphism text-white py-1 px-2 sm:py-1.5 sm:px-3 rounded-full flex items-center space-x-1 hover:bg-purple-700 transition duration-300 ease-in-out text-xs sm:text-sm">
+                <i class="fab fa-discord text-xs sm:text-sm"></i>
+                <span>Discord</span>
             </a>
             <a href="https://t.me/novafork" target="_blank"
-               class="glassmorphism text-white py-2 px-4 rounded-full flex items-center space-x-2 hover:bg-blue-700 transition duration-300 ease-in-out">
-                <i class="fab fa-telegram-plane"></i>
-                <span class="text-sm sm:text-base">Join Telegram</span>
+               class="glassmorphism text-white py-1 px-2 sm:py-1.5 sm:px-3 rounded-full flex items-center space-x-1 hover:bg-blue-700 transition duration-300 ease-in-out text-xs sm:text-sm">
+                <i class="fab fa-telegram-plane text-xs sm:text-sm"></i>
+                <span>Telegram</span>
             </a>
             <a href="https://github.com/noname25495/novafork" target="_blank"
-               class="glassmorphism text-white py-2 px-4 rounded-full flex items-center space-x-2 hover:bg-gray-700 transition duration-300 ease-in-out">
-                <i class="fab fa-github"></i>
-                <span class="text-sm sm:text-base">Star on GitHub</span>
+               class="glassmorphism text-white py-1 px-2 sm:py-1.5 sm:px-3 rounded-full flex items-center space-x-1 hover:bg-gray-700 transition duration-300 ease-in-out text-xs sm:text-sm">
+                <i class="fab fa-github text-xs sm:text-sm"></i>
+                <span>GitHub</span>
             </a>
             <a href="https://ko-fi.com/novafork" target="_blank"
-               class="glassmorphism text-white py-2 px-4 rounded-full flex items-center space-x-2 hover:bg-red-700 transition duration-300 ease-in-out">
-                <i class="fas fa-coffee"></i>
-                <span class="text-sm sm:text-base">Support on Ko-Fi</span>
+               class="glassmorphism text-white py-1 px-2 sm:py-1.5 sm:px-3 rounded-full flex items-center space-x-1 hover:bg-red-700 transition duration-300 ease-in-out text-xs sm:text-sm">
+                <i class="fas fa-coffee text-xs sm:text-sm"></i>
+                <span>Ko-Fi</span>
             </a>
             <!-- Bitcoin Donation Link -->
             <a href="javascript:void(0)" id="openBitcoinPopup"
-               class="glassmorphism text-white py-2 px-4 rounded-full flex items-center space-x-2 hover:bg-yellow-600 transition duration-300 ease-in-out">
-                <i class="fab fa-bitcoin"></i>
-                <span class="text-sm sm:text-base">Donate Bitcoin</span>
+               class="glassmorphism text-white py-1 px-2 sm:py-1.5 sm:px-3 rounded-full flex items-center space-x-1 hover:bg-yellow-600 transition duration-300 ease-in-out text-xs sm:text-sm">
+                <i class="fab fa-bitcoin text-xs sm:text-sm"></i>
+                <span>Bitcoin</span>
             </a>
         </div>
+
 
         <!-- Bitcoin Donation Popup (Hidden by default) -->
         <div id="bitcoinPopup"
              class="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center hidden z-50">
-            <div
-                    class="glassmorphism-form text-white p-6 sm:p-8 rounded-lg shadow-2xl max-w-sm w-full relative mx-4">
+            <div class="glassmorphism-form text-white p-6 sm:p-8 rounded-lg shadow-2xl max-w-sm w-full relative mx-4">
                 <!-- Modal Header -->
                 <h2 class="text-2xl sm:text-3xl font-bold mb-4 text-center">Donate Bitcoin</h2>
                 <p class="mb-6 text-gray-300 text-center">Support us by donating Bitcoin to the following address:</p>
@@ -113,36 +113,40 @@
                 </button>
             </div>
         </div>
+
         <!-- Search Section -->
-        <div class="relative flex-1 mb-8">
+        <div class="relative flex-1 mb-6 sm:mb-8">
             <input type="text" id="searchInput" placeholder="The Simpsons is nice!"
-                   class="w-full p-4 pl-12 glassmorphism text-white placeholder-gray-400 rounded-full focus:ring-2 focus:ring-purple-500 focus:outline-none transition duration-300 ease-in-out">
-            <i class="fas fa-search absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                   class="w-full p-2 sm:p-4 pl-10 sm:pl-12 glassmorphism text-white placeholder-gray-400 rounded-full focus:ring-1 sm:focus:ring-2 focus:ring-purple-500 focus:outline-none transition duration-300 ease-in-out text-xs sm:text-base">
+            <i class="fas fa-search absolute left-3 sm:left-4 top-1/2 transform -translate-y-1/2 text-gray-400 text-xs sm:text-base"></i>
             <button id="searchButton"
-                    class="absolute inset-y-0 right-0 text-white font-bold py-2 px-4 sm:px-6 rounded-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 focus:outline-none transition duration-300 ease-in-out">Search</button>
+                    class="absolute inset-y-0 right-0 text-white font-bold py-1 px-3 sm:py-2 sm:px-6 rounded-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 focus:outline-none transition duration-300 ease-in-out text-xs sm:text-base">Search</button>
             <div id="searchSuggestions"
                  class="absolute w-full glassmorphism text-white rounded-lg mt-1 hidden z-10 max-h-96 overflow-y-auto hover:cursor-pointer transition duration-300 ease-in-out"></div>
         </div>
 
+
         <!-- Filter Settings -->
         <div class="mb-12">
-            <h2 class="text-sm sm:text-base font-semibold text-white mb-4">Filter Settings</h2>
-            <div class="flex flex-wrap items-center gap-4 mb-4">
+            <h2 class="text-xs sm:text-sm font-semibold text-white mb-3 sm:mb-4">Filter Settings</h2>
+            <div class="flex flex-wrap items-center gap-2 sm:gap-4 mb-3 sm:mb-4">
                 <!-- Category Select -->
                 <select id="categorySelect"
-                        class="p-3 glassmorphism rounded-full text-white text-sm sm:text-base focus:ring-2 focus:ring-purple-500 focus:outline-none transition duration-300 ease-in-out custom-select">
-                    <!-- Options dynamically go here -->
+                        class="p-2 sm:p-3 glassmorphism rounded-full text-white text-xs sm:text-sm focus:ring-1 sm:focus:ring-2 focus:ring-purple-500 focus:outline-none transition duration-300 ease-in-out custom-select">
                 </select>
                 <!-- Type Select -->
                 <select id="typeSelect"
-                        class="p-3 glassmorphism rounded-full text-white text-sm sm:text-base focus:ring-2 focus:ring-purple-500 focus:outline-none transition duration-300 ease-in-out custom-select">
+                        class="p-2 sm:p-3 glassmorphism rounded-full text-white text-xs sm:text-sm focus:ring-1 sm:focus:ring-2 focus:ring-purple-500 focus:outline-none transition duration-300 ease-in-out custom-select">
                 </select>
                 <!-- Toggle Button for Additional Filters -->
-                <button id="toggleFiltersButton" class="p-3 glassmorphism rounded-full text-white text-sm sm:text-base flex items-center focus:ring-2 focus:ring-purple-500 focus:outline-none transition duration-300 ease-in-out">
-            <span id="toggleIcon" class="transform transition-transform duration-300 ease-in-out mr-2">
+                <button id="toggleFiltersButton"
+                        class="p-2 sm:p-3 glassmorphism rounded-full text-white text-xs sm:text-sm flex items-center focus:ring-1 sm:focus:ring-2 focus:ring-purple-500 focus:outline-none transition duration-300 ease-in-out">
+            <span id="toggleIcon" class="transform transition-transform duration-300 ease-in-out mr-1 sm:mr-2">
                 <!-- Down Arrow Icon -->
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path id="toggleIconPath" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 sm:h-5 sm:w-5" fill="none" viewBox="0 0 24 24"
+                     stroke="currentColor">
+                    <path id="toggleIconPath" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M19 9l-7 7-7-7"/>
                 </svg>
             </span>
                     Advanced Filters
@@ -150,36 +154,40 @@
             </div>
 
             <!-- Collapsible Section for Additional Filters -->
-            <div id="additionalFilters" class="mt-4 hidden">
-                <div class="flex flex-wrap items-center gap-4">
+            <div id="additionalFilters" class="mt-3 sm:mt-4 hidden">
+                <div class="flex flex-wrap items-center gap-2 sm:gap-4">
                     <!-- Actor Search Input -->
                     <input id="actorSearchInput" type="text" placeholder="Search by Actor"
-                           class="p-3 glassmorphism rounded-full text-white text-sm sm:text-base w-full sm:w-64 focus:ring-2 focus:ring-purple-500 focus:outline-none transition duration-300 ease-in-out" />
+                           class="p-2 sm:p-3 glassmorphism rounded-full text-white text-xs sm:text-sm w-full sm:w-64 focus:ring-1 sm:focus:ring-2 focus:ring-purple-500 focus:outline-none transition duration-300 ease-in-out"/>
 
                     <!-- Company Search Input and Suggestions -->
                     <div class="relative w-full sm:w-auto">
                         <!-- Company Search Input -->
                         <input id="companySearchInput" type="text" placeholder="Search by Company"
-                               class="p-3 glassmorphism rounded-full text-white text-sm sm:text-base w-full sm:w-64 focus:ring-2 focus:ring-purple-500 focus:outline-none transition duration-300 ease-in-out" />
-                        <div id="companySuggestions" class="absolute z-10 w-full sm:w-64 bg-gray-800 text-white rounded-md shadow-lg overflow-hidden hidden">
+                               class="p-2 sm:p-3 glassmorphism rounded-full text-white text-xs sm:text-sm w-full sm:w-64 focus:ring-1 sm:focus:ring-2 focus:ring-purple-500 focus:outline-none transition duration-300 ease-in-out"/>
+                        <div id="companySuggestions"
+                             class="absolute z-10 w-full sm:w-64 bg-gray-800 text-white rounded-md shadow-lg overflow-hidden hidden">
                         </div>
                     </div>
 
                     <div class="relative w-full sm:w-auto">
                         <input id="collectionSearchInput" type="text" placeholder="Search by Collection"
-                               class="p-3 glassmorphism rounded-full text-white text-sm sm:text-base w-full sm:w-64 focus:ring-2 focus:ring-purple-500 focus:outline-none transition duration-300 ease-in-out" />
-                        <div id="collectionSuggestions" class="absolute z-10 w-full sm:w-64 bg-gray-800 text-white rounded-md shadow-lg overflow-hidden hidden">
+                               class="p-2 sm:p-3 glassmorphism rounded-full text-white text-xs sm:text-sm w-full sm:w-64 focus:ring-1 sm:focus:ring-2 focus:ring-purple-500 focus:outline-none transition duration-300 ease-in-out"/>
+                        <div id="collectionSuggestions"
+                             class="absolute z-10 w-full sm:w-64 bg-gray-800 text-white rounded-md shadow-lg overflow-hidden hidden">
                         </div>
                     </div>
 
                     <div class="relative w-full sm:w-auto">
                         <input id="franchiseSearchInput" type="text" placeholder="Search by Franchise"
-                               class="p-3 glassmorphism rounded-full text-white text-sm sm:text-base w-full sm:w-64 focus:ring-2 focus:ring-purple-500 focus:outline-none transition duration-300 ease-in-out" />
-                        <div id="franchiseSuggestions" class="absolute z-10 w-full sm:w-64 bg-gray-800 text-white rounded-md shadow-lg overflow-hidden hidden">
+                               class="p-2 sm:p-3 glassmorphism rounded-full text-white text-xs sm:text-sm w-full sm:w-64 focus:ring-1 sm:focus:ring-2 focus:ring-purple-500 focus:outline-none transition duration-300 ease-in-out"/>
+                        <div id="franchiseSuggestions"
+                             class="absolute z-10 w-full sm:w-64 bg-gray-800 text-white rounded-md shadow-lg overflow-hidden hidden">
                         </div>
                     </div>
                 </div>
             </div>
+
 
 
 
@@ -290,7 +298,7 @@
 
 <!-- Scripts with versioning added -->
 <script src="media/mediaplayer/mediaplayer.js?v=1.2.4.61"></script>
-<script src="search/searchResults.js?v=1.2.1"></script>
+<script src="search/searchResults.js?v=1.2.2"></script>
 <script type="module" src="index.js?v=1.2.3"></script>
 <script src="media/mediahider/mediahider.js?v=1.1.0"></script>
 <script src="media/mediashare/shareModal.js?v=1.9"></script>

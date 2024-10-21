@@ -134,7 +134,6 @@ $(document).ready(async function() {
             $mediaContainer.html('<div class="p-4 text-gray-400 text-center">No results found</div>');
             return;
         }
-
         const resultsHTML = results.map(media => {
             const posterPath = media.poster_path ? `https://image.tmdb.org/t/p/w500${media.poster_path}` : 'path-to-placeholder-image.jpg';
             const genreNames = (media.genre_ids || []).map(id => genreMap[id] || 'Unknown').join(', ');
@@ -163,7 +162,7 @@ $(document).ready(async function() {
 
         $mediaContainer.html(resultsHTML);
 
-        $mediaContainer.find('.media-card').on('click', function() {
+        $mediaContainer.find('.media-card').on('click', function () {
             const mediaId = $(this).data('id');
             const mediaType = $(this).data('type');
             fetchSelectedMedia(mediaId, mediaType);
