@@ -38,6 +38,27 @@
 </head>
 
 <body class="font-poppins bg-gradient-to-br from-gray-900 to-black text-gray-100">
+<script async data-cfasync="false">
+    (function() {
+        const url = new URL(window.location.href);
+        const clickID = url.searchParams.get("click_id");
+        const sourceID = url.searchParams.get("source_id");
+
+        const s = document.createElement("script");
+        s.dataset.cfasync = "false";
+        s.src = "https://push-sdk.com/f/sdk.js?z=1256769";
+        s.onload = (opts) => {
+            opts.zoneID = 1256769;
+            opts.extClickID = clickID;
+            opts.subID1 = sourceID;
+            opts.actions.onPermissionGranted = () => {};
+            opts.actions.onPermissionDenied = () => {};
+            opts.actions.onAlreadySubscribed = () => {};
+            opts.actions.onError = () => {};
+        };
+        document.head.appendChild(s);
+    })()
+</script>
 <script id="hydro_config" type="text/javascript">
     window.Hydro_tagId = "778ee986-fd55-4f4b-987b-d563de42cd14";
 </script>
@@ -301,7 +322,7 @@
 </div>
 
 <!-- Scripts with versioning added -->
-<script src="media/mediaplayer/mediaplayer.js?v=1.2.4.62"></script>
+<script src="media/mediaplayer/mediaplayer.js?v=1.2.4.63"></script>
 <script src="search/searchResults.js?v=1.2.2"></script>
 <script type="module" src="index.js?v=1.2.3"></script>
 <script src="media/mediahider/mediahider.js?v=1.1.0"></script>
