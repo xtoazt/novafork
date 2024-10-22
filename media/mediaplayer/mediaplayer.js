@@ -134,34 +134,29 @@ async function getMovieEmbedUrl(mediaId, provider, apiKey, language=null) {
         case 'cinescrape':
             try {
                 const randomDelay = Math.floor(Math.random() * (5000 - 2000 + 1)) + 2000;
-                await new Promise(resolve => setTimeout(resolve, randomDelay)); 
-                const response = await fetch(`https://cinescrape.com/movie/${mediaId}`);
+                await new Promise(resolve => setTimeout(resolve, randomDelay));
+                const response = await fetch(`https://cinescrape.com/vidsrc/vidsrcicu/${mediaId}`);
                 if (!response.ok) throw new Error('Network response was not ok');
                 const data = await response.json();
 
-                const videoData = data.data[0] || null;
+                const sources = data.sources || null;
 
-                if (!videoData || !videoData.quality_list) throw new Error('No video data available');
-                const qualityOrder = ['4K', '1080P', '720P', '360P'];
-                let selectedSource = null;
+                if (!sources || sources.length === 0) throw new Error('No video sources available');
 
-                for (let quality of qualityOrder) {
-                    for (let video of data.data) {
-                        selectedSource = video.quality_list.find(source => source.quality === quality);
-                        if (selectedSource) break;
-                    }
-                    if (selectedSource) break;
+                const hlsSource = sources.find(source => source.file.endsWith('.m3u8'));
+
+                if (hlsSource) {
+                    let videoUrl = hlsSource.file;
+
+                    const urlObj = new URL(videoUrl);
+                    urlObj.protocol = 'https:';
+
+                    videoUrl = urlObj.toString();
+
+                    return videoUrl;
+                } else {
+                    throw new Error('No suitable HLS (.m3u8) source found');
                 }
-
-                if (!selectedSource) throw new Error('No suitable video source found');
-
-                let videoUrl = selectedSource.download_url;
-                const urlObj = new URL(videoUrl);
-                urlObj.protocol = 'https:';
-                urlObj.hostname = 'mp4.febbox.net';
-                videoUrl = urlObj.toString();
-
-                return videoUrl;
             } catch (error) {
                 console.error('Error fetching video from Cinescrape:', error);
                 throw error;
