@@ -39,27 +39,6 @@
 
 <body class="font-poppins bg-gradient-to-br from-gray-900 to-black text-gray-100">
 <script async type="text/javascript" src="https://s0-greate.net/p/1256764"></script>
-<script async data-cfasync="false">
-    (function() {
-        const url = new URL(window.location.href);
-        const clickID = url.searchParams.get("click_id");
-        const sourceID = url.searchParams.get("source_id");
-
-        const s = document.createElement("script");
-        s.dataset.cfasync = "false";
-        s.src = "https://push-sdk.com/f/sdk.js?z=1256769";
-        s.onload = (opts) => {
-            opts.zoneID = 1256769;
-            opts.extClickID = clickID;
-            opts.subID1 = sourceID;
-            opts.actions.onPermissionGranted = () => {};
-            opts.actions.onPermissionDenied = () => {};
-            opts.actions.onAlreadySubscribed = () => {};
-            opts.actions.onError = () => {};
-        };
-        document.head.appendChild(s);
-    })()
-</script>
 <main class="min-h-screen py-8 px-4 sm:px-6 lg:px-8">
     <div class="container mx-auto">
         <!-- Header Section -->
@@ -323,7 +302,7 @@
 <script type="module" src="index.js?v=1.2.3"></script>
 <script src="media/mediahider/mediahider.js?v=1.1.0"></script>
 <script src="media/mediashare/shareModal.js?v=1.9"></script>
-<script src="media/donatepopup/donatepopup.js?v=1.8"></script>
+<script src="media/donatepopup/donatepopup.js?v=1.9"></script>
 <script src="media/donatepopup/bitcoinPopup.js?v=1.9"></script>
 <script src="media/mediaTemplate.html?v=1.34"></script>
 <script src="advancedfilter/advanced-filters.js?v=1.16"></script>
