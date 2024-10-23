@@ -133,55 +133,35 @@ async function getMovieEmbedUrl(mediaId, provider, apiKey, language=null) {
             return `https://vidsrc.icu/embed/movie/${mediaId}`;
         case 'cinescrape':
             try {
-                // Random delay to avoid overwhelming the server
+                // Random delay to simulate varying response times
                 const randomDelay = Math.floor(Math.random() * (5000 - 2000 + 1)) + 2000;
                 await new Promise(resolve => setTimeout(resolve, randomDelay));
 
+                // Fetch movie data from the API
                 const response = await fetch(`http://159.203.29.118/movie/${mediaId}`);
                 if (!response.ok) throw new Error('Network response was not ok');
+
                 const data = await response.json();
 
-                const movieSource = data.find(source => source.quality === '2160p' || source.quality === '1080p');
+                const videoData = data.find(item => item.quality === '2160p');
 
-                if (movieSource && movieSource.metadata) {
-                    const metadata = movieSource.metadata;
-                    const details = metadata.details;
-
-                    const englishAudio = Object.entries(details.audio).find(
-                        ([key, audio]) => audio.lang_iso === 'eng'
-                    );
-
-                    const englishSubtitles = Object.entries(details.subtitles).find(
-                        ([key, subtitle]) => subtitle.lang_iso === 'eng'
-                    );
-
-                    let videoUrl;
-                    if (movieSource.quality === '2160p') {
-                        videoUrl = metadata.baseUrl + ".mp4";
-                    } else if (movieSource.quality === '1080p') {
-                        videoUrl = metadata.baseUrl + ".mpd";
-                    }
-
-                    const urlObj = new URL(videoUrl);
-                    urlObj.protocol = 'https:';
-                    videoUrl = urlObj.toString();
-
-                    return {
-                        streamUrl: videoUrl,
-                        englishAudio: englishAudio ? englishAudio[1] : null,
-                        englishSubtitles: englishSubtitles ? englishSubtitles[1] : null,
-                        filename: metadata.filename,
-                        year: metadata.year,
-                        poster: metadata.poster_path,
-                        backdrop: metadata.backdrop_path
-                    };
-                } else {
-                    throw new Error('No suitable 2160p or 1080p stream link found');
+                if (!videoData || !videoData.unrestrictedLink) {
+                    throw new Error('No 2160p video source found');
                 }
+
+                let videoUrl = videoData.unrestrictedLink;
+
+                const urlObj = new URL(videoUrl);
+                urlObj.protocol = 'https:';
+                videoUrl = urlObj.toString();
+
+                return videoUrl;
+
             } catch (error) {
-                console.error('Error fetching video from Cinescrape:', error);
+                console.error('Error fetching video:', error);
                 throw error;
             }
+
 
         case 'trailer':
             try {
