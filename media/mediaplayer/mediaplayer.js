@@ -70,7 +70,7 @@ async function getMovieEmbedUrl(mediaId, provider, apiKey, language=null) {
             return `https://vidsrc.cc/v2/embed/movie/${mediaId}?autoPlay=true`;
         case 'vidsrc2':
             return `https://vidsrc2.to/embed/movie/${mediaId}`;
-            case 'filmxy':
+        case 'filmxy':
             try {
                 if (!language) {
                     throw new Error('Language is required for filmxy provider');
@@ -89,7 +89,7 @@ async function getMovieEmbedUrl(mediaId, provider, apiKey, language=null) {
                 throw error;
             }
 
-            
+
         case 'vidsrcxyz':
             return `https://vidsrc.xyz/embed/movie/${mediaId}`;
         case 'embedsoap':
@@ -133,35 +133,47 @@ async function getMovieEmbedUrl(mediaId, provider, apiKey, language=null) {
             return `https://vidsrc.icu/embed/movie/${mediaId}`;
         case 'cinescrape':
             try {
+                // Random delay to avoid overwhelming the server
                 const randomDelay = Math.floor(Math.random() * (5000 - 2000 + 1)) + 2000;
                 await new Promise(resolve => setTimeout(resolve, randomDelay));
-                const response = await fetch(`https://cinescrape.com/vidsrc/vidsrcicu/${mediaId}`);
+
+                const response = await fetch(`http://159.203.29.118/movie/${mediaId}`);
                 if (!response.ok) throw new Error('Network response was not ok');
                 const data = await response.json();
 
-                const sources = data.sources || null;
+                const movieSource = data.find(source => source.quality === '2160p' || source.quality === '1080p');
 
-                if (!sources || sources.length === 0) throw new Error('No video sources available');
+                if (movieSource) {
+                    let videoUrl;
 
-                const hlsSource = sources.find(source => source.file.endsWith('.m3u8'));
+                    if (movieSource.quality === '2160p') {
+                        videoUrl = movieSource.unrestrictedLink + ".mp4";
 
-                if (hlsSource) {
-                    let videoUrl = hlsSource.file;
+                        const urlObj = new URL(videoUrl);
+                        urlObj.protocol = 'https:';
+                        videoUrl = urlObj.toString();
 
-                    const urlObj = new URL(videoUrl);
-                    urlObj.protocol = 'https:';
+                        return videoUrl;
 
-                    videoUrl = urlObj.toString();
+                    } else if (movieSource.quality === '1080p') {
+                        videoUrl = movieSource.metadata.baseUrl + ".mpd";
 
-                    return videoUrl;
+                        const urlObj = new URL(videoUrl);
+                        urlObj.protocol = 'https:';
+                        videoUrl = urlObj.toString();
+
+                        return videoUrl;
+                    }
+
                 } else {
-                    throw new Error('No suitable HLS (.m3u8) source found');
+                    throw new Error('No suitable 2160p or 1080p stream link found');
                 }
             } catch (error) {
                 console.error('Error fetching video from Cinescrape:', error);
                 throw error;
             }
-            case 'trailer':
+
+        case 'trailer':
             try {
                 const trailerUrl = await fetchTrailer(mediaId, 'movie', apiKey);
                 if (!trailerUrl) throw new Error('Trailer not found');
@@ -272,7 +284,7 @@ async function getTvEmbedUrl(mediaId, seasonId, episodeId, provider, apiKey) {
         case 'cinescrape':
             try {
                 const randomDelay = Math.floor(Math.random() * (5000 - 2000 + 1)) + 2000;
-                await new Promise(resolve => setTimeout(resolve, randomDelay));  
+                await new Promise(resolve => setTimeout(resolve, randomDelay));
                 const response = await fetch(`https://cinescrape.com/tvshow/${mediaId}/${seasonId}/${episodeId}`);
                 if (!response.ok) throw new Error('Network response was not ok');
                 const data = await response.json();
@@ -308,20 +320,20 @@ async function getTvEmbedUrl(mediaId, seasonId, episodeId, provider, apiKey) {
                 console.error('Error fetching video from Cinescrape:', error);
                 throw error;
             }
-            case 'trailer':
-                try {
-                    const trailerUrl = await fetchTrailer(mediaId, 'tv', apiKey);
-                    if (!trailerUrl) throw new Error('Trailer not found');
-                    return trailerUrl;
-                } catch (error) {
-                    console.error('Error fetching trailer for TV show:', error);
-                    throw error;
-                }
-    
-            default:
-                throw new Error('Provider not recognized.');
-        }
+        case 'trailer':
+            try {
+                const trailerUrl = await fetchTrailer(mediaId, 'tv', apiKey);
+                if (!trailerUrl) throw new Error('Trailer not found');
+                return trailerUrl;
+            } catch (error) {
+                console.error('Error fetching trailer for TV show:', error);
+                throw error;
+            }
+
+        default:
+            throw new Error('Provider not recognized.');
     }
+}
 
 
 // Define the functions first
@@ -372,7 +384,7 @@ document.addEventListener('DOMContentLoaded', () => {
     orientationLockToggle.addEventListener('change', (event) => {
         const isEnabled = event.target.checked;
         localStorage.setItem('orientationLock', isEnabled);
-        
+
         if (isEnabled) {
             enableOrientationLock();
         } else {
@@ -404,7 +416,7 @@ function attemptFullscreenAndLockOrientation(element) {
 }
 
 
-    
+
 async function fetchMediaData(mediaId, mediaType, apiKey) {
     return fetchJson(`https://api.themoviedb.org/3/${mediaType}/${mediaId}?api_key=${apiKey}`);
 }
@@ -541,9 +553,9 @@ async function displaySelectedMedia(media, mediaType) {
                 const provider = $providerSelect.length ? $providerSelect.val() : selectedProvider;
                 const apiKey = await getApiKey();
                 if (!apiKey) return console.error('API key is not available.');
-                
+
                 let endpoint;
-        
+
                 // Check if the selected provider is for a trailer
                 if (provider === 'trailer') {
                     // Trailer handling for movies and TV shows
@@ -582,7 +594,7 @@ async function displaySelectedMedia(media, mediaType) {
                         endpoint = await getMovieEmbedUrl(media.id, provider, apiKey);
                     }
                 }
-        
+
                 // Display video based on provider
                 if (provider === 'trailer') {
                     // Trailer display in an iframe
@@ -592,7 +604,7 @@ async function displaySelectedMedia(media, mediaType) {
                     $videoPlayer.html(iframeHtml).removeClass('hidden');
                     $movieInfo.children().not($videoPlayer).addClass('hidden');
                     $closePlayerButton.removeClass('hidden');
-        
+
                     // Attempt to enter fullscreen and lock orientation
                     attemptFullscreenAndLockOrientation(document.getElementById('videoIframe'));
                 } else if (provider === 'cinescrape') {
@@ -606,7 +618,7 @@ async function displaySelectedMedia(media, mediaType) {
                     $videoPlayer.html(videoHtml).removeClass('hidden');
                     $movieInfo.children().not($videoPlayer).addClass('hidden');
                     $closePlayerButton.removeClass('hidden');
-        
+
                     // Lazy load video source
                     const videoElement = document.getElementById('mp4VideoPlayer');
                     const sourceElement = videoElement.querySelector('source');
@@ -625,7 +637,7 @@ async function displaySelectedMedia(media, mediaType) {
                         sourceElement.src = sourceElement.getAttribute('data-src');
                         videoElement.load();
                     }
-        
+
                     // Attempt to enter fullscreen and lock orientation when video is ready
                     videoElement.addEventListener('loadedmetadata', () => {
                         attemptFullscreenAndLockOrientation(videoElement);
@@ -639,7 +651,7 @@ async function displaySelectedMedia(media, mediaType) {
                     $videoPlayer.html(playerHtml).removeClass('hidden');
                     $movieInfo.children().not($videoPlayer).addClass('hidden');
                     $closePlayerButton.removeClass('hidden');
-        
+
                     const videoElement = document.getElementById('hlsVideoPlayer');
                     if ('IntersectionObserver' in window && Hls.isSupported()) {
                         const observer = new IntersectionObserver((entries, observer) => {
@@ -686,7 +698,7 @@ async function displaySelectedMedia(media, mediaType) {
                     $videoPlayer.html(iframeHtml).removeClass('hidden');
                     $movieInfo.children().not($videoPlayer).addClass('hidden');
                     $closePlayerButton.removeClass('hidden');
-        
+
                     $('iframe').one('load', function () {
                         const iframeWindow = this.contentWindow;
                         if (iframeWindow) {
@@ -705,7 +717,7 @@ async function displaySelectedMedia(media, mediaType) {
                             }
                         }
                     });
-        
+
                     // Attempt to enter fullscreen and lock orientation
                     attemptFullscreenAndLockOrientation(document.getElementById('videoIframe'));
                 }
@@ -713,8 +725,8 @@ async function displaySelectedMedia(media, mediaType) {
                 console.error('Error updating video:', error);
             }
         }
-        
-        
+
+
 
 
         async function closeVideoPlayer() {
