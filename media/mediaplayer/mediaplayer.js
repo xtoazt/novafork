@@ -143,28 +143,38 @@ async function getMovieEmbedUrl(mediaId, provider, apiKey, language=null) {
 
                 const movieSource = data.find(source => source.quality === '2160p' || source.quality === '1080p');
 
-                if (movieSource) {
+                if (movieSource && movieSource.metadata) {
+                    const metadata = movieSource.metadata;
+                    const details = metadata.details;
+
+                    const englishAudio = Object.entries(details.audio).find(
+                        ([key, audio]) => audio.lang_iso === 'eng'
+                    );
+
+                    const englishSubtitles = Object.entries(details.subtitles).find(
+                        ([key, subtitle]) => subtitle.lang_iso === 'eng'
+                    );
+
                     let videoUrl;
-
                     if (movieSource.quality === '2160p') {
-                        videoUrl = movieSource.unrestrictedLink + ".mp4";
-
-                        const urlObj = new URL(videoUrl);
-                        urlObj.protocol = 'https:';
-                        videoUrl = urlObj.toString();
-
-                        return videoUrl;
-
+                        videoUrl = metadata.baseUrl + ".mp4";
                     } else if (movieSource.quality === '1080p') {
-                        videoUrl = movieSource.metadata.baseUrl + ".mpd";
-
-                        const urlObj = new URL(videoUrl);
-                        urlObj.protocol = 'https:';
-                        videoUrl = urlObj.toString();
-
-                        return videoUrl;
+                        videoUrl = metadata.baseUrl + ".mpd";
                     }
 
+                    const urlObj = new URL(videoUrl);
+                    urlObj.protocol = 'https:';
+                    videoUrl = urlObj.toString();
+
+                    return {
+                        streamUrl: videoUrl,
+                        englishAudio: englishAudio ? englishAudio[1] : null,
+                        englishSubtitles: englishSubtitles ? englishSubtitles[1] : null,
+                        filename: metadata.filename,
+                        year: metadata.year,
+                        poster: metadata.poster_path,
+                        backdrop: metadata.backdrop_path
+                    };
                 } else {
                     throw new Error('No suitable 2160p or 1080p stream link found');
                 }
