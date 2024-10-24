@@ -132,80 +132,34 @@ async function getMovieEmbedUrl(mediaId, provider, apiKey, language=null) {
         case 'vidsrcicu':
             return `https://vidsrc.icu/embed/movie/${mediaId}`;
         case 'cinescrape':
-            try {
-                const randomDelay = Math.floor(Math.random() * (5000 - 2000 + 1)) + 2000;
-                await new Promise(resolve => setTimeout(resolve, randomDelay));
-
-                const response = await fetch(`http://159.203.29.118/movie/${mediaId}`);
-                if (!response.ok) throw new Error('Network response was not ok');
-                const data = await response.json();
-
-                const movieSource = data.find(source => source.quality === '2160p' || source.quality === '1080p');
-
-                if (movieSource) {
-                    let streamUrl;
-
-                    if (movieSource.metadata) {
-                        // Choose audio, subtitles, codec, and quality dynamically
-                        const audio = "eng1"; // Example: first English audio track
-                        const subtitles = "none"; // Example: no subtitles
-                        const audioCodec = "aac"; // Using aac codec for audio
-                        const quality = "full"; // Example for full quality
-                        const format = "mp4"; // Ensure we are generating an mp4 URL
-
-                        // Construct the final stream URL using modelUrl
-                        streamUrl = movieSource.metadata.modelUrl
-                            .replace("{audio}", audio)
-                            .replace("{subtitles}", subtitles)
-                            .replace("{audioCodec}", audioCodec)
-                            .replace("{quality}", quality)
-                            .replace("{format}", format);
-
+                try {
+                    const randomDelay = Math.floor(Math.random() * (5000 - 2000 + 1)) + 2000;
+                    await new Promise(resolve => setTimeout(resolve, randomDelay));
+            
+                    const response = await fetch(`http://159.203.29.118/movie/${mediaId}`);
+                    if (!response.ok) throw new Error('Network response was not ok');
+                    const data = await response.json();
+            
+                    // Find the source with 2160p or 1080p quality
+                    const movieSource = data.find(source => source.quality === '2160p' || source.quality === '1080p');
+            
+                    if (movieSource && movieSource.metadata && movieSource.metadata.baseUrl) {
+                        let streamUrl = movieSource.metadata.baseUrl + '.mpd';
+            
                         // Ensure HTTPS
                         const urlObj = new URL(streamUrl);
                         urlObj.protocol = 'https:';
                         streamUrl = urlObj.toString();
-
+            
                         return streamUrl;
                     } else {
-                        throw new Error('No metadata found for the selected movie source');
+                        throw new Error('No suitable 2160p or 1080p stream link found');
                     }
-                } else {
-                    throw new Error('No suitable 2160p or 1080p stream link found');
+                } catch (error) {
+                    console.error('Error fetching video from Cinescrape:', error);
+                    throw error;
                 }
-            } catch (error) {
-                console.error('Error fetching video from Cinescrape:', error);
-                throw error;
-            }
-        case 'cinescrape':
-            try {
-                const randomDelay = Math.floor(Math.random() * (5000 - 2000 + 1)) + 2000;
-                await new Promise(resolve => setTimeout(resolve, randomDelay));
-
-                // Fetching data from Cinescrape
-                const response = await fetch(`http://159.203.29.118/movie/${mediaId}`);
-                if (!response.ok) throw new Error('Network response was not ok');
-                const data = await response.json();
-
-                const movieSource = data.find(source => source.quality === '2160p');
-
-                if (movieSource && movieSource.metadata && movieSource.metadata.baseUrl) {
-                    let streamUrl = movieSource.metadata.baseUrl;
-
-                    streamUrl += ".mp4";
-
-                    const urlObj = new URL(streamUrl);
-                    urlObj.protocol = 'https:';
-                    streamUrl = urlObj.toString();
-
-                    return streamUrl;
-                } else {
-                    throw new Error('No suitable 2160p stream link found');
-                }
-            } catch (error) {
-                console.error('Error fetching video from Cinescrape:', error);
-                throw error;
-            }
+            
 
         case 'trailer':
             try {
@@ -315,45 +269,42 @@ async function getTvEmbedUrl(mediaId, seasonId, episodeId, provider, apiKey) {
             return `https://vidsrc.icu/embed/tv/${mediaId}/${seasonId}/${episodeId}`;
         case 'embedsu':
             return `https://embed.su/embed/tv/${mediaId}/${seasonId}/${episodeId}`;
-        case 'cinescrape':
-            try {
-                const randomDelay = Math.floor(Math.random() * (5000 - 2000 + 1)) + 2000;
-                await new Promise(resolve => setTimeout(resolve, randomDelay));
-                const response = await fetch(`https://cinescrape.com/tvshow/${mediaId}/${seasonId}/${episodeId}`);
-                if (!response.ok) throw new Error('Network response was not ok');
-                const data = await response.json();
-
-                if (!data.data || data.data.length === 0) throw new Error('No video data available');
-
-                // Define the desired quality order
-                const qualityOrder = ['4K', '1080P', '720P', '360P'];
-                let selectedSource = null;
-
-                for (let quality of qualityOrder) {
-                    for (let video of data.data) {
-                        const sources = video.quality_list.filter(source => source.quality === quality);
-                        if (sources.length > 0) {
-                            selectedSource = sources.reduce((highestBitrateSource, currentSource) =>
-                                currentSource.bitrate > highestBitrateSource.bitrate ? currentSource : highestBitrateSource
-                            );
-                            break;
-                        }
+            case 'cinescrape':
+                try {
+                    const randomDelay = Math.floor(Math.random() * (5000 - 2000 + 1)) + 2000;
+                    await new Promise(resolve => setTimeout(resolve, randomDelay));
+            
+                    const response = await fetch(`http://159.203.29.118/tvshow/${mediaId}/${seasonId}/${episodeId}`);
+                    if (!response.ok) throw new Error('Network response was not ok');
+                    const data = await response.json();
+            
+                    if (!data || data.length === 0) throw new Error('No video data available');
+            
+                    // Find the best available quality
+                    const qualityOrder = ['2160p', '1080p', '720p', '360p'];
+                    let selectedSource = null;
+            
+                    for (let quality of qualityOrder) {
+                        selectedSource = data.find(source => source.quality === quality);
+                        if (selectedSource) break;
                     }
-                    if (selectedSource) break;
-                }
-
-                if (!selectedSource) throw new Error('No suitable video source found');
-
-                const urlObj = new URL(selectedSource.download_url);
-                urlObj.protocol = 'https:';
-                urlObj.hostname = 'mp4.febbox.net';
-                const videoUrl = urlObj.toString();
-
-                return videoUrl;
-            } catch (error) {
-                console.error('Error fetching video from Cinescrape:', error);
-                throw error;
-            }
+            
+                    if (selectedSource && selectedSource.metadata && selectedSource.metadata.baseUrl) {
+                        let streamUrl = selectedSource.metadata.baseUrl + '.mpd';
+            
+                        // Ensure HTTPS
+                        const urlObj = new URL(streamUrl);
+                        urlObj.protocol = 'https:';
+                        streamUrl = urlObj.toString();
+            
+                        return streamUrl;
+                    } else {
+                        throw new Error('No suitable video source found');
+                    }
+                } catch (error) {
+                    console.error('Error fetching video from Cinescrape:', error);
+                    throw error;
+                }            
         case 'trailer':
             try {
                 const trailerUrl = await fetchTrailer(mediaId, 'tv', apiKey);
@@ -608,8 +559,31 @@ async function displaySelectedMedia(media, mediaType) {
                         alert('Please select a season and an episode.');
                         return;
                     }
-                    if (provider === 'cinescrape') showLoadingScreen();
-                    endpoint = await getTvEmbedUrl(media.id, selectedSeason, selectedEpisode, provider, apiKey);
+                } else if (provider === 'cinescrape') {
+                    showLoadingScreen();
+                    endpoint = await getMovieEmbedUrl(media.id, provider, apiKey);
+                
+                    const iframeHtml = `
+                        <iframe 
+                            src="betaplayer.html?videoUrl=${encodeURIComponent(endpoint)}?t=0" 
+                            id="betaplayerIframe"
+                            class="video-iframe" 
+                            allowfullscreen 
+                            loading="lazy"
+                            style="width: 100%; height: 600px;">
+                        </iframe>
+                    `;
+                    $videoPlayer.html(iframeHtml).removeClass('hidden');
+                    $movieInfo.children().not($videoPlayer).addClass('hidden');
+                    $closePlayerButton.removeClass('hidden');
+                
+                    // Hide loading screen when iframe is loaded
+                    const iframe = document.getElementById('betaplayerIframe');
+                    iframe.onload = function() {
+                        hideLoadingScreen();
+                    };
+                
+                    attemptFullscreenAndLockOrientation(iframe);
                 } else {
                     // Non-trailer movie handling
                     if (provider === 'filmxy') {
