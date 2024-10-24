@@ -558,8 +558,32 @@ async function displaySelectedMedia(media, mediaType) {
                         alert('Please select a season and an episode.');
                         return;
                     }
-                    if (provider === 'cinescrape') showLoadingScreen();
-                    endpoint = await getTvEmbedUrl(media.id, selectedSeason, selectedEpisode, provider, apiKey);
+                    else if (provider === 'cinescrape') {
+                        showLoadingScreen();
+                        endpoint = await getTvEmbedUrl(media.id, selectedSeason, selectedEpisode, provider, apiKey);
+                    
+                        const iframeHtml = `
+                            <iframe 
+                                src="../betaplayer.html?videoUrl=${encodeURIComponent(endpoint)}" 
+                                id="betaplayerIframe"
+                                class="video-iframe" 
+                                allowfullscreen 
+                                loading="lazy"
+                                style="width: 100%; height: 600px;">
+                            </iframe>
+                        `;
+                        $videoPlayer.html(iframeHtml).removeClass('hidden');
+                        $movieInfo.children().not($videoPlayer).addClass('hidden');
+                        $closePlayerButton.removeClass('hidden');
+                    
+                        // Hide loading screen when iframe is loaded
+                        const iframe = document.getElementById('betaplayerIframe');
+                        iframe.onload = function() {
+                            hideLoadingScreen();
+                        };
+                    
+                        attemptFullscreenAndLockOrientation(iframe);
+                    }
                 } else {
                     // Non-trailer movie handling
                     if (provider === 'filmxy') {
@@ -574,7 +598,33 @@ async function displaySelectedMedia(media, mediaType) {
                     } else if (provider === 'cinescrape') {
                         showLoadingScreen();
                         endpoint = await getMovieEmbedUrl(media.id, provider, apiKey);
-                    } else {
+
+                        const iframeSrc = `../betaplayer.html?videoUrl=${encodeURIComponent(endpoint)}?t=0`
+                        console.log(iframeSrc);
+                    
+                        const iframeHtml = `
+                            <iframe 
+                                src="${iframeSrc}"
+                                id="betaplayerIframe"
+                                class="video-iframe" 
+                                allowfullscreen 
+                                loading="lazy"
+                                style="width: 100%; height: 600px;">
+                            </iframe>
+                        `;
+                        $videoPlayer.html(iframeHtml).removeClass('hidden');
+                        $movieInfo.children().not($videoPlayer).addClass('hidden');
+                        $closePlayerButton.removeClass('hidden');
+                    
+                        // Hide loading screen when iframe is loaded
+                        const iframe = document.getElementById('betaplayerIframe');
+                        iframe.onload = function() {
+                            hideLoadingScreen();
+                        };
+                    
+                        attemptFullscreenAndLockOrientation(iframe);
+                    }
+                     else {
                         endpoint = await getMovieEmbedUrl(media.id, provider, apiKey);
                     }
                 }
