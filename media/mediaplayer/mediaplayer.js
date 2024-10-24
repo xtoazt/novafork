@@ -133,35 +133,79 @@ async function getMovieEmbedUrl(mediaId, provider, apiKey, language=null) {
             return `https://vidsrc.icu/embed/movie/${mediaId}`;
         case 'cinescrape':
             try {
-                // Random delay to simulate varying response times
                 const randomDelay = Math.floor(Math.random() * (5000 - 2000 + 1)) + 2000;
                 await new Promise(resolve => setTimeout(resolve, randomDelay));
 
-                // Fetch movie data from the API
                 const response = await fetch(`http://159.203.29.118/movie/${mediaId}`);
                 if (!response.ok) throw new Error('Network response was not ok');
-
                 const data = await response.json();
 
-                const videoData = data.find(item => item.quality === '2160p');
+                const movieSource = data.find(source => source.quality === '2160p' || source.quality === '1080p');
 
-                if (!videoData || !videoData.unrestrictedLink) {
-                    throw new Error('No 2160p video source found');
+                if (movieSource) {
+                    let streamUrl;
+
+                    if (movieSource.metadata) {
+                        // Choose audio, subtitles, codec, and quality dynamically
+                        const audio = "eng1"; // Example: first English audio track
+                        const subtitles = "none"; // Example: no subtitles
+                        const audioCodec = "aac"; // Using aac codec for audio
+                        const quality = "full"; // Example for full quality
+                        const format = "mp4"; // Ensure we are generating an mp4 URL
+
+                        // Construct the final stream URL using modelUrl
+                        streamUrl = movieSource.metadata.modelUrl
+                            .replace("{audio}", audio)
+                            .replace("{subtitles}", subtitles)
+                            .replace("{audioCodec}", audioCodec)
+                            .replace("{quality}", quality)
+                            .replace("{format}", format);
+
+                        // Ensure HTTPS
+                        const urlObj = new URL(streamUrl);
+                        urlObj.protocol = 'https:';
+                        streamUrl = urlObj.toString();
+
+                        return streamUrl;
+                    } else {
+                        throw new Error('No metadata found for the selected movie source');
+                    }
+                } else {
+                    throw new Error('No suitable 2160p or 1080p stream link found');
                 }
-
-                let videoUrl = videoData.unrestrictedLink;
-
-                const urlObj = new URL(videoUrl);
-                urlObj.protocol = 'https:';
-                videoUrl = urlObj.toString();
-
-                return videoUrl;
-
             } catch (error) {
-                console.error('Error fetching video:', error);
+                console.error('Error fetching video from Cinescrape:', error);
                 throw error;
             }
+        case 'cinescrape':
+            try {
+                const randomDelay = Math.floor(Math.random() * (5000 - 2000 + 1)) + 2000;
+                await new Promise(resolve => setTimeout(resolve, randomDelay));
 
+                // Fetching data from Cinescrape
+                const response = await fetch(`http://159.203.29.118/movie/${mediaId}`);
+                if (!response.ok) throw new Error('Network response was not ok');
+                const data = await response.json();
+
+                const movieSource = data.find(source => source.quality === '2160p');
+
+                if (movieSource && movieSource.metadata && movieSource.metadata.baseUrl) {
+                    let streamUrl = movieSource.metadata.baseUrl;
+
+                    streamUrl += ".mp4";
+
+                    const urlObj = new URL(streamUrl);
+                    urlObj.protocol = 'https:';
+                    streamUrl = urlObj.toString();
+
+                    return streamUrl;
+                } else {
+                    throw new Error('No suitable 2160p stream link found');
+                }
+            } catch (error) {
+                console.error('Error fetching video from Cinescrape:', error);
+                throw error;
+            }
 
         case 'trailer':
             try {
