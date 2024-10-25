@@ -205,7 +205,7 @@ function showLoadingScreen() {
             const messageIndex = Math.min(Math.floor(currentProgress / 20), loadingMessages.length - 1);
             loadingMessage.innerHTML = `${loadingMessages[messageIndex].icon} ${loadingMessages[messageIndex].message}`;
         }
-    }, 2000);
+    }, 2500);
 }
 // Function to hide loading screen
 function hideLoadingScreen() {
