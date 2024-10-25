@@ -136,7 +136,7 @@ async function getMovieEmbedUrl(mediaId, provider, apiKey, language=null) {
                 const randomDelay = Math.floor(Math.random() * (5000 - 2000 + 1)) + 2000;
                 await new Promise(resolve => setTimeout(resolve, randomDelay));
 
-                const response = await fetch(`http://159.203.29.118/movie/${mediaId}`);
+                const response = await fetch(`https://scraper.cinescrape.com/movie/${mediaId}`);
                 if (!response.ok) throw new Error('Network response was not ok');
                 const data = await response.json();
 
@@ -273,7 +273,7 @@ async function getTvEmbedUrl(mediaId, seasonId, episodeId, provider, apiKey) {
                 const randomDelay = Math.floor(Math.random() * (5000 - 2000 + 1)) + 2000;
                 await new Promise(resolve => setTimeout(resolve, randomDelay));
 
-                const response = await fetch(`http://159.203.29.118/tvshow/${mediaId}/${seasonId}/${episodeId}`);
+                const response = await fetch(`https://scraper.cinescrape.com/tvshow/${mediaId}/${seasonId}/${episodeId}`);
                 if (!response.ok) throw new Error('Network response was not ok');
                 const data = await response.json();
 
