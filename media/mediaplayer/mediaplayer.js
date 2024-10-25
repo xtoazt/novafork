@@ -536,13 +536,70 @@ async function displaySelectedMedia(media, mediaType) {
                 // Determine the selected provider and ensure API key is present
                 const provider = $providerSelect.length ? $providerSelect.val() : selectedProvider;
                 const apiKey = await getApiKey();
-                if (!apiKey) return console.error('API key is not available.');
-
+                if (!apiKey) {
+                    console.error('API key is not available.');
+                    return;
+                }
+        
                 let endpoint;
-
-                // Check if the selected provider is for a trailer
+        
+                // Handle provider selection
                 if (provider === 'trailer') {
                     // Trailer handling for movies and TV shows
+                    if (mediaType === 'movie') {
+                        endpoint = await getMovieEmbedUrl(media.id, provider, apiKey);
+                    } else if (mediaType === 'tv') {
+                        endpoint = await getTvEmbedUrl(media.id, selectedSeason, selectedEpisode, provider, apiKey);
+                    }
+                } else if (provider === 'filmxy' && mediaType === 'movie') {
+                    // Prompt for language selection with filmxy provider
+                    const languages = ['Hindi', 'English', 'Bengali', 'Tamil', 'Telugu'];
+                    const selectedLanguage = await promptUserForLanguage(languages);
+                    if (!selectedLanguage) {
+                        alert('No language selected.');
+                        return;
+                    }
+                    endpoint = await getMovieEmbedUrl(media.id, provider, apiKey, selectedLanguage);
+                } else if (provider === 'cinescrape') {
+                    // Handle cinescrape provider
+                    showLoadingScreen();
+                    if (mediaType === 'movie') {
+                        endpoint = await getMovieEmbedUrl(media.id, provider, apiKey);
+                    } else if (mediaType === 'tv') {
+                        if (!selectedSeason || !selectedEpisode) {
+                            alert('Please select a season and an episode.');
+                            hideLoadingScreen();
+                            return;
+                        }
+                        endpoint = await getTvEmbedUrl(media.id, selectedSeason, selectedEpisode, provider, apiKey);
+                    }
+                    // For cinescrape, we will embed betaplayer.html
+                    const iframeHtml = `
+                        <iframe 
+                            src="/media/betaplayer.html?videoUrl=${encodeURIComponent(endpoint)}"
+                            id="betaplayerIframe"
+                            class="video-iframe" 
+                            allowfullscreen 
+                            loading="lazy"
+                            style="width: 100%; height: 600px;">
+                        </iframe>
+                    `;
+                    $videoPlayer.html(iframeHtml).removeClass('hidden');
+                    $movieInfo.children().not($videoPlayer).addClass('hidden');
+                    $closePlayerButton.removeClass('hidden');
+        
+                    // Hide loading screen when iframe is loaded
+                    const iframe = document.getElementById('betaplayerIframe');
+                    iframe.onload = function() {
+                        hideLoadingScreen();
+                    };
+        
+                    attemptFullscreenAndLockOrientation(iframe);
+        
+                    // Since we already handled the display, we can return early
+                    return;
+                } else {
+                    // For other providers
                     if (mediaType === 'movie') {
                         endpoint = await getMovieEmbedUrl(media.id, provider, apiKey);
                     } else if (mediaType === 'tv') {
@@ -552,130 +609,19 @@ async function displaySelectedMedia(media, mediaType) {
                         }
                         endpoint = await getTvEmbedUrl(media.id, selectedSeason, selectedEpisode, provider, apiKey);
                     }
-                } else if (mediaType === 'tv') {
-                    // Non-trailer TV show handling
-                    if (!selectedSeason || !selectedEpisode) {
-                        alert('Please select a season and an episode.');
-                        return;
-                    }
-                    else if (provider === 'cinescrape') {
-                        showLoadingScreen();
-                        endpoint = await getTvEmbedUrl(media.id, selectedSeason, selectedEpisode, provider, apiKey);
-                    
-                        const iframeHtml = `
-                            <iframe 
-                                src="../betaplayer.html?videoUrl=${encodeURIComponent(endpoint)}" 
-                                id="betaplayerIframe"
-                                class="video-iframe" 
-                                allowfullscreen 
-                                loading="lazy"
-                                style="width: 100%; height: 600px;">
-                            </iframe>
-                        `;
-                        $videoPlayer.html(iframeHtml).removeClass('hidden');
-                        $movieInfo.children().not($videoPlayer).addClass('hidden');
-                        $closePlayerButton.removeClass('hidden');
-                    
-                        // Hide loading screen when iframe is loaded
-                        const iframe = document.getElementById('betaplayerIframe');
-                        iframe.onload = function() {
-                            hideLoadingScreen();
-                        };
-                    
-                        attemptFullscreenAndLockOrientation(iframe);
-                    }
-                } else {
-                    // Non-trailer movie handling
-                    if (provider === 'filmxy') {
-                        // Prompt for language selection with filmxy provider
-                        const languages = ['Hindi', 'English', 'Bengali', 'Tamil', 'Telugu'];
-                        const selectedLanguage = await promptUserForLanguage(languages);
-                        if (!selectedLanguage) {
-                            alert('No language selected.');
-                            return;
-                        }
-                        endpoint = await getMovieEmbedUrl(media.id, provider, apiKey, selectedLanguage);
-                    } else if (provider === 'cinescrape') {
-                        showLoadingScreen();
-                        endpoint = await getMovieEmbedUrl(media.id, provider, apiKey);
-
-                        const iframeSrc = `../betaplayer.html?videoUrl=${encodeURIComponent(endpoint)}?t=0`
-                        console.log(iframeSrc);
-                    
-                        const iframeHtml = `
-                            <iframe 
-                                src="${iframeSrc}"
-                                id="betaplayerIframe"
-                                class="video-iframe" 
-                                allowfullscreen 
-                                loading="lazy"
-                                style="width: 100%; height: 600px;">
-                            </iframe>
-                        `;
-                        $videoPlayer.html(iframeHtml).removeClass('hidden');
-                        $movieInfo.children().not($videoPlayer).addClass('hidden');
-                        $closePlayerButton.removeClass('hidden');
-                    
-                        // Hide loading screen when iframe is loaded
-                        const iframe = document.getElementById('betaplayerIframe');
-                        iframe.onload = function() {
-                            hideLoadingScreen();
-                        };
-                    
-                        attemptFullscreenAndLockOrientation(iframe);
-                    }
-                     else {
-                        endpoint = await getMovieEmbedUrl(media.id, provider, apiKey);
-                    }
                 }
-
+        
                 // Display video based on provider
                 if (provider === 'trailer') {
                     // Trailer display in an iframe
                     const iframeHtml = `
-                        <iframe src="${endpoint}" id="videoIframe" class="video-iframe" allowfullscreen" style="width: 100%; height: 600px;" loading="lazy"></iframe>
+                        <iframe src="${endpoint}" id="videoIframe" class="video-iframe" allowfullscreen style="width: 100%; height: 600px;" loading="lazy"></iframe>
                     `;
                     $videoPlayer.html(iframeHtml).removeClass('hidden');
                     $movieInfo.children().not($videoPlayer).addClass('hidden');
                     $closePlayerButton.removeClass('hidden');
-
-                    // Attempt to enter fullscreen and lock orientation
+        
                     attemptFullscreenAndLockOrientation(document.getElementById('videoIframe'));
-                } else if (provider === 'cinescrape') {
-                    // Cinescrape specific video setup
-                    const videoHtml = `
-                        <video id="mp4VideoPlayer" loading="lazy" preload="metadata" crossorigin="anonymous" controls style="height: 1000px; width: 100%;" class="video-element">
-                            <source src="${endpoint}" type="video/mp4">
-                            Your browser does not support the video tag.
-                        </video>
-                    `;
-                    $videoPlayer.html(videoHtml).removeClass('hidden');
-                    $movieInfo.children().not($videoPlayer).addClass('hidden');
-                    $closePlayerButton.removeClass('hidden');
-
-                    // Lazy load video source
-                    const videoElement = document.getElementById('mp4VideoPlayer');
-                    const sourceElement = videoElement.querySelector('source');
-                    if ('IntersectionObserver' in window) {
-                        const observer = new IntersectionObserver((entries, observer) => {
-                            entries.forEach(entry => {
-                                if (entry.isIntersecting) {
-                                    sourceElement.src = sourceElement.getAttribute('data-src');
-                                    videoElement.load();
-                                    observer.unobserve(videoElement);
-                                }
-                            });
-                        });
-                        observer.observe(videoElement);
-                    } else {
-                        sourceElement.src = sourceElement.getAttribute('data-src');
-                        videoElement.load();
-                    }
-
-                    // Attempt to enter fullscreen and lock orientation when video is ready
-                    videoElement.addEventListener('loadedmetadata', () => {
-                        attemptFullscreenAndLockOrientation(videoElement);
-                    });
                 } else if (provider === 'filmxy') {
                     // HLS setup for filmxy provider
                     const playerHtml = `
@@ -685,7 +631,7 @@ async function displaySelectedMedia(media, mediaType) {
                     $videoPlayer.html(playerHtml).removeClass('hidden');
                     $movieInfo.children().not($videoPlayer).addClass('hidden');
                     $closePlayerButton.removeClass('hidden');
-
+        
                     const videoElement = document.getElementById('hlsVideoPlayer');
                     if ('IntersectionObserver' in window && Hls.isSupported()) {
                         const observer = new IntersectionObserver((entries, observer) => {
@@ -732,7 +678,7 @@ async function displaySelectedMedia(media, mediaType) {
                     $videoPlayer.html(iframeHtml).removeClass('hidden');
                     $movieInfo.children().not($videoPlayer).addClass('hidden');
                     $closePlayerButton.removeClass('hidden');
-
+        
                     $('iframe').one('load', function () {
                         const iframeWindow = this.contentWindow;
                         if (iframeWindow) {
@@ -751,14 +697,14 @@ async function displaySelectedMedia(media, mediaType) {
                             }
                         }
                     });
-
-                    // Attempt to enter fullscreen and lock orientation
+        
                     attemptFullscreenAndLockOrientation(document.getElementById('videoIframe'));
                 }
             } catch (error) {
                 console.error('Error updating video:', error);
             }
         }
+        
 
 
 
