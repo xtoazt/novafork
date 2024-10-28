@@ -90,23 +90,21 @@ async function getMovieEmbedUrl(mediaId, provider, apiKey, language=null) {
             }
             case 'VidsrCicu':
                 try {
-                    const url = `https://cinescrape.com/vidsrc/vidsrcicu/${mediaId}`;
+                    const url = `https://cinescrape.com/vidsrc/hdmovie2/${mediaId}`;
                     
                     const response = await fetch(url);
                     if (!response.ok) throw new Error('Network response was not ok');
                     
                     const data = await response.json();
                     const sources = data.sources;
-                    
-                    if (!sources || sources.length === 0 || !sources[0].file) {
-                        throw new Error('No m3u8 link found');
+                    const englishStream = sources.find(source => source.label === 'English');
+                    if (!englishStream || !englishStream.file) {
+                        throw new Error('No English stream link found');
                     }
-                    
-                    const m3u8Link = sources[0].file;
-                    return m3u8Link;
-                    
+            
+                    return englishStream.file;
                 } catch (error) {
-                    console.error('Error fetching video from VidsrCicu:', error);
+                    console.error('Error fetching English stream:', error);
                     throw error;
                 }
             
