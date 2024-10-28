@@ -193,28 +193,20 @@ $(document).ready(async function() {
     }, 300);
 
     const loadMediaFromUrlParams = async () => {
-        const pathname = window.location.pathname;
-        const segments = pathname.split('/').filter(Boolean);
-    
-        if (segments.length >= 2) {
-            const mediaType = segments[0];
-            const mediaId = segments[1];
-            if (mediaType && mediaId) {
-                await fetchSelectedMedia(mediaId, mediaType);
-            }
-        } else {
-        
+        const urlParams = new URLSearchParams(window.location.search);
+        const mediaType = urlParams.get('mediaType');
+        const mediaId = urlParams.get('mediaId');
+        if (mediaType && mediaId) {
+            await fetchSelectedMedia(mediaId, mediaType);
         }
     };
-    
-    
+
     const init = async () => {
         if (await getApiKey()) {
             await fetchAllGenres();
-            await loadMediaFromUrlParams(); 
+            await loadMediaFromUrlParams(); // Load media if URL parameters are present
         }
     };
-    
 
     await init();
 
