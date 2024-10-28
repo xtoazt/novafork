@@ -186,10 +186,11 @@ const loadingMessages = [
 ];
 
 // Function to show loading screen and initiate progress
-function showLoadingScreen() {
+function showLoadingScreen(time) {
     const loadingScreen = document.getElementById('loadingScreen');
     const progressBar = document.getElementById('progressBar');
     const loadingMessage = document.getElementById('loadingMessage');
+    const timeFinal = time || 2500
 
     let currentProgress = 0;
     loadingScreen.classList.remove('hidden');
@@ -205,7 +206,7 @@ function showLoadingScreen() {
             const messageIndex = Math.min(Math.floor(currentProgress / 20), loadingMessages.length - 1);
             loadingMessage.innerHTML = `${loadingMessages[messageIndex].icon} ${loadingMessages[messageIndex].message}`;
         }
-    }, 2500);
+    }, timeFinal);
 }
 // Function to hide loading screen
 function hideLoadingScreen() {
@@ -561,11 +562,11 @@ async function displaySelectedMedia(media, mediaType) {
                     }
                     endpoint = await getMovieEmbedUrl(media.id, provider, apiKey, selectedLanguage);
                 } else if (provider === 'cinescrape') {
-                    // Handle cinescrape provider
-                    showLoadingScreen();
                     if (mediaType === 'movie') {
+                        showLoadingScreen(2500);
                         endpoint = await getMovieEmbedUrl(media.id, provider, apiKey);
                     } else if (mediaType === 'tv') {
+                        showLoadingScreen(6000);
                         if (!selectedSeason || !selectedEpisode) {
                             alert('Please select a season and an episode.');
                             hideLoadingScreen();
