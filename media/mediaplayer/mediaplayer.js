@@ -728,30 +728,30 @@ async function displaySelectedMedia(media, mediaType) {
 
         $(window).on('resize', adjustIframeSize);
         adjustIframeSize();
-
+        
         async function updateEpisodes(seasonNumber) {
             if (!seasonNumber) return;
-
+        
             try {
                 const season = await fetchJson(`https://api.themoviedb.org/3/tv/${media.id}/season/${seasonNumber}?api_key=${apiKey}`);
-
+        
                 const currentDate = new Date();
-
+        
                 const airedEpisodes = season.episodes.filter(episode => {
                     const airDate = new Date(episode.air_date);
                     return airDate <= currentDate;
                 });
-
+        
                 if (airedEpisodes.length === 0) {
                     $('#runtime').html('No episodes have aired yet.');
                 } else {
                     // Calculate total runtime for all aired episodes
                     const totalRuntime = airedEpisodes.reduce((total, episode) => total + (episode.runtime || 0), 0);
                     const averageRuntime = totalRuntime / airedEpisodes.length || 0;
-
+        
                     $('#runtime').html(`Total Runtime: ${Math.round(totalRuntime)} min (${Math.round(averageRuntime)} min per episode)`);
                 }
-
+        
                 episodesData = airedEpisodes.map(episode => ({
                     number: episode.episode_number,
                     name: episode.name || 'Untitled',
@@ -760,21 +760,21 @@ async function displaySelectedMedia(media, mediaType) {
                     overview: episode.overview || 'No description available.',
                     runtime: episode.runtime || 0
                 }));
-
+        
                 selectedEpisode = null;
-
+        
                 $('#episodeGrid').html(renderEpisodeGrid(episodesData));
-
+        
                 $('.episodes-grid').scrollTop(0);
-
+        
                 attachEpisodeDescriptionToggle();
-
+        
             } catch (error) {
                 console.error('Failed to fetch season details:', error);
             }
         }
-
-
+        
+        
         function escapeHtml(str) {
             return str.replace(/[&<>"'()]/g, function (match) {
                 const escape = {
@@ -789,25 +789,25 @@ async function displaySelectedMedia(media, mediaType) {
                 return escape[match];
             });
         }
-
+        
         function renderEpisodeGrid(episodes) {
             const storedData = JSON.parse(localStorage.getItem('vidLinkProgress') || '{}');
             const mediaData = storedData[media.id];
             const showProgress = mediaData && mediaData.type === 'tv' ? mediaData.show_progress : {};
-
+        
             return episodes.map(episode => {
                 const episodeKey = `s${selectedSeason}e${episode.number}`;
                 let progressPercentage = 0;
                 let watchedMinutes = 0;
                 let durationMinutes = 0;
-
+        
                 if (showProgress && showProgress[episodeKey] && showProgress[episodeKey].progress && showProgress[episodeKey].progress.duration > 0) {
                     watchedMinutes = Math.round(showProgress[episodeKey].progress.watched / 60); // Convert seconds to minutes
                     durationMinutes = Math.round(showProgress[episodeKey].progress.duration / 60); // Convert seconds to minutes
                     progressPercentage = (showProgress[episodeKey].progress.watched / showProgress[episodeKey].progress.duration) * 100;
                     progressPercentage = Math.min(Math.max(progressPercentage, 0), 100); // Ensure between 0 and 100
                 }
-
+        
                 return `
         <div class="episode-item bg-gradient-to-br from-black via-gray-900 to-purple-900 rounded-xl overflow-hidden shadow-lg hover:shadow-2xl transition duration-300 transform hover:-translate-y-2 cursor-pointer relative group" data-episode-number="${episode.number}">
             <div class="relative">
@@ -846,80 +846,78 @@ async function displaySelectedMedia(media, mediaType) {
         `;
             }).join('');
         }
-
+        
         function renderSeasonList(seasons) {
             const storedData = JSON.parse(localStorage.getItem('vidLinkProgress') || '{}');
             const mediaData = storedData[media.id];
             const showProgress = mediaData && mediaData.type === 'tv' ? mediaData.show_progress : {};
-
+        
             return seasons.map(season => {
                 const seasonNumber = season.season_number;
                 const episodesInSeason = season.episode_count;
-
+        
                 let episodesWatched = 0;
                 for (let key in showProgress) {
                     if (showProgress.hasOwnProperty(key)) {
                         const [s, e] = key.split('e');
                         const seasonNum = parseInt(s.substring(1), 10);
-
+        
                         if (seasonNum === seasonNumber && showProgress[key].progress && showProgress[key].progress.watched > 0) {
                             episodesWatched++;
                         }
                     }
                 }
-
+        
                 const progressPercentage = episodesInSeason > 0 ? Math.round((episodesWatched / episodesInSeason) * 100) : 0;
-
+        
                 return `
-            <div class="season-item flex items-center mb-4 cursor-pointer hover:bg-gray-800 p-3 rounded-lg transition relative group" data-season-number="${seasonNumber}">
-                <div class="relative w-20 h-28">
-                    <!-- Progressive Loading: Start with w200, load original when needed -->
-                    <img 
-                        src="${season.poster_path ? 'https://image.tmdb.org/t/p/w200' + season.poster_path : 'https://via.placeholder.com/200x300?text=No+Image'}"
-                        data-src-high="${season.poster_path ? 'https://image.tmdb.org/t/p/original' + season.poster_path : ''}" 
-                        alt="Season ${seasonNumber}" 
-                        class="w-full h-full object-cover rounded-lg shadow-md lazyload transition-opacity duration-500"
-                        loading="lazy"
-                    >
-                    <div class="absolute inset-0 bg-black bg-opacity-60 opacity-0 group-hover:opacity-100 transition-opacity rounded-lg"></div>
-                </div>
-                <div class="ml-4 flex-1 bg-black bg-opacity-60 p-2 rounded-lg">
-                    <h4 class="text-purple-300 text-lg font-semibold">Season ${seasonNumber}</h4>
-                    <p class="text-purple-200 text-sm mb-2">${season.episode_count} Episodes</p>
-                    <div class="w-full bg-gray-800 h-2 rounded-full">
-                        <div class="bg-purple-600 h-2 rounded-full" style="width: ${progressPercentage}%;"></div>
-                    </div>
-                    <p class="text-purple-200 text-xs mt-1">${episodesWatched} / ${season.episode_count} Episodes Watched</p>
-                </div>
-                <i class="fas fa-chevron-right text-purple-400 absolute right-4 opacity-0 group-hover:opacity-100 transition-opacity"></i>
+        <div class="season-item flex items-center mb-4 cursor-pointer hover:bg-gray-800 p-3 rounded-lg transition relative group" data-season-number="${seasonNumber}">
+            <div class="relative w-20 h-28">
+                <!-- Progressive Loading: Start with w200, load original when needed -->
+                <img 
+                    src="${season.poster_path ? 'https://image.tmdb.org/t/p/w200' + season.poster_path : 'https://via.placeholder.com/200x300?text=No+Image'}"
+                    data-src-high="${season.poster_path ? 'https://image.tmdb.org/t/p/original' + season.poster_path : ''}" 
+                    alt="Season ${seasonNumber}" 
+                    class="w-full h-full object-cover rounded-lg shadow-md lazyload transition-opacity duration-500"
+                    loading="lazy"
+                >
+                <div class="absolute inset-0 bg-black bg-opacity-60 opacity-0 group-hover:opacity-100 transition-opacity rounded-lg"></div>
             </div>
+            <div class="ml-4 flex-1 bg-black bg-opacity-60 p-2 rounded-lg">
+                <h4 class="text-purple-300 text-lg font-semibold">Season ${seasonNumber}</h4>
+                <p class="text-purple-200 text-sm mb-2">${season.episode_count} Episodes</p>
+                <div class="w-full bg-gray-800 h-2 rounded-full">
+                    <div class="bg-purple-600 h-2 rounded-full" style="width: ${progressPercentage}%;"></div>
+                </div>
+                <p class="text-purple-200 text-xs mt-1">${episodesWatched} / ${season.episode_count} Episodes Watched</p>
+            </div>
+            <i class="fas fa-chevron-right text-purple-400 absolute right-4 opacity-0 group-hover:opacity-100 transition-opacity"></i>
+        </div>
         `;
             }).join('');
         }
-
-
-
+        
         async function openEpisodeModal() {
             if (mediaType !== 'tv') {
                 alert('Episode selection is only available for TV shows.');
                 return;
             }
-
+        
             if (seasonsData.length === 0) {
                 alert('No seasons are available for this show.');
                 return;
             }
-
+        
             const storedData = JSON.parse(localStorage.getItem('vidLinkProgress') || '{}');
             const mediaData = storedData[media.id];
             let preselectedSeason = null;
             let preselectedEpisode = null;
-
+        
             if (mediaData && mediaData.type === 'tv') {
                 preselectedSeason = parseInt(mediaData.last_season_watched, 10);
                 preselectedEpisode = parseInt(mediaData.last_episode_watched, 10);
             }
-
+        
             const modalContent = `
         <div class="modal-overlay fixed inset-0 bg-black bg-opacity-95 flex items-center justify-center z-50">
             <div class="modal-container bg-gradient-to-br from-gray-900 via-purple-800 to-black rounded-3xl shadow-2xl overflow-hidden max-w-full w-full md:max-w-6xl md:w-auto max-h-full relative">
@@ -943,28 +941,27 @@ async function displaySelectedMedia(media, mediaType) {
                 </div>
             </div>
         </div>
-    `;
-
-
+        `;
+        
             $episodeModal.html(modalContent).removeClass('hidden');
-
+        
             // Close modal handler
             $('#closeModalButton').on('click', function() {
                 $episodeModal.addClass('hidden').html('');
             });
-
+        
             $('.season-item').on('click', async function() {
                 const seasonNumber = $(this).data('season-number');
                 selectedSeason = seasonNumber;
-
+        
                 $('.season-item').removeClass('bg-gray-700');
                 $(this).addClass('bg-gray-700');
-
+        
                 await updateEpisodes(seasonNumber);
-
+        
                 attachEpisodeDescriptionToggle();
             });
-
+        
             if (preselectedSeason && seasonsData.some(season => season.season_number === preselectedSeason)) {
                 selectedSeason = preselectedSeason;
                 $(`.season-item[data-season-number="${selectedSeason}"]`).addClass('bg-gray-700');
@@ -972,7 +969,7 @@ async function displaySelectedMedia(media, mediaType) {
             } else {
                 $('.season-item').first().click();
             }
-
+        
             if (preselectedEpisode) {
                 const checkEpisodesLoaded = setInterval(() => {
                     if ($('#episodeGrid').children().length > 0) {
@@ -981,7 +978,7 @@ async function displaySelectedMedia(media, mediaType) {
                     }
                 }, 100);
             }
-
+        
             $('#episodeSearchInput').on('input', function() {
                 const searchTerm = $(this).val().toLowerCase();
                 const filteredEpisodes = episodesData.filter(episode =>
@@ -989,10 +986,10 @@ async function displaySelectedMedia(media, mediaType) {
                     episode.number.toString().includes(searchTerm)
                 );
                 $('#episodeGrid').html(renderEpisodeGrid(filteredEpisodes));
-
+        
                 attachEpisodeDescriptionToggle();
             });
-
+        
             $('#episodeGrid').on('click', '.episode-item', function(event) {
                 if ($(event.target).closest('.description-toggle').length > 0 || $(event.target).closest('.description-content').length > 0) {
                     return;
@@ -1001,23 +998,23 @@ async function displaySelectedMedia(media, mediaType) {
                 selectEpisode(episodeNumber);
                 $episodeModal.addClass('hidden').html('');
             });
-
+        
             function attachEpisodeDescriptionToggle() {
                 $('.description-toggle').off('click').on('click', function(event) {
                     event.stopPropagation();
                     const $descriptionContent = $(this).closest('.episode-item').find('.description-content');
                     $descriptionContent.fadeToggle();
                 });
-
+        
                 $('.close-description').off('click').on('click', function(event) {
                     event.stopPropagation();
                     $(this).closest('.description-content').fadeOut();
                 });
             }
-
+        
             attachEpisodeDescriptionToggle();
         }
-
+        
         function selectEpisode(episodeNumber) {
             selectedEpisode = episodeNumber;
             const episode = episodesData.find(ep => ep.number === episodeNumber);
@@ -1026,11 +1023,11 @@ async function displaySelectedMedia(media, mediaType) {
             } else {
                 $selectEpisodeButton.text(`Episode ${episodeNumber} Selected`);
             }
-
+        
             const storedData = JSON.parse(localStorage.getItem('vidLinkProgress') || '{}');
             const mediaId = media.id;
             let mediaData = storedData[mediaId];
-
+        
             if (mediaData && mediaData.type === 'tv') {
                 if (!storedData[mediaId]) {
                     storedData[mediaId] = {
@@ -1049,12 +1046,12 @@ async function displaySelectedMedia(media, mediaType) {
                     };
                     mediaData = storedData[mediaId];
                 }
-
+        
                 const episodeKey = `s${selectedSeason}e${selectedEpisode}`;
-
+        
                 mediaData.last_season_watched = selectedSeason.toString();
                 mediaData.last_episode_watched = selectedEpisode.toString();
-
+        
                 if (!mediaData.show_progress[episodeKey]) {
                     mediaData.show_progress[episodeKey] = {
                         season: selectedSeason.toString(),
@@ -1066,15 +1063,15 @@ async function displaySelectedMedia(media, mediaType) {
                         last_updated: Date.now()
                     };
                 }
-
+        
                 // Update last_updated timestamp
                 mediaData.show_progress[episodeKey].last_updated = Date.now();
-
+        
                 storedData[mediaId] = mediaData;
                 localStorage.setItem('vidLinkProgress', JSON.stringify(storedData));
             }
         }
-
+        
         $playButton.on('click', updateVideo);
         $closePlayerButton.on('click', closeVideoPlayer);
         $languageSelect.on('change', function() {
@@ -1088,7 +1085,7 @@ async function displaySelectedMedia(media, mediaType) {
         $selectEpisodeButton.on('click', function() {
             openEpisodeModal();
         });
-
+        
 
     } catch (error) {
         console.error('Failed to display selected media:', error);
