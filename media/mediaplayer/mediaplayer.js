@@ -88,27 +88,7 @@ async function getMovieEmbedUrl(mediaId, provider, apiKey, language=null) {
                 console.error('Error fetching video from filmxy:', error);
                 throw error;
             }
-            case 'VidsrCicu':
-                try {
-                    const url = `https://cinescrape.com/vidsrc/hdmovie2/${mediaId}`;
-                    
-                    const response = await fetch(url);
-                    if (!response.ok) throw new Error('Network response was not ok');
-                    
-                    const data = await response.json();
-                    const sources = data.sources;
-                    const englishStream = sources.find(source => source.label === 'English');
-                    if (!englishStream || !englishStream.file) {
-                        throw new Error('No English stream link found');
-                    }
-            
-                    return englishStream.file;
-                } catch (error) {
-                    console.error('Error fetching English stream:', error);
-                    throw error;
-                }
-            
-            
+    
         case 'vidsrcxyz':
             return `https://vidsrc.xyz/embed/movie/${mediaId}`;
         case 'embedsoap':
