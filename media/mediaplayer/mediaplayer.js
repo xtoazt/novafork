@@ -728,7 +728,8 @@ async function displaySelectedMedia(media, mediaType) {
 
         $(window).on('resize', adjustIframeSize);
         adjustIframeSize();
-        
+
+    
         async function updateEpisodes(seasonNumber) {
             if (!seasonNumber) return;
         
@@ -774,7 +775,6 @@ async function displaySelectedMedia(media, mediaType) {
             }
         }
         
-        
         function escapeHtml(str) {
             return str.replace(/[&<>"'()]/g, function (match) {
                 const escape = {
@@ -813,33 +813,60 @@ async function displaySelectedMedia(media, mediaType) {
             <div class="relative">
                 <img 
                     src="${episode.stillPath ? 'https://image.tmdb.org/t/p/w780' + episode.stillPath : 'https://via.placeholder.com/780x439?text=No+Image'}"
-                    data-src-high="${episode.stillPath ? 'https://image.tmdb.org/t/p/original' + episode.stillPath : ''}" 
                     alt="Episode ${episode.number}"
-                    class="w-full h-48 sm:h-40 object-cover lazyload transition-opacity duration-500"
+                    class="w-full h-48 sm:h-40 object-cover transition-opacity duration-500"
                     loading="lazy"
                 >
                 <div class="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-90"></div>
                 <div class="absolute bottom-2 left-2">
                     <h3 class="text-purple-300 text-sm font-semibold">E${episode.number}: ${escapeHtml(episode.name)}</h3>
                 </div>
-                <button class="description-toggle absolute top-2 right-2 text-white bg-purple-700 bg-opacity-80 rounded-full p-2 focus:outline-none opacity-0 group-hover:opacity-100 transition-opacity">
-                    <i class="fas fa-info-circle"></i>
+                <button class="description-toggle absolute top-2 right-2 text-white bg-purple-700 bg-opacity-80 rounded-full p-1 focus:outline-none opacity-0 group-hover:opacity-100 transition-opacity">
+                    <!-- Heroicons Information Circle Icon -->
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-white hover:text-yellow-300 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <title>View Details</title>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M12 3C7.03 3 3 7.03 3 12s4.03 9 9 9 9-4.03 9-9-4.03-9-9-9z" />
+                    </svg>
                 </button>
                 <div class="absolute bottom-0 left-0 w-full h-2 bg-gray-800">
                     <div class="h-full bg-purple-600" style="width: ${progressPercentage}%;"></div>
                 </div>
             </div>
-            <div class="p-4 relative bg-black bg-opacity-70">
-                <p class="text-purple-200 text-xs mb-2"><i class="fas fa-calendar-alt mr-1"></i>${episode.airDate ? new Date(episode.airDate).toLocaleDateString() : 'Unknown'}</p>
+            <div class="p-4 bg-black bg-opacity-70">
+                <p class="text-purple-200 text-xs mb-2 flex items-center">
+                    <!-- Heroicons Calendar Icon -->
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-purple-200 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <title>Air Date</title>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7H3v12a2 2 0 002 2z" />
+                    </svg>
+                    ${episode.airDate ? new Date(episode.airDate).toLocaleDateString() : 'Unknown'}
+                </p>
                 <p class="text-purple-300 text-xs mt-1">Watched: ${watchedMinutes} min / ${durationMinutes} min</p>
-                
-                <!-- Description content with improved styling and transition -->
-                <div class="description-content hidden mt-2 text-purple-100 text-sm bg-black bg-opacity-95 p-6 rounded-lg absolute inset-0 overflow-y-auto z-30 transition transform opacity-0 scale-95 group-hover:opacity-100 group-hover:scale-100 duration-300 ease-in-out">
-                    <button class="close-description absolute top-4 right-4 text-white bg-red-600 hover:bg-red-700 p-2 rounded-full focus:outline-none">
-                        <i class="fas fa-times"></i>
-                    </button>
-                    <h3 class="text-purple-400 text-lg font-bold mb-4">Episode ${episode.number}: ${escapeHtml(episode.name)}</h3>
-                    <p>${escapeHtml(episode.overview)}</p>
+            </div>
+            <!-- Description content with mirror effect -->
+            <div class="description-content hidden text-purple-100 text-sm bg-gradient-to-b from-purple-900 via-black to-black bg-opacity-95 p-6 rounded-lg absolute inset-0 overflow-hidden z-30 transition transform opacity-0 scale-95 group-hover:opacity-100 group-hover:scale-100 duration-300 ease-in-out">
+                <button class="close-description absolute top-4 right-4 text-white bg-red-600 hover:bg-red-700 p-2 rounded-full focus:outline-none">
+                    <!-- Heroicons X Icon -->
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <title>Close</title>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+        
+                <!-- Content container -->
+                <div class="flex flex-col items-center">
+                    <!-- Original content -->
+                    <div class="mb-4">
+                        <h3 class="text-yellow-300 text-xl font-bold">Episode ${episode.number}: ${escapeHtml(episode.name)}</h3>
+                    </div>
+                    <p class="leading-relaxed text-center">${escapeHtml(episode.overview)}</p>
+        
+                    <!-- Mirrored content -->
+                    <div class="mt-4 transform scale-y-[-1] opacity-50 blur-sm">
+                        <div class="text-center">
+                            <h3 class="text-yellow-300 text-xl font-bold">${escapeHtml(episode.name)}</h3>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -873,17 +900,15 @@ async function displaySelectedMedia(media, mediaType) {
                 return `
         <div class="season-item flex items-center mb-4 cursor-pointer hover:bg-gray-800 p-3 rounded-lg transition relative group" data-season-number="${seasonNumber}">
             <div class="relative w-20 h-28">
-                <!-- Progressive Loading: Start with w200, load original when needed -->
                 <img 
                     src="${season.poster_path ? 'https://image.tmdb.org/t/p/w200' + season.poster_path : 'https://via.placeholder.com/200x300?text=No+Image'}"
-                    data-src-high="${season.poster_path ? 'https://image.tmdb.org/t/p/original' + season.poster_path : ''}" 
                     alt="Season ${seasonNumber}" 
-                    class="w-full h-full object-cover rounded-lg shadow-md lazyload transition-opacity duration-500"
+                    class="w-full h-full object-cover rounded-lg shadow-md transition-opacity duration-500"
                     loading="lazy"
                 >
-                <div class="absolute inset-0 bg-black bg-opacity-60 opacity-0 group-hover:opacity-100 transition-opacity rounded-lg"></div>
+                <div class="absolute inset-0 bg-black bg-opacity-50 opacity-0 group-hover:opacity-100 transition-opacity rounded-lg"></div>
             </div>
-            <div class="ml-4 flex-1 bg-black bg-opacity-60 p-2 rounded-lg">
+            <div class="ml-4 flex-1 bg-black bg-opacity-70 p-3 rounded-lg">
                 <h4 class="text-purple-300 text-lg font-semibold">Season ${seasonNumber}</h4>
                 <p class="text-purple-200 text-sm mb-2">${season.episode_count} Episodes</p>
                 <div class="w-full bg-gray-800 h-2 rounded-full">
@@ -891,7 +916,11 @@ async function displaySelectedMedia(media, mediaType) {
                 </div>
                 <p class="text-purple-200 text-xs mt-1">${episodesWatched} / ${season.episode_count} Episodes Watched</p>
             </div>
-            <i class="fas fa-chevron-right text-purple-400 absolute right-4 opacity-0 group-hover:opacity-100 transition-opacity"></i>
+            <!-- Heroicons Chevron Right Icon -->
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-purple-400 absolute right-4 opacity-0 group-hover:opacity-100 transition-opacity" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <title>View Episodes</title>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+            </svg>
         </div>
         `;
             }).join('');
@@ -920,7 +949,7 @@ async function displaySelectedMedia(media, mediaType) {
         
             const modalContent = `
         <div class="modal-overlay fixed inset-0 bg-black bg-opacity-95 flex items-center justify-center z-50">
-            <div class="modal-container bg-gradient-to-br from-gray-900 via-purple-800 to-black rounded-3xl shadow-2xl overflow-hidden max-w-full w-full md:max-w-6xl md:w-auto max-h-full relative">
+            <div class="modal-container bg-gradient-to-br from-black via-gray-900 to-purple-900 rounded-3xl shadow-2xl overflow-hidden max-w-full w-full md:max-w-6xl md:w-auto max-h-full relative">
                 <button id="closeModalButton" class="absolute top-6 right-6 text-purple-300 text-3xl hover:text-purple-500 focus:outline-none">&times;</button>
                 <div class="flex flex-col md:flex-row h-full">
                     <div class="seasons-list md:w-1/3 w-full bg-black bg-opacity-80 overflow-y-auto custom-scrollbar max-h-screen">
@@ -929,7 +958,7 @@ async function displaySelectedMedia(media, mediaType) {
                             ${renderSeasonList(seasonsData)}
                         </div>
                     </div>
-                    <div class="episodes-grid md:w-2/3 w-full p-6 overflow-y-auto custom-scrollbar max-h-screen bg-gray-950 bg-opacity-90">
+                    <div class="episodes-grid md:w-2/3 w-full p-6 overflow-y-auto custom-scrollbar max-h-screen bg-black bg-opacity-80">
                         <h2 class="text-3xl font-bold text-purple-300 mb-6">Select Episode</h2>
                         <div class="mb-6">
                             <input type="text" id="episodeSearchInput" class="w-full p-3 bg-gray-800 text-purple-200 rounded-full focus:outline-none focus:ring-2 focus:ring-purple-600" placeholder="Search episodes...">
@@ -1064,7 +1093,7 @@ async function displaySelectedMedia(media, mediaType) {
                     };
                 }
         
-                // Update last_updated timestamp
+            
                 mediaData.show_progress[episodeKey].last_updated = Date.now();
         
                 storedData[mediaId] = mediaData;
