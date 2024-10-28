@@ -89,26 +89,23 @@ async function getMovieEmbedUrl(mediaId, provider, apiKey, language=null) {
                 throw error;
             }
           case 'VidsrCicu':
-                try {
-                    if (!mediaId) throw new Error('Media ID is required');
-            
-                  const url = `https://cinescrape.com/vidsrc/vidsrcicu/${mediaId}`;
-                    
-                    const response = await fetch(url);
-                    if (!response.ok) throw new Error('Network response was not ok');
-                    
-                    const data = await response.json();
-                    
-                    // Check and retrieve the m3u8 link
-                    const m3u8Link = data?.streamData?.data?.link;
-                    
-                    if (!m3u8Link) throw new Error('No m3u8 link found');
-                    
-                    return m3u8Link;
-                } catch (error) {
-                    console.error('Error fetching video:', error);
-                    throw error;
-                }
+            try {
+                const url = `https://cinescrape.com/vidsrc/vidsrcicu/${mediaId}`;
+                
+                const response = await fetch(url);
+                if (!response.ok) throw new Error('Network response was not ok');
+        
+                const data = await response.json();
+                
+                const m3u8Link = data?.sources?.[0]?.file;
+                
+                if (!m3u8Link) throw new Error('No m3u8 link found');
+                
+                return m3u8Link;
+            } catch (error) {
+                console.error('Error fetching video:', error);
+                throw error;
+            }
             
         case 'vidsrcxyz':
             return `https://vidsrc.xyz/embed/movie/${mediaId}`;
