@@ -94,16 +94,12 @@ async function getMovieEmbedUrl(mediaId, provider, apiKey, language=null) {
                 
                 const response = await fetch(url);
                 if (!response.ok) throw new Error('Network response was not ok');
-        
                 const data = await response.json();
-                
-                const m3u8Link = data?.sources?.[0]?.file;
-                
+                const m3u8Link = data.streamData.data.link;
                 if (!m3u8Link) throw new Error('No m3u8 link found');
-                
                 return m3u8Link;
             } catch (error) {
-                console.error('Error fetching video:', error);
+                console.error('Error fetching video from filmxy:', error);
                 throw error;
             }
             
