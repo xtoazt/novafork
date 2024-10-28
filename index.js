@@ -615,7 +615,7 @@ $(document).ready(async function () {
     
                 const releaseType = await getReleaseType(mediaId, mediaType);
     
-                const newUrl = `${window.location.origin}${window.location.pathname}?mediaType=${encodeURIComponent(mediaType)}&mediaId=${encodeURIComponent(mediaId)}`;
+                const newUrl = `${window.location.origin}${window.location.pathname}?path=${encodeURIComponent(mediaType)}/${encodeURIComponent(mediaId)}`;
                 window.history.pushState({ mediaId, mediaType, title: media.title || media.name }, '', newUrl);
     
                 displaySelectedMedia(media, mediaType, releaseType);
@@ -636,6 +636,7 @@ $(document).ready(async function () {
             $videoPlayerContainer.addClass('hidden');
         }
     }
+    
     
 
     const cache = new Map();
@@ -903,7 +904,6 @@ $(document).ready(async function () {
             $videoPlayerContainer.addClass('hidden');
         }
     }
-
     async function loadMediaFromUrlParams() {
         const urlParams = new URLSearchParams(window.location.search);
         const mediaType = urlParams.get('mediaType');
@@ -911,19 +911,23 @@ $(document).ready(async function () {
         const title = urlParams.get('title');
     
         if (mediaType && mediaId) {
-            await fetchSelectedMedia(mediaId, mediaType);
+            const mediaPath = `${mediaType}/${mediaId}`;
+            await fetchSelectedMedia(mediaPath);
         } else if (title) {
             const response = await $.getJSON(`https://api.themoviedb.org/3/search/multi?api_key=${API_KEY}&query=${encodeURIComponent(title)}`);
-            const media = response.results.find(item => (item.title && item.title.toLowerCase().replace(/[^a-z0-9]+/g, '-') === title) || (item.name && item.name.toLowerCase().replace(/[^a-z0-9]+/g, '-') === title));
+            const media = response.results.find(item =>
+                (item.title && item.title.toLowerCase().replace(/[^a-z0-9]+/g, '-') === title) ||
+                (item.name && item.name.toLowerCase().replace(/[^a-z0-9]+/g, '-') === title)
+            );
             if (media) {
                 const mediaType = media.media_type || (media.title ? 'movie' : 'tv');
-                await fetchSelectedMedia(media.id, mediaType);
+                const mediaPath = `${mediaType}/${media.id}`;
+                await fetchSelectedMedia(mediaPath);
             } else {
                 handleError('Media not found based on the title parameter.');
             }
         }
     }
-    
 
     if ($categorySelect.length) {
         $categorySelect.on('change', function () {

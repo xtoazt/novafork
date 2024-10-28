@@ -120,8 +120,9 @@ $(document).ready(async function() {
             const media = await apiCall(`${mediaType}/${mediaId}`);
             if (media) {
                 displaySelectedMedia(media, mediaType);
-
-                const newUrl = `${window.location.origin}${window.location.pathname}?mediaType=${encodeURIComponent(mediaType)}&mediaId=${encodeURIComponent(mediaId)}`;
+    
+                // Updated URL format to use tv/id or movie/id
+                const newUrl = `${window.location.origin}${window.location.pathname}?path=${encodeURIComponent(mediaType)}/${encodeURIComponent(mediaId)}`;
                 window.history.pushState({ mediaId, mediaType, title: media.title || media.name }, '', newUrl);
             } else {
                 handleError('Failed to fetch media details.', new Error('API response not OK'));
@@ -130,6 +131,7 @@ $(document).ready(async function() {
             handleError('An error occurred while fetching media details:', error);
         }
     };
+    
 
     const displaySearchResults = (results) => {
         const $mediaContainer = $('#mediaContainer');
@@ -192,17 +194,20 @@ $(document).ready(async function() {
 
     const loadMediaFromUrlParams = async () => {
         const urlParams = new URLSearchParams(window.location.search);
-        const mediaType = urlParams.get('mediaType');
-        const mediaId = urlParams.get('mediaId');
-        if (mediaType && mediaId) {
-            await fetchSelectedMedia(mediaId, mediaType);
+        const path = urlParams.get('path');
+    
+        if (path) {
+            const [mediaType, mediaId] = path.split('/');
+            if (mediaType && mediaId) {
+                await fetchSelectedMedia(mediaId, mediaType);
+            }
         }
     };
-
+    
     const init = async () => {
         if (await getApiKey()) {
             await fetchAllGenres();
-            await loadMediaFromUrlParams(); // Load media if URL parameters are present
+            await loadMediaFromUrlParams(); 
         }
     };
 
