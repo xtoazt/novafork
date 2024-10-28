@@ -607,27 +607,25 @@ $(document).ready(async function () {
             timeout = setTimeout(() => func.apply(this, args), delay);
         };
     }
-
     async function fetchSelectedMedia(mediaId, mediaType) {
         try {
             const response = await $.getJSON(`https://api.themoviedb.org/3/${mediaType}/${mediaId}?api_key=${API_KEY}`);
             if (response) {
                 const media = response;
-
+    
                 const releaseType = await getReleaseType(mediaId, mediaType);
-
-                const titleSlug = media.title ? media.title.toLowerCase().replace(/[^a-z0-9]+/g, '-') : media.name.toLowerCase().replace(/[^a-z0-9]+/g, '-');
-                const newUrl = `${window.location.origin}${window.location.pathname}?title=${encodeURIComponent(titleSlug)}`;
+    
+                const newUrl = `${window.location.origin}${window.location.pathname}?mediaType=${encodeURIComponent(mediaType)}&mediaId=${encodeURIComponent(mediaId)}`;
                 window.history.pushState({ mediaId, mediaType, title: media.title || media.name }, '', newUrl);
-
+    
                 displaySelectedMedia(media, mediaType, releaseType);
                 await fetchMediaTrailer(mediaId, mediaType);
-
+    
                 if ($posterImage.length && media.poster_path) {
                     $posterImage.attr('src', `https://image.tmdb.org/t/p/w300${media.poster_path}`);
                     $posterImage.attr('alt', media.title || media.name);
                 }
-
+    
                 $videoPlayerContainer.removeClass('hidden');
             } else {
                 handleError('Failed to fetch media details.', new Error('API response not OK'));
@@ -638,6 +636,7 @@ $(document).ready(async function () {
             $videoPlayerContainer.addClass('hidden');
         }
     }
+    
 
     const cache = new Map();
 
@@ -907,17 +906,24 @@ $(document).ready(async function () {
 
     async function loadMediaFromUrlParams() {
         const urlParams = new URLSearchParams(window.location.search);
+        const mediaType = urlParams.get('mediaType');
+        const mediaId = urlParams.get('mediaId');
         const title = urlParams.get('title');
-
-        if (title) {
+    
+        if (mediaType && mediaId) {
+            await fetchSelectedMedia(mediaId, mediaType);
+        } else if (title) {
             const response = await $.getJSON(`https://api.themoviedb.org/3/search/multi?api_key=${API_KEY}&query=${encodeURIComponent(title)}`);
             const media = response.results.find(item => (item.title && item.title.toLowerCase().replace(/[^a-z0-9]+/g, '-') === title) || (item.name && item.name.toLowerCase().replace(/[^a-z0-9]+/g, '-') === title));
             if (media) {
                 const mediaType = media.media_type || (media.title ? 'movie' : 'tv');
                 await fetchSelectedMedia(media.id, mediaType);
+            } else {
+                handleError('Media not found based on the title parameter.');
             }
         }
     }
+    
 
     if ($categorySelect.length) {
         $categorySelect.on('change', function () {
