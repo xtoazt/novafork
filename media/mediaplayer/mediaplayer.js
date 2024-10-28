@@ -88,7 +88,7 @@ async function getMovieEmbedUrl(mediaId, provider, apiKey, language=null) {
                 console.error('Error fetching video from filmxy:', error);
                 throw error;
             }
-          case 'vidsrcicu':
+          case 'VidsrCicu':
                 try {
                     if (!mediaId) throw new Error('Media ID is required');
             
