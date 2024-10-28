@@ -905,14 +905,21 @@ $(document).ready(async function () {
         }
     }
     async function loadMediaFromUrlParams() {
-        const urlParams = new URLSearchParams(window.location.search);
-        const mediaType = urlParams.get('mediaType');
-        const mediaId = urlParams.get('mediaId');
-        const title = urlParams.get('title');
+        const pathname = window.location.pathname;
+        const segments = pathname.split('/').filter(Boolean);
+    
+        let mediaType, mediaId, title;
+    
+        if (segments.length >= 2) {
+            mediaType = segments[0];
+            mediaId = segments[1];
+        } else {
+            const urlParams = new URLSearchParams(window.location.search);
+            title = urlParams.get('title');
+        }
     
         if (mediaType && mediaId) {
-            const mediaPath = `${mediaType}/${mediaId}`;
-            await fetchSelectedMedia(mediaPath);
+            await fetchSelectedMedia(mediaType, mediaId);
         } else if (title) {
             const response = await $.getJSON(`https://api.themoviedb.org/3/search/multi?api_key=${API_KEY}&query=${encodeURIComponent(title)}`);
             const media = response.results.find(item =>
@@ -920,15 +927,18 @@ $(document).ready(async function () {
                 (item.name && item.name.toLowerCase().replace(/[^a-z0-9]+/g, '-') === title)
             );
             if (media) {
-                const mediaType = media.media_type || (media.title ? 'movie' : 'tv');
-                const mediaPath = `${mediaType}/${media.id}`;
-                await fetchSelectedMedia(mediaPath);
+                mediaType = media.media_type || (media.title ? 'movie' : 'tv');
+                mediaId = media.id;
+                await fetchSelectedMedia(mediaType, mediaId);
             } else {
                 handleError('Media not found based on the title parameter.');
             }
+        } else {
+            handleError('No mediaType and mediaId found in the URL.');
         }
     }
-
+    
+    
     if ($categorySelect.length) {
         $categorySelect.on('change', function () {
             fetchPopularMedia();

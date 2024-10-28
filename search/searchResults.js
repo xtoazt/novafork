@@ -193,16 +193,20 @@ $(document).ready(async function() {
     }, 300);
 
     const loadMediaFromUrlParams = async () => {
-        const urlParams = new URLSearchParams(window.location.search);
-        const path = urlParams.get('path');
+        const pathname = window.location.pathname;
+        const segments = pathname.split('/').filter(Boolean);
     
-        if (path) {
-            const [mediaType, mediaId] = path.split('/');
+        if (segments.length >= 2) {
+            const mediaType = segments[0];
+            const mediaId = segments[1];
             if (mediaType && mediaId) {
                 await fetchSelectedMedia(mediaId, mediaType);
             }
+        } else {
+        
         }
     };
+    
     
     const init = async () => {
         if (await getApiKey()) {
@@ -210,6 +214,7 @@ $(document).ready(async function() {
             await loadMediaFromUrlParams(); 
         }
     };
+    
 
     await init();
 
