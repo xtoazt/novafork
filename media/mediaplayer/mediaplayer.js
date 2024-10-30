@@ -88,7 +88,7 @@ async function getMovieEmbedUrl(mediaId, provider, apiKey, language=null) {
                 console.error('Error fetching video from filmxy:', error);
                 throw error;
             }
-    
+
         case 'vidsrcxyz':
             return `https://vidsrc.xyz/embed/movie/${mediaId}`;
         case 'embedsoap':
@@ -540,9 +540,9 @@ async function displaySelectedMedia(media, mediaType) {
                     console.error('API key is not available.');
                     return;
                 }
-        
+
                 let endpoint;
-        
+
                 // Handle provider selection
                 if (provider === 'trailer') {
                     // Trailer handling for movies and TV shows
@@ -587,15 +587,15 @@ async function displaySelectedMedia(media, mediaType) {
                     $videoPlayer.html(iframeHtml).removeClass('hidden');
                     $movieInfo.children().not($videoPlayer).addClass('hidden');
                     $closePlayerButton.removeClass('hidden');
-        
+
                     // Hide loading screen when iframe is loaded
                     const iframe = document.getElementById('betaplayerIframe');
                     iframe.onload = function() {
                         hideLoadingScreen();
                     };
-        
+
                     attemptFullscreenAndLockOrientation(iframe);
-        
+
                     // Since we already handled the display, we can return early
                     return;
                 } else {
@@ -610,7 +610,7 @@ async function displaySelectedMedia(media, mediaType) {
                         endpoint = await getTvEmbedUrl(media.id, selectedSeason, selectedEpisode, provider, apiKey);
                     }
                 }
-        
+
                 // Display video based on provider
                 if (provider === 'trailer') {
                     // Trailer display in an iframe
@@ -620,7 +620,7 @@ async function displaySelectedMedia(media, mediaType) {
                     $videoPlayer.html(iframeHtml).removeClass('hidden');
                     $movieInfo.children().not($videoPlayer).addClass('hidden');
                     $closePlayerButton.removeClass('hidden');
-        
+
                     attemptFullscreenAndLockOrientation(document.getElementById('videoIframe'));
                 } else if (provider === 'filmxy') {
                     // HLS setup for filmxy provider
@@ -631,7 +631,7 @@ async function displaySelectedMedia(media, mediaType) {
                     $videoPlayer.html(playerHtml).removeClass('hidden');
                     $movieInfo.children().not($videoPlayer).addClass('hidden');
                     $closePlayerButton.removeClass('hidden');
-        
+
                     const videoElement = document.getElementById('hlsVideoPlayer');
                     if ('IntersectionObserver' in window && Hls.isSupported()) {
                         const observer = new IntersectionObserver((entries, observer) => {
@@ -660,7 +660,6 @@ async function displaySelectedMedia(media, mediaType) {
                     }
                 } else {
                     // Generic iframe display for other providers
-                    const sandboxAttribute = provider === 'vidlink' ? 'sandbox="allow-same-origin allow-scripts allow-forms"' : '';
                     const referrerPolicy = provider === 'vidbinge' ? 'referrerpolicy="origin-when-cross-origin"' : '';
                     const iframeHtml = `
                         <iframe 
@@ -671,40 +670,20 @@ async function displaySelectedMedia(media, mediaType) {
                             preload="auto"
                             loading="lazy"
                             crossorigin="anonymous"
-                            ${sandboxAttribute} 
                             ${referrerPolicy}>
                         </iframe>
                     `;
                     $videoPlayer.html(iframeHtml).removeClass('hidden');
                     $movieInfo.children().not($videoPlayer).addClass('hidden');
                     $closePlayerButton.removeClass('hidden');
-        
-                    $('iframe').one('load', function () {
-                        const iframeWindow = this.contentWindow;
-                        if (iframeWindow) {
-                            try {
-                                iframeWindow.document.addEventListener('click', (event) => {
-                                    const target = event.target.tagName;
-                                    if (target === 'A' || target === 'BUTTON') event.preventDefault();
-                                });
-                                iframeWindow.open = () => null;
-                                iframeWindow.eval(`(function() { window.open = () => null; })();`);
-                                ['beforeunload', 'unload', 'submit'].forEach(eventType => {
-                                    iframeWindow.document.addEventListener(eventType, event => event.preventDefault());
-                                });
-                            } catch (error) {
-                                console.error('Error in iframe event handling:', error);
-                            }
-                        }
-                    });
-        
+
                     attemptFullscreenAndLockOrientation(document.getElementById('videoIframe'));
                 }
             } catch (error) {
                 console.error('Error updating video:', error);
             }
         }
-        
+
 
 
 
@@ -728,30 +707,30 @@ async function displaySelectedMedia(media, mediaType) {
         $(window).on('resize', adjustIframeSize);
         adjustIframeSize();
 
-    
+
         async function updateEpisodes(seasonNumber) {
             if (!seasonNumber) return;
-        
+
             try {
                 const season = await fetchJson(`https://api.themoviedb.org/3/tv/${media.id}/season/${seasonNumber}?api_key=${apiKey}`);
-        
+
                 const currentDate = new Date();
-        
+
                 const airedEpisodes = season.episodes.filter(episode => {
                     const airDate = new Date(episode.air_date);
                     return airDate <= currentDate;
                 });
-        
+
                 if (airedEpisodes.length === 0) {
                     $('#runtime').html('No episodes have aired yet.');
                 } else {
                     // Calculate total runtime for all aired episodes
                     const totalRuntime = airedEpisodes.reduce((total, episode) => total + (episode.runtime || 0), 0);
                     const averageRuntime = totalRuntime / airedEpisodes.length || 0;
-        
+
                     $('#runtime').html(`Total Runtime: ${Math.round(totalRuntime)} min (${Math.round(averageRuntime)} min per episode)`);
                 }
-        
+
                 episodesData = airedEpisodes.map(episode => ({
                     number: episode.episode_number,
                     name: episode.name || 'Untitled',
@@ -760,20 +739,20 @@ async function displaySelectedMedia(media, mediaType) {
                     overview: episode.overview || 'No description available.',
                     runtime: episode.runtime || 0
                 }));
-        
+
                 selectedEpisode = null;
-        
+
                 $('#episodeGrid').html(renderEpisodeGrid(episodesData));
-        
+
                 $('.episodes-grid').scrollTop(0);
-        
+
                 attachEpisodeDescriptionToggle();
-        
+
             } catch (error) {
                 console.error('Failed to fetch season details:', error);
             }
         }
-        
+
         function escapeHtml(str) {
             return str.replace(/[&<>"'()]/g, function (match) {
                 const escape = {
@@ -788,25 +767,25 @@ async function displaySelectedMedia(media, mediaType) {
                 return escape[match];
             });
         }
-        
+
         function renderEpisodeGrid(episodes) {
             const storedData = JSON.parse(localStorage.getItem('vidLinkProgress') || '{}');
             const mediaData = storedData[media.id];
             const showProgress = mediaData && mediaData.type === 'tv' ? mediaData.show_progress : {};
-        
+
             return episodes.map(episode => {
                 const episodeKey = `s${selectedSeason}e${episode.number}`;
                 let progressPercentage = 0;
                 let watchedMinutes = 0;
                 let durationMinutes = 0;
-        
+
                 if (showProgress && showProgress[episodeKey] && showProgress[episodeKey].progress && showProgress[episodeKey].progress.duration > 0) {
                     watchedMinutes = Math.round(showProgress[episodeKey].progress.watched / 60); // Convert seconds to minutes
                     durationMinutes = Math.round(showProgress[episodeKey].progress.duration / 60); // Convert seconds to minutes
                     progressPercentage = (showProgress[episodeKey].progress.watched / showProgress[episodeKey].progress.duration) * 100;
                     progressPercentage = Math.min(Math.max(progressPercentage, 0), 100); // Ensure between 0 and 100
                 }
-        
+
                 return `
         <div class="episode-item bg-gradient-to-br from-black via-gray-900 to-purple-900 rounded-xl overflow-hidden shadow-lg hover:shadow-2xl transition duration-300 transform hover:-translate-y-2 cursor-pointer relative group" data-episode-number="${episode.number}">
             <div class="relative">
@@ -872,31 +851,31 @@ async function displaySelectedMedia(media, mediaType) {
         `;
             }).join('');
         }
-        
+
 
         function renderSeasonList(seasons) {
             const storedData = JSON.parse(localStorage.getItem('vidLinkProgress') || '{}');
             const mediaData = storedData[media.id];
             const showProgress = mediaData && mediaData.type === 'tv' ? mediaData.show_progress : {};
-        
+
             return seasons.map(season => {
                 const seasonNumber = season.season_number;
                 const episodesInSeason = season.episode_count;
-        
+
                 let episodesWatched = 0;
                 for (let key in showProgress) {
                     if (showProgress.hasOwnProperty(key)) {
                         const [s, e] = key.split('e');
                         const seasonNum = parseInt(s.substring(1), 10);
-        
+
                         if (seasonNum === seasonNumber && showProgress[key].progress && showProgress[key].progress.watched > 0) {
                             episodesWatched++;
                         }
                     }
                 }
-        
+
                 const progressPercentage = episodesInSeason > 0 ? Math.round((episodesWatched / episodesInSeason) * 100) : 0;
-        
+
                 return `
         <div class="season-item flex flex-col sm:flex-row items-center mb-4 cursor-pointer hover:bg-gray-800 p-3 rounded-lg transition relative group" data-season-number="${seasonNumber}">
             <div class="relative w-full sm:w-20 h-48 sm:h-28">
@@ -925,29 +904,29 @@ async function displaySelectedMedia(media, mediaType) {
         `;
             }).join('');
         }
-        
+
 
         async function openEpisodeModal() {
             if (mediaType !== 'tv') {
                 alert('Episode selection is only available for TV shows.');
                 return;
             }
-        
+
             if (seasonsData.length === 0) {
                 alert('No seasons are available for this show.');
                 return;
             }
-        
+
             const storedData = JSON.parse(localStorage.getItem('vidLinkProgress') || '{}');
             const mediaData = storedData[media.id];
             let preselectedSeason = null;
             let preselectedEpisode = null;
-        
+
             if (mediaData && mediaData.type === 'tv') {
                 preselectedSeason = parseInt(mediaData.last_season_watched, 10);
                 preselectedEpisode = parseInt(mediaData.last_episode_watched, 10);
             }
-        
+
             const modalContent = `
         <div class="modal-overlay fixed inset-0 bg-black bg-opacity-95 flex items-center justify-center z-50">
             <div class="modal-container bg-gradient-to-br from-black via-gray-900 to-purple-900 rounded-3xl shadow-2xl overflow-hidden max-w-full w-full md:max-w-6xl md:w-auto max-h-full relative">
@@ -972,26 +951,26 @@ async function displaySelectedMedia(media, mediaType) {
             </div>
         </div>
         `;
-        
+
             $episodeModal.html(modalContent).removeClass('hidden');
-        
+
 
             $('#closeModalButton').on('click', function() {
                 $episodeModal.addClass('hidden').html('');
             });
-        
+
             $('.season-item').on('click', async function() {
                 const seasonNumber = $(this).data('season-number');
                 selectedSeason = seasonNumber;
-        
+
                 $('.season-item').removeClass('bg-gray-700');
                 $(this).addClass('bg-gray-700');
-        
+
                 await updateEpisodes(seasonNumber);
-        
+
                 attachEpisodeDescriptionToggle();
             });
-        
+
             if (preselectedSeason && seasonsData.some(season => season.season_number === preselectedSeason)) {
                 selectedSeason = preselectedSeason;
                 $(`.season-item[data-season-number="${selectedSeason}"]`).addClass('bg-gray-700');
@@ -999,7 +978,7 @@ async function displaySelectedMedia(media, mediaType) {
             } else {
                 $('.season-item').first().click();
             }
-        
+
             if (preselectedEpisode) {
                 const checkEpisodesLoaded = setInterval(() => {
                     if ($('#episodeGrid').children().length > 0) {
@@ -1008,7 +987,7 @@ async function displaySelectedMedia(media, mediaType) {
                     }
                 }, 100);
             }
-        
+
             $('#episodeSearchInput').on('input', function() {
                 const searchTerm = $(this).val().toLowerCase();
                 const filteredEpisodes = episodesData.filter(episode =>
@@ -1016,10 +995,10 @@ async function displaySelectedMedia(media, mediaType) {
                     episode.number.toString().includes(searchTerm)
                 );
                 $('#episodeGrid').html(renderEpisodeGrid(filteredEpisodes));
-        
+
                 attachEpisodeDescriptionToggle();
             });
-        
+
             $('#episodeGrid').on('click', '.episode-item', function(event) {
                 if ($(event.target).closest('.description-toggle').length > 0 || $(event.target).closest('.description-content').length > 0) {
                     return;
@@ -1028,23 +1007,23 @@ async function displaySelectedMedia(media, mediaType) {
                 selectEpisode(episodeNumber);
                 $episodeModal.addClass('hidden').html('');
             });
-        
+
             function attachEpisodeDescriptionToggle() {
                 $('.description-toggle').off('click').on('click', function(event) {
                     event.stopPropagation();
                     const $descriptionContent = $(this).closest('.episode-item').find('.description-content');
                     $descriptionContent.fadeToggle();
                 });
-        
+
                 $('.close-description').off('click').on('click', function(event) {
                     event.stopPropagation();
                     $(this).closest('.description-content').fadeOut();
                 });
             }
-        
+
             attachEpisodeDescriptionToggle();
         }
-        
+
         function selectEpisode(episodeNumber) {
             selectedEpisode = episodeNumber;
             const episode = episodesData.find(ep => ep.number === episodeNumber);
@@ -1053,11 +1032,11 @@ async function displaySelectedMedia(media, mediaType) {
             } else {
                 $selectEpisodeButton.text(`Episode ${episodeNumber} Selected`);
             }
-        
+
             const storedData = JSON.parse(localStorage.getItem('vidLinkProgress') || '{}');
             const mediaId = media.id;
             let mediaData = storedData[mediaId];
-        
+
             if (mediaData && mediaData.type === 'tv') {
                 if (!storedData[mediaId]) {
                     storedData[mediaId] = {
@@ -1076,12 +1055,12 @@ async function displaySelectedMedia(media, mediaType) {
                     };
                     mediaData = storedData[mediaId];
                 }
-        
+
                 const episodeKey = `s${selectedSeason}e${selectedEpisode}`;
-        
+
                 mediaData.last_season_watched = selectedSeason.toString();
                 mediaData.last_episode_watched = selectedEpisode.toString();
-        
+
                 if (!mediaData.show_progress[episodeKey]) {
                     mediaData.show_progress[episodeKey] = {
                         season: selectedSeason.toString(),
@@ -1093,15 +1072,15 @@ async function displaySelectedMedia(media, mediaType) {
                         last_updated: Date.now()
                     };
                 }
-        
-            
+
+
                 mediaData.show_progress[episodeKey].last_updated = Date.now();
-        
+
                 storedData[mediaId] = mediaData;
                 localStorage.setItem('vidLinkProgress', JSON.stringify(storedData));
             }
         }
-        
+
         $playButton.on('click', updateVideo);
         $closePlayerButton.on('click', closeVideoPlayer);
         $languageSelect.on('change', function() {
@@ -1115,7 +1094,7 @@ async function displaySelectedMedia(media, mediaType) {
         $selectEpisodeButton.on('click', function() {
             openEpisodeModal();
         });
-        
+
 
     } catch (error) {
         console.error('Failed to display selected media:', error);
