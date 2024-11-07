@@ -95,7 +95,7 @@ async function getMovieEmbedUrl(mediaId, provider, apiKey, language = null) {
         case 'vidsrcxyz':
             return `https://vidsrc.xyz/embed/movie/${mediaId}`;
         case 'flicky':
-                return `https://player.flicky.host/embed/movie/${mediaId} `;
+                return `https://flicky.host/embed/movie/?id=${mediaId} `;
         case 'embedsoap':
             return `https://www.embedsoap.com/embed/movie/?id=${mediaId}`;
         case 'autoembed':
@@ -198,9 +198,9 @@ async function getMovieEmbedUrl(mediaId, provider, apiKey, language = null) {
             case 'vidsrcpro':
                 return `https://vidsrc.pro/embed/tv/${mediaId}/${seasonId}/${episodeId}`;
             case 'flicky':
-                return `https://player.flicky.host/embed/tv/${mediaId}/${seasonId}/${episodeId} `;
+                return `https://flicky.host/embed/tv/?id=${mediaId}/${seasonId}/${episodeId} `;
             case 'flickyanime':
-                    return `https://flicky.host/embed/anime/${mediaId}/${seasonId}/${episodeId} `;
+                    return `https://flicky.host/embed/anime/?id=${mediaId}/${seasonId}/${episodeId} `;
             case 'vidsrcxyz':
                 return `https://vidsrc.xyz/embed/tv/${mediaId}?season=${seasonId}&episode=${episodeId}`;
             case 'embedsoap':
