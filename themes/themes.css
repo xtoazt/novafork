@@ -272,7 +272,6 @@ button:active {
     transform: translateX(20px);
 }
 
-
 /* Search Suggestions */
 #searchSuggestions {
     position: absolute;
@@ -289,7 +288,6 @@ button:active {
     scrollbar-width: thin;
     scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
 }
-
 
 #searchSuggestions::-webkit-scrollbar {
     width: 4px;
@@ -344,11 +342,32 @@ button:active {
     font-size: 14px;
     color: #a0aec0;
     margin-bottom: 5px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.suggestion-details .suggestion-type,
+.suggestion-details .suggestion-year {
+    display: flex;
+    align-items: center;
 }
 
 .suggestion-meta {
     font-size: 12px;
     color: #718096;
+}
+
+.suggestion-rating,
+.suggestion-genres {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.suggestion-meta .suggestion-rating i,
+.suggestion-meta .suggestion-genres i {
+    font-size: 1rem;
 }
 
 .highlight {
@@ -360,6 +379,7 @@ button:active {
 .selected {
     background: rgba(255, 255, 255, 0.2);
 }
+
 /* Utility Classes */
 .rounded { border-radius: 0.75rem; }
 .hover\:scale-105:hover { transform: scale(1.05); }
@@ -404,6 +424,7 @@ button:active {
         margin-bottom: 2px;
     }
 }
+
 
 /* Development Notice
 .dev-notice {
