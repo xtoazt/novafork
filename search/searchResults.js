@@ -92,8 +92,7 @@ $(document).ready(async function () {
             // Set the poster image, fallback to a placeholder if missing
             const posterPath = media.poster_path
                 ? `https://image.tmdb.org/t/p/w185${media.poster_path}`
-                : 'path-to-placeholder-image.jpg';
-
+                : 'placeholder.jpeg';
             // Fetch genres for the media, slice to show top 2 genres
             const genreNames = (media.genre_ids || []).map(id => genreMap[id] || 'Unknown').slice(0, 2).join(', ');
 
