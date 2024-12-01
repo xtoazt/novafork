@@ -9,6 +9,8 @@
   <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
   <!-- Include Font Awesome for Icons -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
+
 </head>
 <body class="bg-black text-white min-h-screen font-sans antialiased">
 <div class="container mx-auto p-4 sm:p-6">
@@ -38,39 +40,47 @@
           </select>
         </div>
         <!-- Provider Select Dropdown -->
-        <div>
+
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
+
+        <div class="dropdown-container">
           <label for="providerSelect" class="block text-xs sm:text-sm font-semibold text-gray-200 mb-1">
-            <i class="fas fa-tv mr-2"></i>Select Content Provider:
+            <i class="bi bi-tv mr-2"></i>Select Content Provider:
           </label>
           <select id="providerSelect"
-                  class="custom-select sm-select w-full bg-gray-800 text-white rounded-lg border border-gray-700 p-1 sm:p-2 focus:border-purple-400 focus:ring-purple-400 transition duration-200 ease-in-out">
-            <optgroup label="Best Providers (No Ads)">
-              <option value="vidbinge">VidBinge - 4k </option>
-             <!--  <option value="cinescrape">Cinescrape - 4K (DebateMyRoomba)</option> -->
-             <option value="flicky">flicky</option>
-             <option value="vidsrcnl">VidSrc NL </option>
-              <option value="filmxy">Filmxy - Multi Lang</option>
+                  class="custom-select sm-select w-full bg-gray-900 text-white rounded-md border border-gray-700 p-2 pl-3 text-xs focus:border-purple-400 focus:ring-purple-400 focus:outline-none shadow-md transition duration-200 ease-in-out">
+
+            <!-- Best Providers Section -->
+            <optgroup label="Best Providers (No Ads)" class="bg-gray-800 rounded-lg mb-2 p-2 text-sm font-semibold text-green-400">
+              <option value="vidbinge" class="bg-gray-700 hover:bg-gray-600 p-2 text-xs">VidBinge - 4K</option>
+              <option value="flicky" class="bg-gray-700 hover:bg-gray-600 p-2 text-xs">Flicky</option>
+              <option value="vidsrcnl" class="bg-gray-700 hover:bg-gray-600 p-2 text-xs">VidSrc NL</option>
+              <option value="filmxy" class="bg-gray-700 hover:bg-gray-600 p-2 text-xs">Filmxy - Multi Lang</option>
             </optgroup>
-            <optgroup label="Alternative Providers (Ads May Appear)">
-              <option value="vidlink">VidLink - ads </option>
-              <option value="vidsrc">VidSrc - Ads </option>
-              <option value="embedsu">Embedsu - ads</option>
-              <option value="vidsrcicu">VidSrc ICU - Ads</option>
-              <option value="vidsrcpro">VidSrcPro - Ads</option>
-              <option value="autoembed">AutoEmbed - Ads</option>
-              <option value="nontonGo">NontonGo - Ads</option>
-              <option value="vidsrcxyz">VidSrcXYZ - Ads</option>
-              <option value="embedsoap">EmbedSoap - Ads</option>
-              <option value="smashystream">SmashyStream - Ads</option>
-              <option value="2embed">2Embed - Ads</option>
-              <option value="moviesapi">MoviesAPI - Decent Provider</option>
-              <option value="1vid1shar">1Vid1Shar - Ads</option>
-              <option value="moviee">Moviee - Ads</option>
-              <option value="multiembed">MultiEmbed - Ads</option>
-              <option value="multiembedvip">MultiEmbedVIP - Ads</option>
+
+            <!-- Alternative Providers Section -->
+            <optgroup label="Alternative Providers (Ads May Appear)" class="bg-gray-800 rounded-lg mb-2 p-2 text-sm font-semibold text-yellow-500">
+              <option value="vidlink" class="bg-gray-700 hover:bg-gray-600 p-2 text-xs">VidLink - Ads</option>
+              <option value="vidsrc" class="bg-gray-700 hover:bg-gray-600 p-2 text-xs">VidSrc - Ads</option>
+              <option value="embedsu" class="bg-gray-700 hover:bg-gray-600 p-2 text-xs">Embedsu - Ads</option>
+              <option value="vidsrcicu" class="bg-gray-700 hover:bg-gray-600 p-2 text-xs">VidSrc ICU - Ads</option>
+              <option value="vidsrcpro" class="bg-gray-700 hover:bg-gray-600 p-2 text-xs">VidSrcPro - Ads</option>
+              <option value="autoembed" class="bg-gray-700 hover:bg-gray-600 p-2 text-xs">AutoEmbed - Ads</option>
+              <option value="nontonGo" class="bg-gray-700 hover:bg-gray-600 p-2 text-xs">NontonGo - Ads</option>
+              <option value="vidsrcxyz" class="bg-gray-700 hover:bg-gray-600 p-2 text-xs">VidSrcXYZ - Ads</option>
+              <option value="embedsoap" class="bg-gray-700 hover:bg-gray-600 p-2 text-xs">EmbedSoap - Ads</option>
+              <option value="smashystream" class="bg-gray-700 hover:bg-gray-600 p-2 text-xs">SmashyStream - Ads</option>
+              <option value="2embed" class="bg-gray-700 hover:bg-gray-600 p-2 text-xs">2Embed - Ads</option>
+              <option value="moviesapi" class="bg-gray-700 hover:bg-gray-600 p-2 text-xs">MoviesAPI - Decent Provider</option>
+              <option value="1vid1shar" class="bg-gray-700 hover:bg-gray-600 p-2 text-xs">1Vid1Shar - Ads</option>
+              <option value="moviee" class="bg-gray-700 hover:bg-gray-600 p-2 text-xs">Moviee - Ads</option>
+              <option value="multiembed" class="bg-gray-700 hover:bg-gray-600 p-2 text-xs">MultiEmbed - Ads</option>
+              <option value="multiembedvip" class="bg-gray-700 hover:bg-gray-600 p-2 text-xs">MultiEmbedVIP - Ads</option>
             </optgroup>
-            <optgroup label="Anime Providers">
-              <option value="flickyanime"> flicky anime no ads</option>
+
+            <!-- Anime Providers Section -->
+            <optgroup label="Anime Providers" class="bg-gray-800 rounded-lg mb-2 p-2 text-sm font-semibold text-blue-400">
+              <option value="flickyanime" class="bg-gray-700 hover:bg-gray-600 p-2 text-xs">Flicky Anime - No Ads</option>
             </optgroup>
           </select>
         </div>
