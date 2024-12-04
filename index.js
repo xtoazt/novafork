@@ -370,6 +370,52 @@ $(document).ready(async function () {
             handleError('An error occurred while fetching media for the company.', error);
         }
     }
+    // Function to fetch movies in a collection with pagination
+    async function fetchMoviesInCollection(collectionId, page = 1) {
+        currentMediaType = 'collection';
+        currentPage = page;
+        const url = `https://api.themoviedb.org/3/collection/${collectionId}?api_key=${API_KEY}&language=en-US`;
+        try {
+            const response = await $.getJSON(url);
+            if (!response.parts || response.parts.length === 0) {
+                clearMediaDisplay();
+                handleError('No movies found in this collection.');
+                totalPages = 1;
+                updatePaginationControls(currentPage, totalPages);
+                return;
+            }
+            const sortedMovies = response.parts.sort((a, b) => new Date(a.release_date) - new Date(b.release_date));
+            totalPages = Math.ceil(sortedMovies.length / 12);
+            const paginatedMovies = sortedMovies.slice((currentPage - 1) * 12, currentPage * 12);
+            displayPopularMedia(paginatedMovies);
+            updatePaginationControls(currentPage, totalPages);
+        } catch (error) {
+            handleError('An error occurred while fetching movies in the collection.', error);
+        }
+    }
+    // Function to fetch movies and shows by actor with pagination
+    async function fetchMoviesAndShowsByActor(actorId, page = 1) {
+        currentMediaType = 'actor';
+        currentPage = page;
+        const selectedType = $typeSelect.val();
+        const url = `https://api.themoviedb.org/3/discover/${selectedType}?api_key=${API_KEY}&with_cast=${actorId}&language=en-US&page=${page}`;
+        try {
+            const response = await $.getJSON(url);
+            if (response.total_results === 0) {
+                clearMediaDisplay();
+                handleError('No media found for this actor.');
+                totalPages = 1;
+                updatePaginationControls(currentPage, totalPages);
+                return;
+            }
+            const results = response.results.slice(0, 12);
+            totalPages = response.total_pages;
+            displayPopularMedia(results);
+            updatePaginationControls(currentPage, totalPages);
+        } catch (error) {
+            handleError('An error occurred while fetching media for the actor.', error);
+        }
+    }
 
     // Function to fetch popular media with pagination
     async function fetchPopularMedia(page = 1) {
