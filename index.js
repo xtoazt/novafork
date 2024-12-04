@@ -371,62 +371,6 @@ $(document).ready(async function () {
         }
     }
 
-    // Function to fetch movies in a collection with pagination
-    async function fetchMoviesInCollection(collectionId, page = 1) {
-        currentMediaType = 'collection';
-        currentPage = page;
-        const url = `https://api.themoviedb.org/3/collection/${collectionId}?api_key=${API_KEY}&language=en-US`;
-
-        try {
-            const response = await $.getJSON(url);
-            if (!response.parts || response.parts.length === 0) {
-                clearMediaDisplay();
-                handleError('No movies found in this collection.');
-                totalPages = 1;
-                updatePaginationControls(currentPage, totalPages);
-                return;
-            }
-
-            const sortedMovies = response.parts.sort((a, b) => new Date(a.release_date) - new Date(b.release_date));
-
-            totalPages = Math.ceil(sortedMovies.length / 12);
-
-            const paginatedMovies = sortedMovies.slice((currentPage - 1) * 12, currentPage * 12);
-
-            displayPopularMedia(paginatedMovies);
-
-            updatePaginationControls(currentPage, totalPages);
-        } catch (error) {
-            handleError('An error occurred while fetching movies in the collection.', error);
-        }
-    }
-
-    // Function to fetch movies and shows by actor with pagination
-    async function fetchMoviesAndShowsByActor(actorId, page = 1) {
-        currentMediaType = 'actor';
-        currentPage = page;
-        const selectedType = $typeSelect.val();
-        const url = `https://api.themoviedb.org/3/discover/${selectedType}?api_key=${API_KEY}&with_cast=${actorId}&language=en-US&page=${page}`;
-
-        try {
-            const response = await $.getJSON(url);
-            if (response.total_results === 0) {
-                clearMediaDisplay();
-                handleError('No media found for this actor.');
-                totalPages = 1;
-                updatePaginationControls(currentPage, totalPages);
-                return;
-            }
-
-            const results = response.results.slice(0, 12);
-            totalPages = response.total_pages;
-            displayPopularMedia(results);
-            updatePaginationControls(currentPage, totalPages);
-        } catch (error) {
-            handleError('An error occurred while fetching media for the actor.', error);
-        }
-    }
-
     // Function to fetch popular media with pagination
     async function fetchPopularMedia(page = 1) {
         currentMediaType = 'popular';
@@ -760,6 +704,9 @@ $(document).ready(async function () {
 
 
     let displayedMediaIds = new Set();
+
+
+
     async function displayPopularMedia(results) {
         $popularMedia.empty();
         displayedMediaIds.clear();
@@ -815,28 +762,32 @@ $(document).ready(async function () {
             // Get certification information if available
             const certification = (mediaType === 'movie' && media.certifications['US']) ? media.certifications['US'] : '';
 
-            // Populate the media card's HTML content
             $mediaCard.html(`
-            <img src="https://image.tmdb.org/t/p/w500${media.poster_path}" alt="${media.title || media.name}" class="media-image">
-            ${displayType ? `<div class="release-type">${displayType}</div>` : ''}
-            <div class="media-content">
-                <h3 class="media-title">${media.title || media.name}</h3>
-                <p class="media-type">
-                    ${mediaType === 'movie' ? '<i class="fas fa-film" title="Movie"></i> Movie' :
+           <img 
+                 src="${media.poster_path ? `https://image.tmdb.org/t/p/w500${media.poster_path}` : 'placeholder.jpeg'}" 
+                    alt="${media.title || media.name}" 
+                     class="media-image"
+                     onerror="this.onerror=null; this.src='placeholder.jpeg';"
+                 
+             ${displayType ? `<div class="release-type">${displayType}</div>` : ''}
+    <div class="media-content">
+        <h3 class="media-title">${media.title || media.name}</h3>
+        <p class="media-type">
+            ${mediaType === 'movie' ? '<i class="fas fa-film" title="Movie"></i> Movie' :
                 mediaType === 'tv' ? '<i class="fas fa-tv" title="TV Show"></i> TV Show' :
                     '<i class="fas fa-pencil-alt" title="Animation"></i> Animation'}
-                </p>
-                <div class="media-details">
-                    <p><i class="fas fa-theater-masks"></i> Genres: ${genreNames}</p>
-                    <div class="media-rating">
-                        <span class="rating-stars">${ratingStars}</span>
-                        <span>${media.vote_average.toFixed(1)}/10</span>
-                    </div>
-                    <p><i class="fas fa-calendar-alt"></i> Release Date: ${formattedDate}</p>
-                    ${certification ? `<p><i class="fas fa-certificate"></i> Certification: ${certification}</p>` : ''}
-                </div>
+        </p>
+        <div class="media-details">
+            <p><i class="fas fa-theater-masks"></i> Genres: ${genreNames}</p>
+            <div class="media-rating">
+                <span class="rating-stars">${ratingStars}</span>
+                <span>${media.vote_average.toFixed(1)}/10</span>
             </div>
-        `);
+            <p><i class="fas fa-calendar-alt"></i> Release Date: ${formattedDate}</p>
+            ${certification ? `<p><i class="fas fa-certificate"></i> Certification: ${certification}</p>` : ''}
+        </div>
+    </div>
+`);
 
             // Add a click event to fetch and display the selected media
             $mediaCard.on('click', function () {
